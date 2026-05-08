@@ -1052,21 +1052,30 @@ function SD(){
   try{
     D.savedAt=Date.now();
     if(CU) D._user=CU;
-    localStorage.setItem("gm3",JSON.stringify(D));
+    var encrypted=encryptData(D);
+    localStorage.setItem("gm3",encrypted);
   }catch(e){
-    try{sessionStorage.setItem("gm3",JSON.stringify(D));}catch(e2){}
+    try{
+      var encrypted2=encryptData(D);
+      sessionStorage.setItem("gm3",encrypted2);
+    }catch(e2){}
   }
   showSBar();
 }
 function LD(){
-  let raw=null;
+  var lic=getLicenseData();
+  if(lic&&lic.codigo) setEncryptKey(lic.codigo);
+  var raw=null;
   try{raw=localStorage.getItem("gm3");}catch(e){}
   if(!raw) try{raw=sessionStorage.getItem("gm3");}catch(e){}
   if(raw){
     try{
-      D=JSON.parse(raw);
-      if(D._user){CU=D._user;delete D._user;}
-      return true;
+      var parsed=decryptData(raw);
+      if(parsed&&typeof parsed==="object"){
+        D=parsed;
+        if(D._user){CU=D._user;delete D._user;}
+        return true;
+      }
     }catch(e){}
   }
   D=defData();
