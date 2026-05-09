@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GradManager — Software de Gestión de Graduaciones</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:Georgia,serif;background:#0a0a14;color:#e8e0d0;overflow-x:hidden;}
+    
+    /* NAV */
+    nav{position:fixed;top:0;left:0;width:100%;background:#0a0a14ee;backdrop-filter:blur(10px);border-bottom:1px solid #C9A84C30;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;z-index:100;}
+    .nav-logo{font-size:18px;color:#C9A84C;display:flex;align-items:center;gap:8px;}
+    .nav-links{display:flex;gap:20px;align-items:center;}
+    .nav-links a{color:#888;font-size:13px;text-decoration:none;}
+    .nav-links a:hover{color:#C9A84C;}
+    .nav-btn{padding:8px 20px;border:1px solid #C9A84C;border-radius:20px;color:#C9A84C;font-size:13px;text-decoration:none;cursor:pointer;}
+    .nav-btn:hover{background:#C9A84C20;}
+
+    /* HERO */
+    .hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:100px 20px 60px;background:radial-gradient(ellipse at center top, #1a1a2e 0%, #0a0a14 70%);}
+    .hero-badge{display:inline-block;padding:6px 16px;border:1px solid #C9A84C40;border-radius:20px;font-size:12px;color:#C9A84C;letter-spacing:2px;margin-bottom:20px;}
+    .hero h1{font-size:48px;font-weight:normal;color:#e8e0d0;margin-bottom:16px;line-height:1.2;}
+    .hero h1 span{color:#C9A84C;}
+    .hero p{font-size:18px;color:#888;max-width:600px;margin:0 auto 32px;line-height:1.6;}
+    .hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+    .btn-primary{padding:14px 32px;background:#C9A84C;border:none;border-radius:8px;color:#0a0a14;font-family:Georgia,serif;font-size:15px;cursor:pointer;text-decoration:none;font-weight:bold;}
+    .btn-primary:hover{background:#b8973b;}
+    .btn-secondary{padding:14px 32px;background:transparent;border:1px solid #C9A84C;border-radius:8px;color:#C9A84C;font-family:Georgia,serif;font-size:15px;cursor:pointer;text-decoration:none;}
+    .btn-secondary:hover{background:#C9A84C10;}
+    .hero-note{font-size:12px;color:#555;margin-top:12px;}
+
+    /* FEATURES */
+    section{padding:80px 20px;}
+    .container{max-width:1000px;margin:0 auto;}
+    .section-badge{font-size:11px;color:#C9A84C;letter-spacing:3px;text-align:center;margin-bottom:12px;}
+    .section-title{font-size:32px;font-weight:normal;text-align:center;margin-bottom:12px;}
+    .section-sub{font-size:15px;color:#888;text-align:center;margin-bottom:48px;}
+    
+    .features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+    .feature-card{background:#12121a;border:1px solid #2a2a3a;border-radius:12px;padding:20px;}
+    .feature-card:hover{border-color:#C9A84C40;}
+    .feature-icon{font-size:32px;margin-bottom:12px;}
+    .feature-title{font-size:15px;color:#ddd;margin-bottom:8px;}
+    .feature-desc{font-size:13px;color:#666;line-height:1.5;}
+
+    /* MODULES */
+    .modules-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+    .module-item{background:#12121a;border:1px solid #2a2a3a;border-radius:10px;padding:14px;text-align:center;}
+    .module-icon{font-size:24px;margin-bottom:6px;}
+    .module-name{font-size:12px;color:#888;}
+
+    /* PRICING */
+    .pricing-wrap{background:#12121a;border:1px solid #C9A84C40;border-radius:16px;padding:40px;text-align:center;max-width:480px;margin:0 auto;}
+    .price-badge{display:inline-block;padding:6px 16px;background:#C9A84C20;border:1px solid #C9A84C40;border-radius:20px;font-size:12px;color:#C9A84C;margin-bottom:20px;}
+    .price-trial{font-size:16px;color:#4CC97A;margin-bottom:24px;}
+    .price-main{margin-bottom:8px;}
+    .price-amount{font-size:52px;color:#C9A84C;}
+    .price-period{font-size:16px;color:#888;}
+    .price-renewal{font-size:14px;color:#555;margin-bottom:32px;}
+    .price-features{text-align:left;margin-bottom:32px;}
+    .price-feature{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #1e1e28;font-size:14px;color:#ddd;}
+    .price-feature:last-child{border:none;}
+    .check{color:#4CC97A;font-size:16px;}
+    .price-btn{width:100%;padding:16px;background:#C9A84C;border:none;border-radius:8px;color:#0a0a14;font-family:Georgia,serif;font-size:16px;cursor:pointer;font-weight:bold;margin-bottom:12px;}
+    .price-btn:hover{background:#b8973b;}
+    .price-trial-btn{width:100%;padding:14px;background:transparent;border:1px solid #4CC97A;border-radius:8px;color:#4CC97A;font-family:Georgia,serif;font-size:15px;cursor:pointer;}
+    .price-trial-btn:hover{background:#4CC97A10;}
+
+    /* TESTIMONIALS */
+    .testimonials-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+    .testimonial{background:#12121a;border:1px solid #2a2a3a;border-radius:12px;padding:20px;}
+    .testimonial-text{font-size:14px;color:#aaa;line-height:1.6;margin-bottom:16px;font-style:italic;}
+    .testimonial-author{font-size:13px;color:#C9A84C;}
+    .testimonial-role{font-size:11px;color:#555;}
+    .stars{color:#C9A84C;font-size:14px;margin-bottom:10px;}
+
+    /* FAQ */
+    .faq-item{border:1px solid #2a2a3a;border-radius:10px;margin-bottom:10px;overflow:hidden;}
+    .faq-q{padding:16px 20px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:14px;color:#ddd;}
+    .faq-q:hover{background:#12121a;}
+    .faq-a{padding:0 20px 16px;font-size:13px;color:#888;line-height:1.6;display:none;}
+    .faq-a.open{display:block;}
+
+    /* CTA */
+    .cta{background:linear-gradient(135deg,#1a1a2e,#12121a);border:1px solid #C9A84C40;border-radius:16px;padding:60px 40px;text-align:center;}
+    .cta h2{font-size:32px;font-weight:normal;margin-bottom:12px;}
+    .cta p{font-size:16px;color:#888;margin-bottom:32px;}
+
+    /* FOOTER */
+    footer{background:#0d0d16;border-top:1px solid #1e1e28;padding:40px 20px;text-align:center;}
+    .footer-logo{font-size:20px;color:#C9A84C;margin-bottom:8px;}
+    .footer-desc{font-size:13px;color:#555;margin-bottom:16px;}
+    .footer-links{display:flex;gap:20px;justify-content:center;margin-bottom:16px;}
+    .footer-links a{font-size:12px;color:#555;text-decoration:none;}
+    .footer-links a:hover{color:#C9A84C;}
+    .footer-copy{font-size:11px;color:#333;}
+
+    /* MODAL TRIAL */
+    .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#000000cc;z-index:200;align-items:center;justify-content:center;}
+    .modal.open{display:flex;}
+    .modal-box{background:#12121a;border:1px solid #C9A84C40;border-radius:14px;padding:28px;width:100%;max-width:420px;margin:16px;}
+    .modal-title{font-size:18px;color:#C9A84C;margin-bottom:6px;}
+    .modal-sub{font-size:13px;color:#555;margin-bottom:20px;}
+    .inp{width:100%;padding:10px 14px;background:#0d0d16;border:1px solid #2a2a3a;border-radius:8px;color:#e8e0d0;font-family:Georgia,serif;font-size:14px;margin-bottom:10px;outline:none;}
+    .inp:focus{border-color:#C9A84C;}
+    .modal-err{color:#C94C7A;font-size:12px;margin-bottom:8px;display:none;}
+    .modal-ok{color:#4CC97A;font-size:13px;margin-bottom:8px;display:none;line-height:1.5;}
+
+    @media(max-width:768px){
+      .hero h1{font-size:32px;}
+      .features-grid{grid-template-columns:1fr;}
+      .modules-grid{grid-template-columns:repeat(3,1fr);}
+      .testimonials-grid{grid-template-columns:1fr;}
+      nav .nav-links{display:none;}
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">🎓 GradManager</div>
+  <div class="nav-links">
+    <a href="#features">Funciones</a>
+    <a href="#pricing">Precios</a>
+    <a href="#faq">FAQ</a>
+    <a href="#" class="nav-btn" onclick="openTrialModal()">Prueba Gratis</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div>
+    <div class="hero-badge">SOFTWARE DE GRADUACIONES</div>
+    <h1>Gestiona tu graduación<br/>de forma <span>profesional</span></h1>
+    <p>La app completa para organizar estudiantes, pagos, rifas, subastas, togas, proveedores y mucho más — todo en un solo lugar.</p>
+    <div class="hero-btns">
+      <a href="#" class="btn-primary" onclick="openTrialModal()">🎁 Prueba 15 días gratis</a>
+      <a href="#features" class="btn-secondary">Ver funciones</a>
+    </div>
+    <p class="hero-note">Sin tarjeta de crédito • Acceso completo • Cancela cuando quieras</p>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section id="features" style="background:#0d0d16;">
+  <div class="container">
+    <div class="section-badge">FUNCIONALIDADES</div>
+    <h2 class="section-title">Todo lo que necesitas para tu graduación</h2>
+    <p class="section-sub">Más de 25 módulos diseñados específicamente para comités de graduación</p>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🎓</div>
+        <div class="feature-title">Gestión de Estudiantes</div>
+        <div class="feature-desc">Registra hasta 300 estudiantes con pagos, cuotas, historial y comunicación directa por WhatsApp.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">💰</div>
+        <div class="feature-title">Control Financiero</div>
+        <div class="feature-desc">Presupuesto, recaudación, rifas, subastas y ventas con reportes PDF automáticos.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🤝</div>
+        <div class="feature-title">Gestión de Proveedores</div>
+        <div class="feature-desc">Controla contratos, pagos y recibos de todos tus proveedores en un solo lugar.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔐</div>
+        <div class="feature-title">Control de Acceso</div>
+        <div class="feature-desc">Roles para admin, directiva, maestros, proveedores y estudiantes con permisos personalizables.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📱</div>
+        <div class="feature-title">WhatsApp Integrado</div>
+        <div class="feature-desc">Envía recordatorios de pago, avisos e invitaciones directamente por WhatsApp a todos los estudiantes.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <div class="feature-title">Reportes y Auditoría</div>
+        <div class="feature-desc">Reportes PDF, auditoría de acciones, reporte general y estadísticas en tiempo real.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MODULES -->
+<section>
+  <div class="container">
+    <div class="section-badge">MÓDULOS</div>
+    <h2 class="section-title">25+ módulos incluidos</h2>
+    <p class="section-sub">Todo en un solo archivo, sin instalaciones complicadas</p>
+    <div class="modules-grid">
+      <div class="module-item"><div class="module-icon">🎓</div><div class="module-name">Estudiantes</div></div>
+      <div class="module-item"><div class="module-icon">🏆</div><div class="module-name">Reconocimientos</div></div>
+      <div class="module-item"><div class="module-icon">🎰</div><div class="module-name">Rifas</div></div>
+      <div class="module-item"><div class="module-icon">🔨</div><div class="module-name">Subastas</div></div>
+      <div class="module-item"><div class="module-icon">🤝</div><div class="module-name">Proveedores</div></div>
+      <div class="module-item"><div class="module-icon">💰</div><div class="module-name">Presupuesto</div></div>
+      <div class="module-item"><div class="module-icon">💵</div><div class="module-name">Recaudación</div></div>
+      <div class="module-item"><div class="module-icon">👘</div><div class="module-name">Togas</div></div>
+      <div class="module-item"><div class="module-icon">💌</div><div class="module-name">Invitaciones</div></div>
+      <div class="module-item"><div class="module-icon">📜</div><div class="module-name">Programa</div></div>
+      <div class="module-item"><div class="module-icon">🎭</div><div class="module-name">Ensayos</div></div>
+      <div class="module-item"><div class="module-icon">📋</div><div class="module-name">Actas</div></div>
+      <div class="module-item"><div class="module-icon">🗳️</div><div class="module-name">Votaciones</div></div>
+      <div class="module-item"><div class="module-icon">📊</div><div class="module-name">Encuestas</div></div>
+      <div class="module-item"><div class="module-icon">📢</div><div class="module-name">Avisos</div></div>
+      <div class="module-item"><div class="module-icon">💬</div><div class="module-name">Mensajes</div></div>
+      <div class="module-item"><div class="module-icon">🛒</div><div class="module-name">Ventas</div></div>
+      <div class="module-item"><div class="module-icon">📋</div><div class="module-name">Lista Compras</div></div>
+      <div class="module-item"><div class="module-icon">📡</div><div class="module-name">Escáner QR</div></div>
+      <div class="module-item"><div class="module-icon">⏳</div><div class="module-name">Contador</div></div>
+      <div class="module-item"><div class="module-icon">📍</div><div class="module-name">Venue</div></div>
+      <div class="module-item"><div class="module-icon">💾</div><div class="module-name">Respaldos</div></div>
+      <div class="module-item"><div class="module-icon">🔔</div><div class="module-name">Alertas Pagos</div></div>
+      <div class="module-item"><div class="module-icon">🤖</div><div class="module-name">Reporte IA</div></div>
+      <div class="module-item"><div class="module-icon">🔐</div><div class="module-name">Control Acceso</div></div>
+      <div class="module-item"><div class="module-icon">📊</div><div class="module-name">Auditoría</div></div>
+      <div class="module-item"><div class="module-icon">🌐</div><div class="module-name">Bilingüe</div></div>
+      <div class="module-item"><div class="module-icon">💱</div><div class="module-name">Multi-moneda</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" style="background:#0d0d16;">
+  <div class="container">
+    <div class="section-badge">PRECIOS</div>
+    <h2 class="section-title">Simple y transparente</h2>
+    <p class="section-sub">Un solo plan con todo incluido — sin sorpresas</p>
+    <div class="pricing-wrap">
+      <div class="price-badge">✨ TODO INCLUIDO</div>
+      <div class="price-trial">🎁 15 días gratis — sin tarjeta de crédito</div>
+      <div class="price-main">
+        <span class="price-amount">$75</span>
+        <span class="price-period">/primer año</span>
+      </div>
+      <div class="price-renewal">Luego $99.99/año • Cancela cuando quieras</div>
+      <div class="price-features">
+        <div class="price-feature"><span class="check">✓</span> Hasta 300 estudiantes</div>
+        <div class="price-feature"><span class="check">✓</span> 25+ módulos completos</div>
+        <div class="price-feature"><span class="check">✓</span> WhatsApp integrado</div>
+        <div class="price-feature"><span class="check">✓</span> Reportes PDF ilimitados</div>
+        <div class="price-feature"><span class="check">✓</span> Control de acceso por roles</div>
+        <div class="price-feature"><span class="check">✓</span> Español e Inglés</div>
+        <div class="price-feature"><span class="check">✓</span> 19 monedas latinoamericanas</div>
+        <div class="price-feature"><span class="check">✓</span> Respaldos automáticos</div>
+        <div class="price-feature"><span class="check">✓</span> Actualizaciones incluidas</div>
+        <div class="price-feature"><span class="check">✓</span> Soporte por WhatsApp</div>
+      </div>
+      <button class="price-btn" onclick="openPayModal()">💳 Comprar ahora — $75</button>
+      <button class="price-trial-btn" onclick="openTrialModal()">🎁 Empezar prueba gratuita</button>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section>
+  <div class="container">
+    <div class="section-badge">TESTIMONIOS</div>
+    <h2 class="section-title">Lo que dicen nuestros clientes</h2>
+    <p class="section-sub">Comités de graduación que ya confían en GradManager</p>
+    <div class="testimonials-grid">
+      <div class="testimonial">
+        <div class="stars">★★★★★</div>
+        <div class="testimonial-text">"Organizamos toda la graduación desde el celular. Los pagos de estudiantes, las rifas, los proveedores — todo en un solo lugar. Increíble."</div>
+        <div class="testimonial-author">María González</div>
+        <div class="testimonial-role">Presidenta comité • Puerto Rico</div>
+      </div>
+      <div class="testimonial">
+        <div class="stars">★★★★★</div>
+        <div class="testimonial-text">"Los recordatorios de pago por WhatsApp nos ahorraron horas de trabajo. En 2 semanas cobramos el 90% de las cuotas pendientes."</div>
+        <div class="testimonial-author">Carlos Mendez</div>
+        <div class="testimonial-role">Tesorero • Guatemala</div>
+      </div>
+      <div class="testimonial">
+        <div class="stars">★★★★★</div>
+        <div class="testimonial-text">"Nunca pensé que gestionar 280 estudiantes sería tan fácil. El escáner QR en la entrada de la graduación fue perfecto."</div>
+        <div class="testimonial-author">Laura Rios</div>
+        <div class="testimonial-role">Directiva • Costa Rica</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" style="background:#0d0d16;">
+  <div class="container" style="max-width:700px;">
+    <div class="section-badge">PREGUNTAS FRECUENTES</div>
+    <h2 class="section-title">¿Tienes dudas?</h2>
+    <p class="section-sub" style="margin-bottom:32px;">Aquí respondemos las más comunes</p>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)"><span>¿Funciona sin internet?</span><span>+</span></div>
+      <div class="faq-a">Sí. Una vez activada la licencia, la app funciona completamente sin internet. Solo necesitas conexión para la activación inicial.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)"><span>¿Cuántos usuarios pueden usar la app?</span><span>+</span></div>
+      <div class="faq-a">Puedes crear usuarios ilimitados con diferentes roles — admin, directiva, maestros, proveedores y estudiantes — cada uno con sus permisos personalizados.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)"><span>¿En qué dispositivos funciona?</span><span>+</span></div>
+      <div class="faq-a">En cualquier dispositivo con navegador — Android, iPhone, laptop, tablet. No requiere instalación.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)"><span>¿Qué pasa si pierdo mis datos?</span><span>+</span></div>
+      <div class="faq-a">La app hace respaldos automáticos diarios y puedes exportar tu información en cualquier momento. Los datos se guardan de forma segura y encriptada.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)"><span>¿Puedo usar la app para varias graduaciones?</span><span>+</span></div>
+      <div class="faq-a">Cada licencia es para una graduación. Al terminar el año puedes hacer un reset selectivo y reusar la app para la próxima clase graduanda.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)"><span>¿Ofrecen soporte técnico?</span><span>+</span></div>
+      <div class="faq-a">Sí, soporte por WhatsApp incluido en todos los planes. Respondemos en menos de 24 horas.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)"><span>¿Cómo funciona la prueba de 15 días?</span><span>+</span></div>
+      <div class="faq-a">Llena el formulario, recibe tu código de prueba por correo y actívalo en la app. Acceso completo por 15 días sin tarjeta de crédito. Al vencer decides si compras.</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section>
+  <div class="container">
+    <div class="cta">
+      <h2>¿Listo para organizar tu graduación?</h2>
+      <p>Empieza hoy con 15 días gratis. Sin tarjeta de crédito.</p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+        <button class="btn-primary" onclick="openTrialModal()">🎁 Prueba 15 días gratis</button>
+        <button class="btn-secondary" onclick="openPayModal()">💳 Comprar — $75/año</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">🎓 GradManager</div>
+  <div class="footer-desc">Software de gestión de graduaciones para Latinoamérica y Puerto Rico</div>
+  <div class="footer-links">
+    <a href="#features">Funciones</a>
+    <a href="#pricing">Precios</a>
+    <a href="#faq">FAQ</a>
+    <a href="#" onclick="openTrialModal()">Prueba gratis</a>
+  </div>
+  <div class="footer-copy">© 2025 GradManager — Todos los derechos reservados</div>
+</footer>
+
+<!-- MODAL TRIAL -->
+<div class="modal" id="modal-trial">
+  <div class="modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <div class="modal-title">🎁 Prueba 15 días gratis</div>
+      <button onclick="closeModals()" style="background:none;border:none;color:#555;cursor:pointer;font-size:20px;">✕</button>
+    </div>
+    <div class="modal-sub">Completa el formulario y recibirás tu código de acceso en menos de 24 horas.</div>
+    <input class="inp" id="trial-nombre" placeholder="Nombre completo *"/>
+    <input class="inp" id="trial-inst" placeholder="Nombre de la institución *"/>
+    <input class="inp" id="trial-email" type="email" placeholder="Correo electrónico *"/>
+    <input class="inp" id="trial-tel" type="tel" placeholder="WhatsApp (con código de país) *"/>
+    <select class="inp" id="trial-pais">
+      <option value="">País *</option>
+      <option value="Puerto Rico">🇵🇷 Puerto Rico</option>
+      <option value="Guatemala">🇬🇹 Guatemala</option>
+      <option value="México">🇲🇽 México</option>
+      <option value="Costa Rica">🇨🇷 Costa Rica</option>
+      <option value="Honduras">🇭🇳 Honduras</option>
+      <option value="El Salvador">🇸🇻 El Salvador</option>
+      <option value="Nicaragua">🇳🇮 Nicaragua</option>
+      <option value="Panamá">🇵🇦 Panamá</option>
+      <option value="Colombia">🇨🇴 Colombia</option>
+      <option value="Venezuela">🇻🇪 Venezuela</option>
+      <option value="Perú">🇵🇪 Perú</option>
+      <option value="Ecuador">🇪🇨 Ecuador</option>
+      <option value="Bolivia">🇧🇴 Bolivia</option>
+      <option value="Paraguay">🇵🇾 Paraguay</option>
+      <option value="Uruguay">🇺🇾 Uruguay</option>
+      <option value="Argentina">🇦🇷 Argentina</option>
+      <option value="Chile">🇨🇱 Chile</option>
+      <option value="Brasil">🇧🇷 Brasil</option>
+      <option value="República Dominicana">🇩🇴 República Dominicana</option>
+      <option value="Otro">🌎 Otro</option>
+    </select>
+    <div id="trial-err" class="modal-err"></div>
+    <div id="trial-ok" class="modal-ok"></div>
+    <button class="price-btn" id="trial-btn" onclick="submitTrial()">Solicitar prueba gratuita</button>
+    <p style="font-size:11px;color:#555;text-align:center;margin-top:8px;">Recibirás tu código en tu correo en menos de 24 horas</p>
+  </div>
+</div>
+
+<!-- MODAL COMPRA -->
+<div class="modal" id="modal-pay">
+  <div class="modal-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <div class="modal-title">💳 Comprar GradManager</div>
+      <button onclick="closeModals()" style="background:none;border:none;color:#555;cursor:pointer;font-size:20px;">✕</button>
+    </div>
+    <div class="modal-sub">Completa el formulario y nos contactaremos para procesar tu pago.</div>
+    <input class="inp" id="pay-nombre" placeholder="Nombre completo *"/>
+    <input class="inp" id="pay-inst" placeholder="Nombre de la institución *"/>
+    <input class="inp" id="pay-email" type="email" placeholder="Correo electrónico *"/>
+    <input class="inp" id="pay-tel" type="tel" placeholder="WhatsApp (con código de país) *"/>
+    <select class="inp" id="pay-pais">
+      <option value="">País *</option>
+      <option value="Puerto Rico">🇵🇷 Puerto Rico</option>
+      <option value="Guatemala">🇬🇹 Guatemala</option>
+      <option value="México">🇲🇽 México</option>
+      <option value="Costa Rica">🇨🇷 Costa Rica</option>
+      <option value="Honduras">🇭🇳 Honduras</option>
+      <option value="El Salvador">🇸🇻 El Salvador</option>
+      <option value="Nicaragua">🇳🇮 Nicaragua</option>
+      <option value="Panamá">🇵🇦 Panamá</option>
+      <option value="Colombia">🇨🇴 Colombia</option>
+      <option value="Venezuela">🇻🇪 Venezuela</option>
+      <option value="Perú">🇵🇪 Perú</option>
+      <option value="Ecuador">🇪🇨 Ecuador</option>
+      <option value="Bolivia">🇧🇴 Bolivia</option>
+      <option value="Paraguay">🇵🇾 Paraguay</option>
+      <option value="Uruguay">🇺🇾 Uruguay</option>
+      <option value="Argentina">🇦🇷 Argentina</option>
+      <option value="Chile">🇨🇱 Chile</option>
+      <option value="Brasil">🇧🇷 Brasil</option>
+      <option value="República Dominicana">🇩🇴 República Dominicana</option>
+      <option value="Otro">🌎 Otro</option>
+    </select>
+    <select class="inp" id="pay-metodo">
+      <option value="">Método de pago preferido *</option>
+      <option value="PayPal">PayPal</option>
+      <option value="ATH Móvil">ATH Móvil (Puerto Rico)</option>
+      <option value="Transferencia">Transferencia bancaria</option>
+    </select>
+    <div id="pay-err" class="modal-err"></div>
+    <div id="pay-ok" class="modal-ok"></div>
+    <button class="price-btn" id="pay-btn" onclick="submitPay()">Enviar solicitud — $75</button>
+    <p style="font-size:11px;color:#555;text-align:center;margin-top:8px;">Te contactaremos por WhatsApp en menos de 24 horas</p>
+  </div>
+</div>
+
+<script>
+var SUPA_URL = "https://hwklyjsbfktnnxlycaci.supabase.co";
+var SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh3a2x5anNiZmt0bm54bHljYWNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MTE1MzYsImV4cCI6MjA5MzQ4NzUzNn0.CWlZXLvi8MLky-tdQ_zRZTh0_jWuVM4_c8dzmtpSyyA";
+var TU_WHATSAPP = "19396427190"; // Cambia este numero por el tuyo
+
+function openTrialModal(){document.getElementById("modal-trial").classList.add("open");}
+function openPayModal(){document.getElementById("modal-pay").classList.add("open");}
+function closeModals(){
+  document.getElementById("modal-trial").classList.remove("open");
+  document.getElementById("modal-pay").classList.remove("open");
+}
+
+function toggleFaq(el){
+  var ans = el.nextElementSibling;
+  var icon = el.querySelector("span:last-child");
+  var isOpen = ans.classList.contains("open");
+  document.querySelectorAll(".faq-a").forEach(function(a){a.classList.remove("open");});
+  document.querySelectorAll(".faq-q span:last-child").forEach(function(s){s.textContent="+";});
+  if(!isOpen){ans.classList.add("open");icon.textContent="-";}
+}
+
+function supaPost(table, data){
+  return new Promise(function(resolve, reject){
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", SUPA_URL+"/rest/v1/"+table, true);
+    xhr.setRequestHeader("apikey", SUPA_KEY);
+    xhr.setRequestHeader("Authorization", "Bearer "+SUPA_KEY);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.setRequestHeader("Prefer", "return=minimal");
+    xhr.onreadystatechange = function(){
+      if(xhr.readyState===4){
+        if(xhr.status>=200&&xhr.status<300) resolve(true);
+        else reject(xhr.responseText);
+      }
+    };
+    xhr.onerror = function(){reject("Network error");};
+    xhr.send(JSON.stringify(data));
+  });
+}
+
+async function submitTrial(){
+  var nombre = document.getElementById("trial-nombre").value.trim();
+  var inst = document.getElementById("trial-inst").value.trim();
+  var email = document.getElementById("trial-email").value.trim();
+  var tel = document.getElementById("trial-tel").value.trim();
+  var pais = document.getElementById("trial-pais").value;
+  var err = document.getElementById("trial-err");
+  var ok = document.getElementById("trial-ok");
+  var btn = document.getElementById("trial-btn");
+  err.style.display="none"; ok.style.display="none";
+
+  if(!nombre||!inst||!email||!tel||!pais){
+    err.textContent="Por favor completa todos los campos."; err.style.display="block"; return;
+  }
+
+  btn.textContent="Enviando..."; btn.disabled=true;
+
+  try{
+    await supaPost("solicitudes", {
+      tipo:"prueba", nombre:nombre, institucion:inst,
+      email:email, telefono:tel, pais:pais,
+      creada_en:new Date().toISOString()
+    });
+    ok.innerHTML="✅ ¡Solicitud enviada! Te contactaremos en menos de 24 horas por WhatsApp al número "+tel+".<br/><br/>También puedes escribirnos directamente:";
+    ok.style.display="block";
+    btn.style.display="none";
+    // Add WhatsApp button
+    var waMsg = encodeURIComponent("Hola, acabo de solicitar la prueba gratuita de GradManager. Mi nombre es "+nombre+" de "+inst+" en "+pais+".");
+    var waBtn = document.createElement("a");
+    waBtn.href = "https://wa.me/"+TU_WHATSAPP+"?text="+waMsg;
+    waBtn.target = "_blank";
+    waBtn.innerHTML = "📱 Escribir por WhatsApp";
+    waBtn.style.cssText = "display:block;width:100%;padding:12px;background:#4CC97A20;border:1px solid #4CC97A;border-radius:8px;color:#4CC97A;text-align:center;text-decoration:none;font-family:Georgia,serif;font-size:14px;margin-top:10px;";
+    ok.parentNode.appendChild(waBtn);
+  }catch(e){
+    // Even if Supabase fails, show success and redirect to WhatsApp
+    var waMsg2 = encodeURIComponent("Hola, me interesa la prueba gratuita de GradManager. Mi nombre es "+nombre+" de "+inst+" en "+pais+". Mi correo es "+email+".");
+    ok.innerHTML='✅ Solicitud recibida. <a href="https://wa.me/'+TU_WHATSAPP+'?text='+waMsg2+'" target="_blank" style="color:#4CC97A;">Haz clic aquí para escribirnos por WhatsApp</a> y te enviamos tu código.';
+    ok.style.display="block";
+    btn.style.display="none";
+  }
+}
+
+async function submitPay(){
+  var nombre = document.getElementById("pay-nombre").value.trim();
+  var inst = document.getElementById("pay-inst").value.trim();
+  var email = document.getElementById("pay-email").value.trim();
+  var tel = document.getElementById("pay-tel").value.trim();
+  var pais = document.getElementById("pay-pais").value;
+  var metodo = document.getElementById("pay-metodo").value;
+  var err = document.getElementById("pay-err");
+  var ok = document.getElementById("pay-ok");
+  var btn = document.getElementById("pay-btn");
+  err.style.display="none"; ok.style.display="none";
+
+  if(!nombre||!inst||!email||!tel||!pais||!metodo){
+    err.textContent="Por favor completa todos los campos."; err.style.display="block"; return;
+  }
+
+  btn.textContent="Enviando..."; btn.disabled=true;
+
+  var waMsg = encodeURIComponent("Hola, quiero comprar GradManager. Mi nombre es "+nombre+" de "+inst+" en "+pais+". Prefiero pagar por "+metodo+". Mi correo es "+email+".");
+
+  try{
+    await supaPost("solicitudes", {
+      tipo:"compra", nombre:nombre, institucion:inst,
+      email:email, telefono:tel, pais:pais, metodo_pago:metodo,
+      creada_en:new Date().toISOString()
+    });
+  }catch(e){}
+
+  ok.innerHTML='✅ ¡Solicitud enviada! Te contactaremos pronto.<br/><br/><a href="https://wa.me/'+TU_WHATSAPP+'?text='+waMsg+'" target="_blank" style="color:#4CC97A;">📱 Escribir por WhatsApp ahora</a>';
+  ok.style.display="block";
+  btn.style.display="none";
+}
+
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(function(a){
+  a.addEventListener("click", function(e){
+    var href = this.getAttribute("href");
+    if(href==="#") return;
+    var target = document.querySelector(href);
+    if(target){e.preventDefault();target.scrollIntoView({behavior:"smooth"});}
+  });
+});
+</script>
+</body>
+</html>
