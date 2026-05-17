@@ -72,6 +72,9 @@ select.inp{appearance:none;}
     <input class="inp" id="lp" type="password" placeholder="Contrasena" onkeydown="if(event.key==='Enter')login()"/>
     <div id="lerr" style="color:#C94C7A;font-size:13px;margin-bottom:8px;display:none;">⚠ Correo o contrasena incorrectos.</div>
     <button class="btn bw" id="login-btn" onclick="login()" style="padding:13px;font-size:15px;margin-bottom:8px;">Ingresar</button>
+    <div style="height:1px;background:#1e1e28;margin:12px 0;"></div>
+    <button class="btn bw" onclick="showLoginEstudiante()" style="padding:11px;font-size:13px;margin-bottom:8px;border-color:#C94C7A;color:#C94C7A;background:#C94C7A10;">🎓 Entrar como Estudiante</button>
+    <button class="btn bw" onclick="showRegistroEstudiante()" style="padding:11px;font-size:13px;margin-bottom:8px;border-color:#4CC97A;color:#4CC97A;background:#4CC97A10;">✏️ Registrarme como Estudiante</button>
     <div style="text-align:center;margin-bottom:12px;">
       <span onclick="if(confirm('Limpiar datos en cache?')){localStorage.clear();location.reload();}" id="login-cache-link" style="font-size:11px;color:#333;cursor:pointer;text-decoration:underline;">Limpiar cache</span>
     </div>
@@ -924,6 +927,544 @@ function decryptData(encrypted){
   }
 }
 
+
+// ══════════════════════════════════════
+// PORTAL DEL ESTUDIANTE
+// ══════════════════════════════════════
+
+function getMyStudent(){
+  if(!CU||CU.role!=="estudiante") return null;
+  var sts=gST();
+  // Try by studentPortalId first (most secure)
+  if(CU.studentId){
+    var mine=sts.find(function(s){return s.studentPortalId===CU.studentId||s.qr===CU.studentId;});
+    if(mine) return mine;
+  }
+  // Try by carnet
+  if(CU.carnet){
+    var mine2=sts.find(function(s){return s.carnet===CU.carnet;});
+    if(mine2) return mine2;
+  }
+  return null;
+}
+
+function rPortalEstudiante(){
+  var c=CU?CU.color:"#C9A84C";
+  var s=getMyStudent();
+  var html='';
+
+  if(!s){
+    html+='<div style="text-align:center;padding:40px 20px;">';
+    html+='<div style="font-size:48px;margin-bottom:12px;">🎓</div>';
+    html+='<div style="font-size:16px;color:#ddd;margin-bottom:8px;">Bienvenido, '+CU.name+'</div>';
+    html+='<div style="font-size:13px;color:#555;margin-bottom:20px;">Tu perfil de estudiante aun no esta vinculado.<br/>Contacta al administrador para vincularlo.</div>';
+    html+='</div>';
+  } else {
+    // Student info card
+    html+='<div class="card" style="border-color:'+c+'40;margin-bottom:12px;">';
+    html+='<div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">';
+    html+=avatarHTML(s,56);
+    html+='<div>';
+    html+='<div style="font-size:18px;color:#ddd;font-weight:bold;">'+s.nombre+'</div>';
+    html+='<div style="font-size:12px;color:'+c+';">'+s.carrera+'</div>';
+    html+='<div style="font-size:11px;color:#555;">Carnet: '+s.carnet+'</div>';
+    html+='</div></div>';
+    // Payment status
+    var pagado=cP(s.pagos);
+    var total=cT(s.parts);
+    var saldo=total-pagado;
+    var pct=total>0?Math.round((pagado/total)*100):0;
+    html+='<div style="font-size:11px;color:#555;letter-spacing:2px;margin-bottom:8px;">ESTADO DE PAGOS</div>';
+    html+=pbHTML(pagado,Math.max(total,1),saldo<=0?"#4CC97A":"#C9A84C",10);
+    html+='<div class="g3" style="margin-top:10px;">';
+    html+='<div class="sb" style="border-color:#4CC97A;"><div class="sv" style="color:#4CC97A;font-size:15px;">'+fD(pagado)+'</div><div class="sl">Pagado</div></div>';
+    html+='<div class="sb" style="border-color:#C94C7A;"><div class="sv" style="color:#C94C7A;font-size:15px;">'+fD(saldo)+'</div><div class="sl">Pendiente</div></div>';
+    html+='<div class="sb" style="border-color:'+c+';"><div class="sv" style="color:'+c+';font-size:15px;">'+pct+'%</div><div class="sl">Completado</div></div>';
+    html+='</div></div>';
+
+    // Toga status
+    html+='<div class="card" style="margin-bottom:12px;">';
+    html+='<div style="font-size:11px;color:#555;letter-spacing:2px;margin-bottom:8px;">TOGA</div>';
+    if(s.toga&&s.toga.ok){
+      html+='<div style="display:flex;align-items:center;gap:10px;">';
+      html+='<div style="font-size:32px;">👘</div>';
+      html+='<div><div style="font-size:14px;color:#4CC97A;font-weight:bold;">✓ Entregada</div>';
+      if(s.toga.talla) html+='<div style="font-size:12px;color:#888;">Talla: '+s.toga.talla+'</div>';
+      html+='</div></div>';
+    } else {
+      html+='<div style="display:flex;align-items:center;gap:10px;">';
+      html+='<div style="font-size:32px;">👘</div>';
+      html+='<div><div style="font-size:14px;color:#C94C7A;">⏳ Pendiente de entrega</div>';
+      html+='<div style="font-size:12px;color:#888;">Contacta al administrador</div>';
+      html+='</div></div>';
+    }
+    html+='</div>';
+
+    // Payment history
+    if(s.pagos&&s.pagos.length){
+      html+='<div class="card" style="margin-bottom:12px;">';
+      html+='<div style="font-size:11px;color:#555;letter-spacing:2px;margin-bottom:10px;">HISTORIAL DE PAGOS</div>';
+      s.pagos.slice().reverse().forEach(function(p){
+        html+='<div class="li">';
+        html+='<div><div style="font-size:13px;color:#ddd;">'+p.concepto+'</div>';
+        html+='<div style="font-size:11px;color:#555;">'+p.fecha+'</div></div>';
+        html+='<div style="font-size:14px;color:#4CC97A;font-weight:bold;">'+fD(p.monto)+'</div>';
+        html+='</div>';
+      });
+      html+='</div>';
+    }
+
+    // QR Code
+    if(s.qr){
+      html+='<div class="card" style="text-align:center;margin-bottom:12px;">';
+      html+='<div style="font-size:11px;color:#555;letter-spacing:2px;margin-bottom:10px;">MI CODIGO QR</div>';
+      html+='<div id="qr-portal" style="display:flex;justify-content:center;"></div>';
+      html+='<div style="font-size:11px;color:#555;margin-top:8px;">Presenta este QR en la entrada</div>';
+      html+='</div>';
+    }
+  }
+
+  // Announcements
+  var avs=gAN().filter(function(a){
+    var hoy=tod();
+    return !a.expDate||a.expDate>=hoy;
+  });
+  if(avs.length){
+    html+='<div class="card" style="margin-bottom:12px;">';
+    html+='<div style="font-size:11px;color:#555;letter-spacing:2px;margin-bottom:10px;">📢 AVISOS</div>';
+    avs.forEach(function(a){
+      var pc=a.prio==="alta"?"#C94C7A":"#C9A84C";
+      html+='<div style="border-left:3px solid '+pc+';padding:8px 12px;margin-bottom:8px;background:#0d0d16;border-radius:0 8px 8px 0;">';
+      html+='<div style="font-size:13px;color:#ddd;margin-bottom:3px;">'+a.titulo+'</div>';
+      html+='<div style="font-size:12px;color:#888;">'+a.texto+'</div>';
+      html+='</div>';
+    });
+    html+='</div>';
+  }
+
+  // Graduation info
+  var gc=gGC();
+  var ic=gIC();
+  var venue=D.venue||{};
+  if(gc.nombre||ic.fecha||venue.nombre){
+    html+='<div class="card" style="margin-bottom:12px;">';
+    html+='<div style="font-size:11px;color:#555;letter-spacing:2px;margin-bottom:10px;">🎓 MI GRADUACION</div>';
+    if(gc.nombre) html+='<div style="font-size:15px;color:#ddd;margin-bottom:8px;">'+gc.nombre+'</div>';
+    if(ic.fecha||ic.hora) html+='<div style="font-size:13px;color:#C9A84C;margin-bottom:4px;">📅 '+ic.fecha+' '+ic.hora+'</div>';
+    if(venue.nombre){
+      html+='<div style="font-size:13px;color:#ddd;margin-bottom:4px;">📍 '+venue.nombre+'</div>';
+      if(venue.direccion) html+='<div style="font-size:12px;color:#888;margin-bottom:8px;">'+venue.direccion+'</div>';
+      if(venue.mapUrl||venue.nombre){
+        var mapUrl=venue.mapUrl||"https://www.google.com/maps/search/"+encodeURIComponent(venue.nombre+" "+venue.direccion);
+        html+='<button class="btn bs bg" style="width:100%;margin-top:4px;" data-url="'+mapUrl+'" onclick="abrirEnMapa(this.dataset.url)">🗺️ Abrir en Google Maps</button>';
+      }
+    }
+    html+='</div>';
+  }
+
+  // Countdown
+  if(D.gradConfig&&D.gradConfig.fechaEvento){
+    var now=new Date();
+    var evDate=new Date(D.gradConfig.fechaEvento+"T"+(D.gradConfig.horaEvento||"00:00"));
+    var diff=evDate-now;
+    var dias=Math.floor(diff/(1000*60*60*24));
+    if(diff>0){
+      html+='<div class="card" style="text-align:center;border-color:#C9A84C40;">';
+      html+='<div style="font-size:11px;color:#555;letter-spacing:2px;margin-bottom:8px;">⏳ CUENTA REGRESIVA</div>';
+      html+='<div style="font-size:42px;font-weight:bold;color:#C9A84C;">'+dias+'</div>';
+      html+='<div style="font-size:13px;color:#888;">dias para la graduacion</div>';
+      html+='</div>';
+    }
+  }
+
+  document.getElementById("s-dash").innerHTML=html;
+
+  // Render QR if exists
+  if(s&&s.qr){
+    setTimeout(function(){
+      var qrDiv=document.getElementById("qr-portal");
+      if(qrDiv&&typeof QRCode!=="undefined"){
+        new QRCode(qrDiv,{text:s.qr,width:160,height:160});
+      }
+    },200);
+  }
+}
+
+
+// ══════════════════════════════════════
+// SISTEMA DE REGISTRO DE ESTUDIANTES
+// ══════════════════════════════════════
+
+function generateStudentId(){
+  // Generate secure unique ID: EST-XXXX-XXXX
+  var chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  var p1="",p2="";
+  for(var i=0;i<4;i++) p1+=chars[Math.floor(Math.random()*chars.length)];
+  for(var i=0;i<4;i++) p2+=chars[Math.floor(Math.random()*chars.length)];
+  return "EST-"+p1+"-"+p2;
+}
+
+function hashPassword(pass){
+  // Simple hash for demo - in production use bcrypt
+  var hash=0;
+  for(var i=0;i<pass.length;i++){
+    hash=((hash<<5)-hash)+pass.charCodeAt(i);
+    hash=hash&hash;
+  }
+  return "h"+Math.abs(hash).toString(36)+pass.length.toString(36);
+}
+
+function showRegistroEstudiante(){
+  document.getElementById("lgs").style.display="none";
+  var div=document.getElementById("reg-screen");
+  if(!div){
+    div=document.createElement("div");
+    div.id="reg-screen";
+    div.style.cssText="position:fixed;top:0;left:0;width:100%;min-height:100%;background:#0a0a14;overflow-y:auto;padding:20px;z-index:9998;";
+    div.innerHTML='<div style="max-width:380px;margin:0 auto;">'
+      +'<div style="text-align:center;margin-bottom:24px;padding-top:20px;">'
+      +'<div style="font-size:48px;margin-bottom:8px;">🎓</div>'
+      +'<h2 style="font-size:20px;font-weight:normal;color:#e8e0d0;">GradManager</h2>'
+      +'<p style="font-size:12px;color:#555;margin-top:4px;">Registro de Estudiante</p></div>'
+      +'<div style="background:#12121a;border:1px solid #C9A84C40;border-radius:12px;padding:16px;margin-bottom:12px;">'
+      +'<div style="font-size:11px;color:#C9A84C;letter-spacing:2px;margin-bottom:12px;">PASO 1 — CODIGO DE ACCESO</div>'
+      +'<input class="inp" id="reg-codigo" placeholder="Codigo de registro de tu escuela *"/>'
+      +'<button class="btn bg bw" id="reg-verify-btn" onclick="verificarCodigoReg()">Verificar codigo</button>'
+      +'</div>'
+      +'<div id="reg-form" style="display:none;">'
+      +'<div style="background:#12121a;border:1px solid #C9A84C40;border-radius:12px;padding:16px;margin-bottom:12px;">'
+      +'<div style="font-size:11px;color:#C9A84C;letter-spacing:2px;margin-bottom:12px;">PASO 2 — TUS DATOS</div>'
+      +'<input class="inp" id="reg-nombre" placeholder="Nombre(s) *"/>'
+      +'<div class="r2"><input class="inp" id="reg-ap1" placeholder="Primer apellido *"/><input class="inp" id="reg-ap2" placeholder="Segundo apellido"/></div>'
+      +'<input class="inp" id="reg-carnet" placeholder="Numero de carnet *"/>'
+      +'<input class="inp" id="reg-carrera" placeholder="Carrera *"/>'
+      +'<input class="inp" id="reg-tel" type="tel" placeholder="Telefono"/>'
+      +'<input class="inp" id="reg-email" type="email" placeholder="Correo electronico"/>'
+      +'</div>'
+      +'<div style="background:#12121a;border:1px solid #C9A84C40;border-radius:12px;padding:16px;margin-bottom:12px;">'
+      +'<div style="font-size:11px;color:#C9A84C;letter-spacing:2px;margin-bottom:12px;">PASO 3 — CREA TU CONTRASENA</div>'
+      +'<input class="inp" id="reg-pass" type="password" placeholder="Contrasena *"/>'
+      +'<input class="inp" id="reg-pass2" type="password" placeholder="Confirmar contrasena *"/>'
+      +'</div>'
+      +'<div id="reg-err" style="color:#C94C7A;font-size:12px;margin-bottom:8px;display:none;"></div>'
+      +'<div id="reg-ok" style="display:none;background:#4CC97A15;border:1px solid #4CC97A40;border-radius:10px;padding:14px;margin-bottom:12px;"></div>'
+      +'<button class="btn bw bg" id="reg-submit-btn" onclick="submitRegistro()">✓ Completar Registro</button>'
+      +'</div>'
+      +'<div style="text-align:center;margin-top:12px;">'
+      +'<span onclick="cancelarRegistro()" style="font-size:12px;color:#555;cursor:pointer;text-decoration:underline;">← Volver al login</span>'
+      +'</div></div>';
+    document.body.appendChild(div);
+  }
+  div.style.display="block";
+}
+
+function cancelarRegistro(){
+  var div=document.getElementById("reg-screen");
+  if(div) div.style.display="none";
+  document.getElementById("lgs").style.display="flex";
+}
+
+var _regLicencia=null;
+
+function verificarCodigoReg(){
+  var codigo=document.getElementById("reg-codigo")?document.getElementById("reg-codigo").value.trim().toUpperCase():"";
+  if(!codigo){alert("Ingresa el codigo de registro.");return;}
+  var btn=document.getElementById("reg-verify-btn");
+  if(btn){btn.textContent="Verificando...";btn.disabled=true;}
+
+  var xhr=new XMLHttpRequest();
+  xhr.open("GET",SUPA_URL+"/rest/v1/licencias?codigo_registro=eq."+encodeURIComponent(codigo)+"&select=*&apikey="+SUPA_KEY,true);
+  xhr.setRequestHeader("apikey",SUPA_KEY);
+  xhr.setRequestHeader("Authorization","Bearer "+SUPA_KEY);
+  xhr.onreadystatechange=function(){
+    if(xhr.readyState===4){
+      if(btn){btn.textContent="Verificar codigo";btn.disabled=false;}
+      if(xhr.status===200){
+        try{
+          var data=JSON.parse(xhr.responseText);
+          if(!data||!data.length){
+            alert("Codigo de registro invalido. Verifica con tu administrador.");
+            return;
+          }
+          var lic=data[0];
+          if(!lic.activa){alert("Esta licencia no esta activa.");return;}
+          var venc=new Date(lic.fecha_vencimiento);
+          if(venc<new Date()){alert("La licencia de tu escuela ha vencido.");return;}
+          _regLicencia=lic;
+          // Show form
+          var form=document.getElementById("reg-form");
+          if(form) form.style.display="block";
+          var step1=document.getElementById("reg-codigo").parentNode;
+          if(step1){
+            step1.style.borderColor="#4CC97A40";
+            var ok=document.createElement("div");
+            ok.style.cssText="font-size:12px;color:#4CC97A;margin-top:8px;";
+            ok.textContent="✓ Codigo verificado: "+lic.institucion;
+            step1.appendChild(ok);
+          }
+        }catch(e){alert("Error al verificar.");}
+      } else {
+        alert("Error de conexion. Intenta de nuevo.");
+      }
+    }
+  };
+  xhr.send();
+}
+
+function submitRegistro(){
+  if(!_regLicencia){alert("Primero verifica el codigo.");return;}
+  var nombre=document.getElementById("reg-nombre")?document.getElementById("reg-nombre").value.trim():"";
+  var ap1=document.getElementById("reg-ap1")?document.getElementById("reg-ap1").value.trim():"";
+  var ap2=document.getElementById("reg-ap2")?document.getElementById("reg-ap2").value.trim():"";
+  var carnet=document.getElementById("reg-carnet")?document.getElementById("reg-carnet").value.trim():"";
+  var carrera=document.getElementById("reg-carrera")?document.getElementById("reg-carrera").value.trim():"";
+  var tel=document.getElementById("reg-tel")?document.getElementById("reg-tel").value.trim():"";
+  var email=document.getElementById("reg-email")?document.getElementById("reg-email").value.trim():"";
+  var pass=document.getElementById("reg-pass")?document.getElementById("reg-pass").value:"";
+  var pass2=document.getElementById("reg-pass2")?document.getElementById("reg-pass2").value:"";
+  var err=document.getElementById("reg-err");
+  var ok=document.getElementById("reg-ok");
+  err.style.display="none";ok.style.display="none";
+
+  if(!nombre||!ap1){err.textContent="Escribe tu nombre y primer apellido.";err.style.display="block";return;}
+  if(!carnet){err.textContent="Escribe tu numero de carnet.";err.style.display="block";return;}
+  if(!carrera){err.textContent="Escribe tu carrera.";err.style.display="block";return;}
+  if(!pass||pass.length<6){err.textContent="La contrasena debe tener al menos 6 caracteres.";err.style.display="block";return;}
+  if(pass!==pass2){err.textContent="Las contrasenas no coinciden.";err.style.display="block";return;}
+
+  var fullName=nombre+" "+ap1+(ap2?" "+ap2:"");
+  var studentId=generateStudentId();
+  var passHash=hashPassword(pass);
+  var btn=document.getElementById("reg-submit-btn");
+  if(btn){btn.textContent="Registrando...";btn.disabled=true;}
+
+  var payload={
+    licencia_id:_regLicencia.id,
+    codigo_licencia:_regLicencia.codigo,
+    id_estudiante:studentId,
+    nombre:fullName,
+    carnet:carnet,
+    carrera:carrera,
+    telefono:tel,
+    email:email,
+    password_hash:passHash,
+    aprobado:false
+  };
+
+  var xhr=new XMLHttpRequest();
+  xhr.open("POST",SUPA_URL+"/rest/v1/registros_estudiantes?apikey="+SUPA_KEY,true);
+  xhr.setRequestHeader("apikey",SUPA_KEY);
+  xhr.setRequestHeader("Authorization","Bearer "+SUPA_KEY);
+  xhr.setRequestHeader("Content-Type","application/json");
+  xhr.setRequestHeader("Prefer","return=minimal");
+  xhr.onreadystatechange=function(){
+    if(xhr.readyState===4){
+      if(btn){btn.disabled=false;}
+      if(xhr.status>=200&&xhr.status<300){
+        ok.innerHTML='<div style="font-size:14px;color:#4CC97A;font-weight:bold;margin-bottom:8px;">✅ Registro completado!</div>'
+          +'<div style="font-size:13px;color:#ddd;margin-bottom:8px;">Tu ID de estudiante es:</div>'
+          +'<div style="font-size:22px;color:#C9A84C;font-weight:bold;letter-spacing:3px;margin-bottom:8px;">'+studentId+'</div>'
+          +'<div style="font-size:12px;color:#888;margin-bottom:12px;">Guarda este ID — lo necesitarás para entrar al sistema.</div>'
+          +'<div style="font-size:12px;color:#C9A84C;">⏳ Tu acceso sera activado por el administrador.</div>';
+        ok.style.display="block";
+        if(btn) btn.style.display="none";
+      } else if(xhr.status===409){
+        err.textContent="Este carnet ya esta registrado.";err.style.display="block";
+        if(btn) btn.textContent="✓ Completar Registro";
+      } else {
+        err.textContent="Error al registrar. Intenta de nuevo.";err.style.display="block";
+        if(btn) btn.textContent="✓ Completar Registro";
+      }
+    }
+  };
+  xhr.send(JSON.stringify(payload));
+}
+
+// Student login with ID
+function loginEstudiante(studentId, password){
+  var passHash=hashPassword(password);
+  var xhr=new XMLHttpRequest();
+  xhr.open("GET",SUPA_URL+"/rest/v1/registros_estudiantes?id_estudiante=eq."+encodeURIComponent(studentId)+"&select=*&apikey="+SUPA_KEY,true);
+  xhr.setRequestHeader("apikey",SUPA_KEY);
+  xhr.setRequestHeader("Authorization","Bearer "+SUPA_KEY);
+  xhr.onreadystatechange=function(){
+    if(xhr.readyState===4){
+      if(xhr.status===200){
+        try{
+          var data=JSON.parse(xhr.responseText);
+          if(!data||!data.length){
+            document.getElementById("lerr").style.display="block";
+            document.getElementById("lerr").textContent="⚠ ID de estudiante no encontrado.";
+            return;
+          }
+          var st=data[0];
+          if(st.password_hash!==passHash){
+            document.getElementById("lerr").style.display="block";
+            document.getElementById("lerr").textContent="⚠ Contrasena incorrecta.";
+            return;
+          }
+          if(!st.aprobado){
+            document.getElementById("lerr").style.display="block";
+            document.getElementById("lerr").textContent="⚠ Tu acceso aun no ha sido aprobado por el administrador.";
+            return;
+          }
+          // Login as student
+          var u={
+            id:st.id,name:st.nombre,email:st.email||st.id_estudiante,
+            role:"estudiante",color:"#C94C7A",icon:"🎓",av:st.nombre.charAt(0),
+            studentId:st.id_estudiante,carnet:st.carnet
+          };
+          D._user=u;SD();applyTheme(u);go("dash");
+        }catch(e){
+          document.getElementById("lerr").style.display="block";
+          document.getElementById("lerr").textContent="⚠ Error de conexion.";
+        }
+      }
+    }
+  };
+  xhr.send();
+}
+
+
+function showLoginEstudiante(){
+  document.getElementById("lgs").style.display="none";
+  var div=document.getElementById("est-login-screen");
+  if(!div){
+    div=document.createElement("div");
+    div.id="est-login-screen";
+    div.style.cssText="position:fixed;top:0;left:0;width:100%;height:100%;background:#0a0a14;display:flex;align-items:center;justify-content:center;z-index:9998;padding:20px;";
+    div.innerHTML='<div style="width:100%;max-width:360px;">'
+      +'<div style="text-align:center;margin-bottom:24px;">'
+      +'<div style="font-size:48px;margin-bottom:8px;">🎓</div>'
+      +'<h2 style="font-size:20px;font-weight:normal;color:#e8e0d0;">Portal Estudiantil</h2>'
+      +'<p style="font-size:12px;color:#555;margin-top:4px;">Ingresa con tu ID de estudiante</p></div>'
+      +'<div style="background:#12121a;border:1px solid #C94C7A40;border-radius:12px;padding:16px;">'
+      +'<input class="inp" id="est-id" placeholder="ID de estudiante (ej: EST-XXXX-XXXX) *"/>'
+      +'<input class="inp" id="est-pass" type="password" placeholder="Contrasena *" id2="est-pass-enter"/>'
+      +'<div id="est-err" style="color:#C94C7A;font-size:12px;margin-bottom:8px;display:none;"></div>'
+      +'<button class="btn bw" style="border-color:#C94C7A;color:#C94C7A;background:#C94C7A20;padding:13px;" onclick="doLoginEstudiante()">🎓 Ingresar</button>'
+      +'</div>'
+      +'<div style="text-align:center;margin-top:16px;">'
+      +'<span onclick="cancelarLoginEst()" style="font-size:12px;color:#555;cursor:pointer;text-decoration:underline;">← Volver al login</span>'
+      +'</div></div>';
+    document.body.appendChild(div);
+  }
+  div.style.display="flex";
+  setTimeout(setupEstPassEnter,100);
+}
+
+function cancelarLoginEst(){
+  var div=document.getElementById("est-login-screen");
+  if(div) div.style.display="none";
+  document.getElementById("lgs").style.display="flex";
+}
+
+function setupEstPassEnter(){
+  var ep=document.getElementById("est-pass");
+  if(ep) ep.addEventListener("keydown",function(e){if(e.key==="Enter")doLoginEstudiante();});
+}
+function doLoginEstudiante(){
+  var id=document.getElementById("est-id")?document.getElementById("est-id").value.trim().toUpperCase():"";
+  var pass=document.getElementById("est-pass")?document.getElementById("est-pass").value:"";
+  var err=document.getElementById("est-err");
+  if(!id||!pass){if(err){err.textContent="Completa todos los campos.";err.style.display="block";}return;}
+  if(err) err.style.display="none";
+  loginEstudiante(id, pass);
+}
+
+
+function mRegistrosEstudiantes(){
+  if(!CU||CU.role!=="admin"){alert("Solo el admin puede ver esto.");return;}
+  var html='<div class="dv"></div>';
+  html+='<div class="ct">🎓 Registros de Estudiantes</div>';
+  html+='<div id="reg-list"><div style="text-align:center;padding:20px;color:#555;">Cargando...</div></div>';
+  sMC(html);
+  
+  var xhr=new XMLHttpRequest();
+  xhr.open("GET",SUPA_URL+"/rest/v1/registros_estudiantes?codigo_licencia=eq."+encodeURIComponent(getLicenseData()?getLicenseData().codigo:"")+"&select=*&order=creado_en.desc&apikey="+SUPA_KEY,true);
+  xhr.setRequestHeader("apikey",SUPA_KEY);
+  xhr.setRequestHeader("Authorization","Bearer "+SUPA_KEY);
+  xhr.onreadystatechange=function(){
+    if(xhr.readyState!==4)return;
+    var list=document.getElementById("reg-list");
+    if(!list)return;
+    if(xhr.status===200){
+      try{
+        var data=JSON.parse(xhr.responseText);
+        if(!data.length){list.innerHTML='<div style="text-align:center;padding:20px;color:#555;">Sin registros aun.</div>';return;}
+        var h='';
+        data.forEach(function(r){
+          var col=r.aprobado?"#4CC97A":"#C9A84C";
+          h+='<div style="background:#12121a;border:1px solid '+col+'40;border-radius:10px;padding:12px;margin-bottom:8px;">';
+          h+='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">';
+          h+='<div><div style="font-size:14px;color:#ddd;margin-bottom:2px;">'+r.nombre+'</div>';
+          h+='<div style="font-size:12px;color:#888;">Carnet: '+r.carnet+' · '+r.carrera+'</div>';
+          h+='<div style="font-size:11px;color:'+col+';margin-top:3px;">ID: '+r.id_estudiante+'</div></div>';
+          h+='<span class="badge" style="color:'+col+';border:1px solid '+col+'40;">'+(r.aprobado?"Aprobado":"Pendiente")+'</span>';
+          h+='</div>';
+          h+='<div style="display:flex;gap:6px;">';
+          if(!r.aprobado){
+            h+='<button class="btn bs bg" style="flex:1;font-size:11px;" data-rid="'+r.id+'" data-nombre="'+r.nombre+'" data-carnet="'+r.carnet+'" data-carrera="'+r.carrera+'" data-tel="'+r.telefono+'" data-email="'+r.email+'" data-sid="'+r.id_estudiante+'" onclick="aprobarRegistro(this)">✓ Aprobar</button>';
+          }
+          h+='<button class="btn bs br" style="font-size:11px;" data-rid="'+r.id+'" onclick="rechazarRegistro(this.dataset.rid)">✕ Rechazar</button>';
+          h+='</div></div>';
+        });
+        list.innerHTML=h;
+      }catch(e){list.innerHTML='<div style="color:#C94C7A;padding:12px;">Error al cargar.</div>';}
+    }
+  };
+  xhr.send();
+}
+
+function aprobarRegistro(btn){
+  var rid=btn.dataset.rid;
+  var nombre=btn.dataset.nombre;
+  var carnet=btn.dataset.carnet;
+  var carrera=btn.dataset.carrera;
+  var tel=btn.dataset.tel;
+  var email=btn.dataset.email;
+  var sid=btn.dataset.sid;
+  
+  // 1. Approve in Supabase
+  var xhr=new XMLHttpRequest();
+  xhr.open("PATCH",SUPA_URL+"/rest/v1/registros_estudiantes?id=eq."+rid+"&apikey="+SUPA_KEY,true);
+  xhr.setRequestHeader("apikey",SUPA_KEY);
+  xhr.setRequestHeader("Authorization","Bearer "+SUPA_KEY);
+  xhr.setRequestHeader("Content-Type","application/json");
+  xhr.onreadystatechange=function(){
+    if(xhr.readyState===4&&xhr.status>=200&&xhr.status<300){
+      // 2. Add student to local D.students
+      if(!D.students) D.students=[];
+      var exists=D.students.find(function(s){return s.carnet===carnet;});
+      if(!exists){
+        D.students.push({
+          id:Date.now(),nombre:nombre,carnet:carnet,carrera:carrera,
+          tel:tel,email:email,gpa:0,parts:[],pagos:[],
+          toga:{talla:"",ok:false},qr:sid,asis:[],foto:"",
+          studentPortalId:sid
+        });
+        SD();
+      }
+      addN("✅ "+nombre+" aprobado");
+      mRegistrosEstudiantes();
+    }
+  };
+  xhr.send(JSON.stringify({aprobado:true}));
+}
+
+function rechazarRegistro(rid){
+  confirmarAccion("Rechazar y eliminar este registro?",function(){
+    var xhr=new XMLHttpRequest();
+    xhr.open("DELETE",SUPA_URL+"/rest/v1/registros_estudiantes?id=eq."+rid+"&apikey="+SUPA_KEY,true);
+    xhr.setRequestHeader("apikey",SUPA_KEY);
+    xhr.setRequestHeader("Authorization","Bearer "+SUPA_KEY);
+    xhr.onreadystatechange=function(){
+      if(xhr.readyState===4) mRegistrosEstudiantes();
+    };
+    xhr.send();
+  });
+}
+
 function sortByName(arr,field){field=field||"nombre";return [].concat(arr).sort(function(a,b){var na=(a[field]||"").toLowerCase();var nb=(b[field]||"").toLowerCase();return na<nb?-1:na>nb?1:0;});}
 function sortProvs(arr){return [].concat(arr).sort(function(a,b){var na=(a.empresa||"").toLowerCase();var nb=(b.empresa||"").toLowerCase();return na<nb?-1:na>nb?1:0;});}
 
@@ -1552,6 +2093,11 @@ function cPr(pid){const p=gPR().find(x=>x.id===pid);if(p)cModal(p.empresa+" - "+
 // DASHBOARD
 // ═══════════════════════════════════
 function rDash(){
+  // Show student portal for estudiante role
+  if(CU&&CU.role==="estudiante"){
+    rPortalEstudiante();
+    return;
+  }
   var c=CU?CU.color:"#C9A84C";
   var tR=gST().reduce(function(s,st){return s+cP(st.pagos);},0);
   var tE=gST().reduce(function(s,st){return s+cT(st.parts);},0);
@@ -3724,6 +4270,7 @@ function mUsuarios(){
 }
 
 function selNuRol(btn){
+  selNuRolExtra(btn.dataset.role);
   document.querySelectorAll('[data-role]').forEach(function(b){b.style.borderColor="#333";b.style.color="#666";b.style.background="transparent";});
   var r=btn.dataset.role;
   var cols={admin:"#C9A84C",directiva:"#7C6CD4",maestro:"#4CA8C9",proveedor:"#4CC97A",estudiante:"#C94C7A"};
@@ -4258,6 +4805,10 @@ function mPermisos(){
   sMC(html);
 }
 function setPermRole(role){window._permRole=role;mPermisos();}
+function selNuRolExtra(role){
+  var hint=document.getElementById("nu-hint");
+  if(hint) hint.style.display=role==="estudiante"?"block":"none";
+}
 function savePermisos(){
   var keys=["dash","stud","awrd","rifa","suba","scan","prov","aviso","voto","enc","acta","fund","ens","pres","prog","toga","invit","chat","ai","ventas","compras","usuarios","audit","contador","venue","backups","alertas"];
   var sel=keys.filter(function(k){var cb=document.getElementById("perm-"+k);return cb&&cb.checked;});
@@ -4902,7 +5453,7 @@ function storageBar(){
   return html;
 }
 function mTab(t){
-  var fs={aviso:mAviso,voto:mVoto,enc:mEnc,acta:mActa,fund:mFund,ens:mEns,pres:mPres,prog:mProg,toga:mToga,invit:mInvit,chat:mChat,ai:mAI,ventas:mVentas,usuarios:mUsuarios,compras:mCompras,audit:mAudit,permisos:mPermisos,contador:mContador,venue:mVenue,backups:mBackups,alertas:mAlertas};
+  var fs={aviso:mAviso,voto:mVoto,enc:mEnc,acta:mActa,fund:mFund,ens:mEns,pres:mPres,prog:mProg,toga:mToga,invit:mInvit,chat:mChat,ai:mAI,ventas:mVentas,usuarios:mUsuarios,compras:mCompras,audit:mAudit,permisos:mPermisos,contador:mContador,venue:mVenue,backups:mBackups,alertas:mAlertas,registros:mRegistrosEstudiantes};
   // Ensure #mc exists
   var mc=document.getElementById("mc");
   if(!mc){
