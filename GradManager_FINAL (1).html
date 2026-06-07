@@ -4,9 +4,15 @@
 <meta charset="UTF-8"/>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<link rel="manifest" href="manifest.json"/>
+<meta name="theme-color" content="#C9A84C"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="GradManager"/>
+<link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
 <title>GradManager 2025 — v122</title>
 <style>
-:root{--app-color:var(--app-color);}
+:root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 body{font-family:Georgia,serif;background:#0a0a0f;color:#e8e0d0;min-height:100vh;}
 .sc{display:none;padding:14px;padding-bottom:90px;}.sc.on{display:block;}
@@ -14,16 +20,16 @@ body{font-family:Georgia,serif;background:#0a0a0f;color:#e8e0d0;min-height:100vh
 .bnav{position:fixed;bottom:0;left:0;right:0;background:#12121a;border-top:1px solid #1e1e28;display:flex;z-index:100;overflow-x:auto;scrollbar-width:none;}
 .bnav::-webkit-scrollbar{display:none;}
 .nb{flex:0 0 auto;padding:10px 12px;border:none;background:transparent;color:#555;font-family:Georgia,serif;font-size:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:58px;border-top:2px solid transparent;}
-.nb.on{color:var(--app-color);border-top-color:var(--app-color);}
+.nb.on{color:#C9A84C;border-top-color:#C9A84C;}
 .nb span:first-child{font-size:18px;}
-.card{background:#12121a;border:1px solid var(--app-color)30;border-radius:12px;padding:14px;margin-bottom:12px;}
-.ct{font-size:10px;letter-spacing:3px;color:var(--app-color);text-transform:uppercase;margin-bottom:12px;}
+.card{background:#12121a;border:1px solid #C9A84C30;border-radius:12px;padding:14px;margin-bottom:12px;}
+.ct{font-size:10px;letter-spacing:3px;color:#C9A84C;text-transform:uppercase;margin-bottom:12px;}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
 .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
 .sb{background:#0d0d16;border-radius:10px;padding:12px;text-align:center;border:1px solid #2a2a3a;}
 .sv{font-size:20px;font-weight:bold;margin-bottom:3px;}
 .sl{font-size:10px;color:#666;}
-.btn{display:inline-block;padding:9px 16px;border-radius:8px;border:1px solid var(--app-color);background:var(--app-color)20;color:var(--app-color);font-family:Georgia,serif;font-size:13px;cursor:pointer;text-align:center;}
+.btn{display:inline-block;padding:9px 16px;border-radius:8px;border:1px solid #C9A84C;background:#C9A84C20;color:#C9A84C;font-family:Georgia,serif;font-size:13px;cursor:pointer;text-align:center;}
 .bw{width:100%;display:block;}
 .bs{padding:6px 12px;font-size:12px;}
 .bg{border-color:#4CC97A!important;background:#4CC97A20!important;color:#4CC97A!important;}
@@ -43,18 +49,18 @@ select.inp{appearance:none;}
 .is{font-size:11px;color:#666;}
 .dv{height:1px;background:#1e1e28;margin:12px 0;}
 .chip{display:inline-block;padding:7px 12px;border-radius:20px;font-size:12px;cursor:pointer;border:1px solid #333;color:#666;background:transparent;font-family:Georgia,serif;margin:3px;}
-.chip.on{border-color:var(--app-color);color:var(--app-color);background:var(--app-color)20;}
+.chip.on{border-color:#C9A84C;color:#C9A84C;background:#C9A84C20;}
 #lgs{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:20px;}
 .mov{display:none;position:fixed;inset:0;background:#000b;z-index:500;align-items:flex-end;justify-content:center;}
 .mov.on{display:flex;}
-.mob{background:#12121a;border:1px solid var(--app-color)40;border-radius:14px 14px 0 0;width:100%;max-height:88vh;overflow-y:auto;padding:18px;}
+.mob{background:#12121a;border:1px solid #C9A84C40;border-radius:14px 14px 0 0;width:100%;max-height:88vh;overflow-y:auto;padding:18px;}
 .moh{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
 .mot{font-size:15px;color:#ddd;}
 .moc{background:none;border:none;color:#555;font-size:22px;cursor:pointer;}
 #sbar{position:fixed;top:0;left:0;right:0;background:#4CC97A;color:#000;font-size:12px;text-align:center;padding:6px;z-index:999;display:none;font-family:Georgia,serif;font-weight:bold;}
 
 [contenteditable]:empty:before{content:attr(data-placeholder);color:#555;pointer-events:none;}
-[contenteditable]:focus{outline:1px solid var(--app-color);}
+[contenteditable]:focus{outline:1px solid #C9A84C;}
 
 body.light .card { background: var(--card-bg); border-color: #d0d0dc; }
 body.light .inp { background: #f5f5fa; border-color: #c0c0cc; color: #1a1a2e; }
@@ -85,7 +91,10 @@ body.light .is { color: var(--text2); }
       <h1 style="font-size:24px;font-weight:normal;color:#e8e0d0;">GradManager</h1>
       <div style="font-size:10px;color:#333;margin-top:2px;">v111</div>
       <p id="login-grad" style="font-size:13px;color:#C9A84C;margin-top:5px;font-weight:bold;"></p>
-      
+      <div style="display:flex;justify-content:center;gap:8px;margin-bottom:8px;">
+        <button id="lang-es" onclick="setLang('es')" style="padding:4px 14px;border-radius:16px;border:1px solid #C9A84C;background:#C9A84C20;color:#C9A84C;font-size:12px;cursor:pointer;font-family:Georgia,serif;">🇬🇹 ES</button>
+        <button id="lang-en" onclick="setLang('en')" style="padding:4px 14px;border-radius:16px;border:1px solid #333;background:transparent;color:#666;font-size:12px;cursor:pointer;font-family:Georgia,serif;opacity:0.4;">🇺🇸 EN</button>
+      </div>
     </div>
     <input class="inp" id="le" type="email" placeholder="Correo electronico"/>
     <input class="inp" id="lp" type="password" placeholder="Contrasena" onkeydown="if(event.key==='Enter')login()"/>
@@ -112,7 +121,7 @@ body.light .is { color: var(--text2); }
       <div id="av" style="width:36px;height:36px;border-radius:50%;background:#C9A84C22;border:1px solid #C9A84C;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;color:#C9A84C;">CM</div>
       <div>
         <div id="hr" style="font-size:10px;letter-spacing:3px;color:#C9A84C;text-transform:uppercase;">⚡ ADMIN</div>
-        <div id="hn" style="font-size:15px;color:#ddd;">${(D.gradConfig&&D.gradConfig.nombreInstitucion)||"GradManager"}</div>
+        <div id="hn" style="font-size:15px;color:#ddd;">Carlos Mendez</div>
         <div id="hgrad" style="font-size:10px;color:#555;" onclick="if(CU&&CU.role==='admin')oEditGrad()"></div>
       </div>
     </div>
@@ -514,8 +523,8 @@ function reRender(){setLang(window._lang||"es");}
 
 
 var CURRENCIES={
-  USD:{code:"USD",symbol:"$",  name:"Dolar",           flag:"🇺🇸"},
   GTQ:{code:"GTQ",symbol:"Q",  name:"Quetzal",        flag:"🇬🇹"},
+  USD:{code:"USD",symbol:"$",  name:"Dolar",           flag:"🇺🇸"},
   MXN:{code:"MXN",symbol:"$",  name:"Peso Mexicano",   flag:"🇲🇽"},
   CRC:{code:"CRC",symbol:"₡",  name:"Colon",           flag:"🇨🇷"},
   HNL:{code:"HNL",symbol:"L",  name:"Lempira",         flag:"🇭🇳"},
@@ -535,8 +544,8 @@ var CURRENCIES={
   BZD:{code:"BZD",symbol:"BZ$",name:"Dolar Beliceno",  flag:"🇧🇿"},
   EUR:{code:"EUR",symbol:"€",  name:"Euro",            flag:"🇪🇺"},
 };
-function getCurrency(){var c=null;try{c=localStorage.getItem("gm_currency");}catch(e){}return CURRENCIES[c||"USD"]||CURRENCIES.USD;}
-function setCurrency(code){try{localStorage.setItem("gm_currency",code);}catch(e){}window._currency=CURRENCIES[code]||CURRENCIES.USD;}
+function getCurrency(){var c=null;try{c=localStorage.getItem("gm_currency");}catch(e){}return CURRENCIES[c||"GTQ"]||CURRENCIES.GTQ;}
+function setCurrency(code){try{localStorage.setItem("gm_currency",code);}catch(e){}window._currency=CURRENCIES[code]||CURRENCIES.GTQ;}
 function loadCurrency(){window._currency=getCurrency();}
 
 var PERMS_DEFAULT={"admin": ["dash", "stud", "awrd", "rifa", "suba", "scan", "prov", "more", "aviso", "voto", "enc", "acta", "fund", "ens", "pres", "prog", "toga", "invit", "chat", "ai", "ventas", "compras", "usuarios", "audit", "reset"], "directiva": ["dash", "stud", "awrd", "rifa", "suba", "scan", "prov", "more", "aviso", "voto", "enc", "acta", "fund", "ens", "pres", "prog", "toga", "invit", "chat", "ventas", "compras", "contador", "venue", "backups", "alertas"], "maestro": ["dash", "stud", "awrd", "scan", "more", "aviso", "enc", "ens", "pres", "prog", "toga", "chat", "contador", "venue", "backups", "alertas"], "proveedor": ["dash", "prov", "more", "aviso", "chat", "contador", "venue", "backups"], "estudiante": ["dash", "more", "aviso", "chat", "contador", "venue", "alertas", "voto", "enc", "ens", "consign"],
@@ -1931,7 +1940,7 @@ function mEntregas(){
   initEntregas();
   var c=CU?CU.color:"#C9A84C";
   var html='<div class="dv"></div>';
-  html+='<input class="inp" placeholder="🔍 Buscar..." oninput="filtrarMC(this)" style="margin-bottom:8px;width:100%;"/>';
+  html+='<input class="inp" placeholder="🔍 Buscar estudiante..." oninput="fSearch(this,\'mc\',\'.srch-item\')" style="margin-bottom:8px;width:100%;"/>';
   html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">';
   html+='<div class="ct" style="margin:0;">📦 Entregas</div>';
   html+='<div style="display:flex;gap:6px;">';
@@ -3234,70 +3243,38 @@ function defData(){return{
     {id:"invit", label:"2 Invitaciones",  costo:50},
   ],
   students:[
-    {id:1,nombre:"Sofia Ramirez Torres",    carnet:"2021-001",carrera:"Administracion de Empresas",tel:"787-555-0101",email:"sofia.ramirez@demo.com",  parts:["toga","foto","cena","invit"],pagos:[{id:"p1",f:"2025-02-10",monto:200,con:"Cuota inicial"},{id:"p2",f:"2025-03-15",monto:115,con:"Pago final"}],gpa:95.2,toga:{talla:"S",ok:true,fechaEntrega:"15 mar. 2025"},entregas:[{id:"toga",entregado:true,fecha:"15 mar. 2025",entregadoPor:"Admin"}],qr:"QR-001",asis:{jarana:null,bformal:null,cere:null},foto:""},
-    {id:2,nombre:"Carlos Mendez Ortiz",     carnet:"2021-002",carrera:"Ingenieria Civil",          tel:"787-555-0102",email:"carlos.mendez@demo.com",  parts:["toga","foto","video","cena"],pagos:[{id:"p3",f:"2025-02-12",monto:180,con:"Cuota inicial"},{id:"p4",f:"2025-04-01",monto:180,con:"Segunda cuota"}],gpa:88.7,toga:{talla:"L",ok:false},entregas:[],qr:"QR-002",asis:{jarana:null,bformal:null,cere:null},foto:""},
-    {id:3,nombre:"Gabriela Flores Vega",    carnet:"2021-003",carrera:"Enfermeria",               tel:"787-555-0103",email:"gabriela.flores@demo.com", parts:["toga","foto","cena","flores","invit"],pagos:[{id:"p5",f:"2025-02-20",monto:250,con:"Cuota inicial"}],gpa:92.1,toga:{talla:"XS",ok:false},entregas:[],qr:"QR-003",asis:{jarana:null,bformal:null,cere:null},foto:""},
-    {id:4,nombre:"Miguel Santiago Rivera",  carnet:"2021-004",carrera:"Contabilidad",             tel:"787-555-0104",email:"miguel.santiago@demo.com", parts:["toga","foto","video"],pagos:[{id:"p6",f:"2025-03-05",monto:280,con:"Pago completo"}],gpa:91.5,toga:{talla:"XL",ok:true,fechaEntrega:"20 mar. 2025"},entregas:[{id:"toga",entregado:true,fecha:"20 mar. 2025",entregadoPor:"Admin"}],qr:"QR-004",asis:{jarana:null,bformal:null,cere:null},foto:""},
-    {id:5,nombre:"Valeria Cruz Morales",    carnet:"2021-005",carrera:"Psicologia",               tel:"787-555-0105",email:"valeria.cruz@demo.com",    parts:["toga","foto","cena"],pagos:[{id:"p7",f:"2025-02-28",monto:100,con:"Primer pago"}],gpa:97.3,toga:{talla:"S",ok:false},entregas:[],qr:"QR-005",asis:{jarana:null,bformal:null,cere:null},foto:""},
-    {id:6,nombre:"Luis Gonzalez Reyes",     carnet:"2021-006",carrera:"Derecho",                  tel:"787-555-0106",email:"luis.gonzalez@demo.com",   parts:["toga","foto","cena","invit"],pagos:[{id:"p8",f:"2025-03-10",monto:365,con:"Pago total"}],gpa:89.4,toga:{talla:"M",ok:true,fechaEntrega:"22 mar. 2025"},entregas:[{id:"toga",entregado:true,fecha:"22 mar. 2025",entregadoPor:"Admin"}],qr:"QR-006",asis:{jarana:null,bformal:null,cere:null},foto:""},
-    {id:7,nombre:"Isabella Vargas Jimenez", carnet:"2021-007",carrera:"Educacion",                tel:"787-555-0107",email:"isabella.vargas@demo.com", parts:["toga","foto","flores"],pagos:[],gpa:86.2,toga:{talla:"XS",ok:false},entregas:[],qr:"QR-007",asis:{jarana:null,bformal:null,cere:null},foto:""},
-    {id:8,nombre:"Andres Lopez Castillo",   carnet:"2021-008",carrera:"Mercadeo",                 tel:"787-555-0108",email:"andres.lopez@demo.com",    parts:["toga","foto","video","cena","transp"],pagos:[{id:"p9",f:"2025-04-05",monto:150,con:"Abono inicial"}],gpa:83.9,toga:{talla:"L",ok:false},entregas:[],qr:"QR-008",asis:{jarana:null,bformal:null,cere:null},foto:""},
-    {id:9,nombre:"Natalia Herrera Munoz",   carnet:"2021-009",carrera:"Biologia",                 tel:"787-555-0109",email:"natalia.herrera@demo.com", parts:["toga","foto","cena"],pagos:[{id:"p10",f:"2025-02-15",monto:365,con:"Pago completo"}],gpa:93.8,toga:{talla:"S",ok:true,fechaEntrega:"18 mar. 2025"},entregas:[{id:"toga",entregado:true,fecha:"18 mar. 2025",entregadoPor:"Admin"}],qr:"QR-009",asis:{jarana:null,bformal:null,cere:null},foto:""},
-    {id:10,nombre:"Roberto Morales Perez",  carnet:"2021-010",carrera:"Arquitectura",             tel:"787-555-0110",email:"roberto.morales@demo.com", parts:["toga","foto","video","cena","invit"],pagos:[{id:"p11",f:"2025-03-20",monto:200,con:"Primera cuota"}],gpa:90.1,toga:{talla:"XL",ok:false},entregas:[],qr:"QR-010",asis:{jarana:null,bformal:null,cere:null},foto:""},
+    {id:1,nombre:"Sofia Ramirez Torres",carnet:"2021-001",carrera:"Administracion de Empresas",tel:"787-555-0101",email:"sofia.ramirez@demo.com",parts:["toga","foto","cena","invit"],pagos:[{id:"p1",f:"2025-02-10",monto:200,con:"Cuota inicial"},{id:"p2",f:"2025-03-15",monto:115,con:"Pago final"}],gpa:95.2,toga:{talla:"S",ok:true,fechaEntrega:"15 mar. 2025"},entregas:[{id:"toga",entregado:true,fecha:"15 mar. 2025",entregadoPor:"Admin"}],qr:"QR-001",asis:{},foto:""},
+    {id:2,nombre:"Carlos Mendez Ortiz",carnet:"2021-002",carrera:"Ingenieria Civil",tel:"787-555-0102",email:"carlos.mendez@demo.com",parts:["toga","foto","video","cena"],pagos:[{id:"p3",f:"2025-02-12",monto:180,con:"Cuota inicial"}],gpa:88.7,toga:{talla:"L",ok:false},entregas:[],qr:"QR-002",asis:{},foto:""},
+    {id:3,nombre:"Gabriela Flores Vega",carnet:"2021-003",carrera:"Enfermeria",tel:"787-555-0103",email:"gabriela.flores@demo.com",parts:["toga","foto","cena","flores","invit"],pagos:[{id:"p5",f:"2025-02-20",monto:250,con:"Cuota inicial"}],gpa:92.1,toga:{talla:"XS",ok:false},entregas:[],qr:"QR-003",asis:{},foto:""},
+    {id:4,nombre:"Miguel Santiago Rivera",carnet:"2021-004",carrera:"Contabilidad",tel:"787-555-0104",email:"miguel.santiago@demo.com",parts:["toga","foto","video"],pagos:[{id:"p6",f:"2025-03-05",monto:280,con:"Pago completo"}],gpa:91.5,toga:{talla:"XL",ok:true,fechaEntrega:"20 mar. 2025"},entregas:[{id:"toga",entregado:true,fecha:"20 mar. 2025",entregadoPor:"Admin"}],qr:"QR-004",asis:{},foto:""},
+    {id:5,nombre:"Valeria Cruz Morales",carnet:"2021-005",carrera:"Psicologia",tel:"787-555-0105",email:"valeria.cruz@demo.com",parts:["toga","foto","cena"],pagos:[{id:"p7",f:"2025-02-28",monto:100,con:"Primer pago"}],gpa:97.3,toga:{talla:"S",ok:false},entregas:[],qr:"QR-005",asis:{},foto:""},
+    {id:6,nombre:"Luis Gonzalez Reyes",carnet:"2021-006",carrera:"Derecho",tel:"787-555-0106",email:"luis.gonzalez@demo.com",parts:["toga","foto","cena","invit"],pagos:[{id:"p8",f:"2025-03-10",monto:365,con:"Pago total"}],gpa:89.4,toga:{talla:"M",ok:true,fechaEntrega:"22 mar. 2025"},entregas:[{id:"toga",entregado:true,fecha:"22 mar. 2025",entregadoPor:"Admin"}],qr:"QR-006",asis:{},foto:""},
+    {id:7,nombre:"Isabella Vargas Jimenez",carnet:"2021-007",carrera:"Educacion",tel:"787-555-0107",email:"isabella.vargas@demo.com",parts:["toga","foto","flores"],pagos:[],gpa:86.2,toga:{talla:"XS",ok:false},entregas:[],qr:"QR-007",asis:{},foto:""},
+    {id:8,nombre:"Andres Lopez Castillo",carnet:"2021-008",carrera:"Mercadeo",tel:"787-555-0108",email:"andres.lopez@demo.com",parts:["toga","foto","video","cena","transp"],pagos:[{id:"p9",f:"2025-04-05",monto:150,con:"Abono inicial"}],gpa:83.9,toga:{talla:"L",ok:false},entregas:[],qr:"QR-008",asis:{},foto:""},
+    {id:9,nombre:"Natalia Herrera Munoz",carnet:"2021-009",carrera:"Biologia",tel:"787-555-0109",email:"natalia.herrera@demo.com",parts:["toga","foto","cena"],pagos:[{id:"p10",f:"2025-02-15",monto:365,con:"Pago completo"}],gpa:93.8,toga:{talla:"S",ok:true,fechaEntrega:"18 mar. 2025"},entregas:[{id:"toga",entregado:true,fecha:"18 mar. 2025",entregadoPor:"Admin"}],qr:"QR-009",asis:{},foto:""},
+    {id:10,nombre:"Roberto Morales Perez",carnet:"2021-010",carrera:"Arquitectura",tel:"787-555-0110",email:"roberto.morales@demo.com",parts:["toga","foto","video","cena","invit"],pagos:[{id:"p11",f:"2025-03-20",monto:200,con:"Primera cuota"}],gpa:90.1,toga:{talla:"XL",ok:false},entregas:[],qr:"QR-010",asis:{},foto:""},
   ],
-  gradConfig:{
-    nombreInstitucion:"Universidad Demo — GradManager",
-    fechaEvento:"2025-06-15",
-    horaEvento:"4:00 PM",
-    venue:{nombre:"Salon Gran Imperial",direccion:"Ave. Ponce de Leon 500, San Juan, PR"},
-  },
+  gradConfig:{nombreInstitucion:"Universidad Demo — GradManager",fechaEvento:"2025-06-15",horaEvento:"4:00 PM",venue:{nombre:"Salon Gran Imperial",direccion:"Ave. Ponce de Leon 500, San Juan, PR"}},
   providers:[
     {id:1,empresa:"Fotografia Recuerdos PR",contacto:"Juan Maldonado",tel:"787-555-0200",email:"info@recuerdospr.com",pagos:[{id:"pr1",f:"2025-03-01",monto:500,con:"Deposito"}],contrato:""},
-    {id:2,empresa:"Video Producciones Elite",contacto:"Maria Colon",  tel:"787-555-0201",email:"elite@videopro.com",   pagos:[],contrato:""},
-    {id:3,empresa:"Flores del Caribe",       contacto:"Rosa Ruiz",    tel:"787-555-0202",email:"flores@caribe.com",    pagos:[{id:"pr2",f:"2025-04-01",monto:200,con:"Anticipo"}],contrato:""},
+    {id:2,empresa:"Video Producciones Elite",contacto:"Maria Colon",tel:"787-555-0201",email:"elite@videopro.com",pagos:[],contrato:""},
   ],
   awards:[
-    {id:1,tipo:"academico",nombre:"Mejor Promedio General",ganador:"Valeria Cruz Morales",icono:"🥇",descripcion:"Promedio mas alto de la clase",monto:0,ok:true,orden:1},
-    {id:2,tipo:"academico",nombre:"Honor al Merito Academico",ganador:"Sofia Ramirez Torres",icono:"🏆",descripcion:"Excelencia academica",monto:0,ok:true,orden:2},
-    {id:3,tipo:"especial",nombre:"Lider Estudiantil",ganador:"Luis Gonzalez Reyes",icono:"⭐",descripcion:"Contribucion a la comunidad",monto:0,ok:false,orden:3},
+    {id:1,tipo:"academico",nombre:"Mejor Promedio General",ganador:"Valeria Cruz Morales",icono:"🥇",descripcion:"Promedio mas alto",monto:0,ok:true,orden:1},
+    {id:2,tipo:"academico",nombre:"Honor al Merito",ganador:"Sofia Ramirez Torres",icono:"🏆",descripcion:"Excelencia academica",monto:0,ok:true,orden:2},
   ],
-  mensajes:[],
-  anuncios:[],
-  recolectas:[
-    {id:1,empresa:"Farmacia San Juan",contacto:"Pedro Acosta",tel:"787-555-0300",donaciones:[{tipo:"dinero",descripcion:"Donacion monetaria",valor:100,firma:true}],fechaVisita:"2025-03-10",notas:"Muy colaboradores"},
-    {id:2,empresa:"Supermercado La Plaza",contacto:"Carmen Vega",tel:"787-555-0301",donaciones:[{tipo:"especie",descripcion:"Refrescos para la cena",valor:0,firma:true}],fechaVisita:"2025-03-15",notas:""},
-  ],
-  ensayos:[
-    {id:1,titulo:"Ensayo General",fecha:"2025-06-10",hora:"10:00 AM",lugar:"Auditorio Principal",asist:[1,2,4,6,9]},
-    {id:2,titulo:"Ensayo de Marcha",fecha:"2025-06-12",hora:"9:00 AM",lugar:"Patio Central",asist:[1,3,4,6,9,10]},
-  ],
-  subastas:[],
-  rifas:[],
-  checklist:[
+  mensajes:[],anuncios:[],recolectas:[],ensayos:[],subastas:[],rifas:[],checklist:[
     {id:1,texto:"Confirmar salon de eventos",resp:"Coordinadora",ok:true},
     {id:2,texto:"Ordenar togas y birretes",resp:"Administracion",ok:true},
     {id:3,texto:"Confirmar fotografo",resp:"Coordinadora",ok:false},
     {id:4,texto:"Enviar invitaciones a padres",resp:"Secretaria",ok:false},
-    {id:5,texto:"Preparar diplomas",resp:"Rector",ok:false},
   ],
-  consignaciones:[],
-  pagos:{},
-  budge:[
+  consignaciones:[],pagos:{},budge:[
     {id:1,categoria:"Salon",presupuesto:2000,gastado:1800},
     {id:2,categoria:"Fotografia y Video",presupuesto:1500,gastado:500},
     {id:3,categoria:"Flores y Decoracion",presupuesto:800,gastado:200},
-    {id:4,categoria:"Catering Cena",presupuesto:3000,gastado:0},
   ],
-  procesional:[],
-  ventas:[],
-  productos:[],
-  compras:[],
-  encuestas:[],
-  votaciones:[],
-  permisos:{},
-  notifs:[],
-  venues:[],
-}}
+  procesional:[],ventas:[],productos:[],compras:[],encuestas:[],votaciones:[],permisos:{},notifs:[],venues:[]}}
 
 // ═══════════════════════════════════
 // STATE
@@ -3449,19 +3426,7 @@ function oEmail(email,sub,body){
 function exportPDF(title,headers,rows){
   const w=window.open("","_blank");
   if(!w){alert("Permite ventanas emergentes.");return;}
-  w.document.write(`<html><head><style>body{font-family:Georgia,serif;margin:22px;color:#222}h1{font-size:17px;border-bottom:2px solid #C9A84C;padding-bottom:6px;margin-bottom:8px}table{width:100%;border-collapse:collapse;font-size:10px}th{background:#1a1a2a;color:#C9A84C;padding:6px;text-align:left;border:1px solid #ddd}td{padding:5px 6px;border:1px solid #eee}tr:nth-child(even) td{background:#f9f9f9}</style></head><body><h1>🎓 ${title}</h1><p style="font-size:11px;color:#999;margin-bottom:10px;">Generado: ${new Date().toLocaleDateString("es-GT",{year:"numeric",month:"long",day:"numeric"})}</p><table><thead><tr>${headers.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join("")}</tr>`).join("")}</tbody></table>
-<script>
-if('serviceWorker' in navigator){
-  window.addEventListener('load', function(){
-    navigator.serviceWorker.register('sw.js').then(function(reg){
-      console.log('SW registrado:', reg.scope);
-    }).catch(function(err){
-      console.log('SW error:', err);
-    });
-  });
-}
-</script>
-</body></html>`);
+  w.document.write(`<html><head><style>body{font-family:Georgia,serif;margin:22px;color:#222}h1{font-size:17px;border-bottom:2px solid #C9A84C;padding-bottom:6px;margin-bottom:8px}table{width:100%;border-collapse:collapse;font-size:10px}th{background:#1a1a2a;color:#C9A84C;padding:6px;text-align:left;border:1px solid #ddd}td{padding:5px 6px;border:1px solid #eee}tr:nth-child(even) td{background:#f9f9f9}</style></head><body><h1>🎓 ${title}</h1><p style="font-size:11px;color:#999;margin-bottom:10px;">Generado: ${new Date().toLocaleDateString("es-GT",{year:"numeric",month:"long",day:"numeric"})}</p><table><thead><tr>${headers.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join("")}</tr>`).join("")}</tbody></table></body></html>`);
   w.document.close();setTimeout(()=>w.print(),400);
 }
 
@@ -3913,6 +3878,7 @@ function rStudents(){
     return s.studentPortalId===CU.studentId||s.email===CU.email||s.carnet===CU.carnet;
   }):allSts;
   document.getElementById("s-stud").innerHTML=`
+    <input class='inp' id='stud-srch' placeholder='🔍 Buscar estudiante...' style='width:100%;margin-bottom:10px;display:block;'/>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
       <span style="font-size:16px;color:#ddd;">${sts.length>=280?"⚠️ ":""}Estudiantes (${sts.length}${sts.length>=280?" / 300 — limite cercano":""})</span>
       <div style="display:flex;gap:6px;">
@@ -3932,7 +3898,7 @@ function rStudents(){
       const slbl=sinCuotas?"⚠️ Sin cuotas":sal<=0?"Al dia":pag>0?"Parcial":"Pendiente";
       const scolor=sinCuotas?"#C9A84C":sal<=0?"#4CC97A":"#C94C7A";
       const aw=gAW().filter(a=>a.sid===s.id&&a.ok).map(a=>{const t=ATY.find(x=>x.id===a.tid);return t?t.icon:"";}).join("");
-      return `<div class="card" style="border-color:${sc}33;margin-bottom:10px;">
+      return `<div class="card" data-student="true" style="border-color:${sc}33;margin-bottom:10px;">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
           <div style="display:flex;align-items:center;gap:8px;flex:1;">
             ${s.foto?`<img src="${s.foto}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid ${c};flex-shrink:0;"/>`:`<div style="width:40px;height:40px;border-radius:50%;background:${c}25;border:2px solid ${c};display:flex;align-items:center;justify-content:center;font-size:16px;color:${c};flex-shrink:0;">${s.nombre[0]}</div>`}
@@ -3961,23 +3927,20 @@ function rStudents(){
         </div>
       </div>`;
     }).join("")}`;
-  // Add search
-  var _srch_s_stud=document.createElement('input');
-  _srch_s_stud.className='inp';
-  _srch_s_stud.placeholder='🔍 Buscar estudiante...';
-  _srch_s_stud.style.cssText='width:100%;margin-bottom:8px;';
-  _srch_s_stud.addEventListener('input',function(){
+  // Search listener
+  var si=document.getElementById("stud-srch");
+  if(si) si.addEventListener("input",function(){
     var q=this.value.toLowerCase();
-    document.getElementById('s-stud').querySelectorAll('.card').forEach(function(el){
-      el.style.display=el.textContent.toLowerCase().includes(q)?'':'none';
+    var sc=document.getElementById("s-stud");
+    if(!sc)return;
+    var items=document.getElementById("s-stud").querySelectorAll("[data-student]");
+    alert("Found "+items.length+" items. q="+q);
+    items.forEach(function(el,i){
+      var txt=el.textContent.toLowerCase().substring(0,30);
+      var match=txt.includes(q);
+      el.style.display=match?"":"none";
     });
   });
-  var _sc_s_stud=document.getElementById('s-stud');
-  if(_sc_s_stud){
-    var _fc=_sc_s_stud.querySelector('.card');
-    if(_fc) _sc_s_stud.insertBefore(_srch_s_stud,_fc);
-    else _sc_s_stud.insertBefore(_srch_s_stud,_sc_s_stud.firstChild);
-  }
 }
 
 
@@ -6126,7 +6089,9 @@ function rMore(){
     html+='<input class="inp" id="cfg-promo" placeholder="Ej: Promocion 2025" value="'+(D.gradConfig&&D.gradConfig.promocion?D.gradConfig.promocion:'')+'" style="margin-bottom:8px;"/>';
     html+='<button class="btn bs bw" style="margin-bottom:12px;" onclick="saveInstConfig()">✓ Guardar nombre</button>';
     html+='<div style="font-size:11px;color:#555;letter-spacing:1px;margin-bottom:6px;">COLOR DE LA INSTITUCION</div>';
-    html+='<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;"><input type="color" id="cfg-color" value="'+(D.gradConfig&&D.gradConfig.colorPrimario?D.gradConfig.colorPrimario:'#C9A84C')+'" style="width:48px;height:36px;border:none;cursor:pointer;border-radius:8px;"/><span style="flex:1;color:#888;font-size:12px;">Selecciona el color de tu institucion</span></div>';
+    html+='<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">';
+    html+='<input type="color" id="cfg-color" value="'+(D.gradConfig&&D.gradConfig.colorPrimario?D.gradConfig.colorPrimario:"#C9A84C")+'" style="width:48px;height:36px;border:none;cursor:pointer;border-radius:8px;"/>';
+    html+='<span style="flex:1;color:#888;font-size:12px;">Color de tu institución</span></div>';
     html+='<button class="btn bs bw" style="margin-bottom:14px;" onclick="saveClientColor()">&#127912; Aplicar color</button>';
     html+='<div class="dv"></div>';
     html+='<div style="font-size:10px;color:#555;letter-spacing:2px;margin-bottom:8px;">MONEDA / CURRENCY</div>';
@@ -7738,12 +7703,10 @@ function mContador(){
   
 
 
-
 function applyClientColor(color){
   if(!color) color=(D.gradConfig&&D.gradConfig.colorPrimario)||"#C9A84C";
   document.documentElement.style.setProperty('--app-color', color);
   window._clientColor=color;
-  // Also update CU color if logged in
   if(CU) CU.color=color;
 }
 
@@ -7754,7 +7717,7 @@ function saveClientColor(){
   D.gradConfig.colorPrimario=inp.value;
   SD();
   applyClientColor(inp.value);
-  addN("🎨 Color actualizado");
+  addN("Color actualizado");
 }
 
 function saveInstConfig(){
@@ -7764,10 +7727,9 @@ function saveInstConfig(){
   if(inst) D.gradConfig.nombreInstitucion=inst.value.trim();
   if(promo) D.gradConfig.promocion=promo.value.trim();
   SD();
-  addN("🏫 Institución actualizada");
-  // Update header
-  var hInst=document.getElementById('hgrad');
-  if(hInst) hInst.textContent=D.gradConfig.nombreInstitucion||"GradManager";
+  addN("Institucion actualizada");
+  var hn=document.getElementById('hn');
+  if(hn&&D.gradConfig.nombreInstitucion) hn.textContent=D.gradConfig.nombreInstitucion;
 }
 
 function saveEventDate(){
@@ -9156,15 +9118,13 @@ function mEns(){
 
 
 
-function filtrarMC(inp){var q=(inp.value||'').toLowerCase();var mc=document.getElementById('mc');if(!mc)return;mc.querySelectorAll('.srch-item').forEach(function(el){if(el===inp||el.contains(inp))return;el.style.display=el.textContent.toLowerCase().includes(q)?'':'none';});}
-
 function fSearch(inp, containerId, selector){
   var q=(inp.value||"").toLowerCase();
   var container=document.getElementById(containerId);
   if(!container) container=inp.parentElement;
   if(!container)return;
-  container.querySelectorAll(selector).forEach(function(el){
-    if(el===inp)return;
+  Array.from(container.children).forEach(function(el){
+    if(el===inp||el.tagName==="INPUT")return;
     el.style.display=el.textContent.toLowerCase().includes(q)?"":"none";
   });
 }
@@ -9179,8 +9139,6 @@ function filtrarEnsInline(inp){
 }
 
 
-
-function filtrarMC(inp){var q=(inp.value||'').toLowerCase();var mc=document.getElementById('mc');if(!mc)return;mc.querySelectorAll('.srch-item').forEach(function(el){if(el===inp||el.contains(inp))return;el.style.display=el.textContent.toLowerCase().includes(q)?'':'none';});}
 
 function fSearch(inp, containerId, selector){
   var q=(inp.value||"").toLowerCase();
