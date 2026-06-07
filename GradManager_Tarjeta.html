@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Tarjeta GradManager</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap');
+
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body{
+  background:#1a1a24;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+  padding:40px 20px;
+  font-family:'DM Sans',sans-serif;
+  gap:40px;
+}
+
+h1{
+  color:#C9A84C;
+  font-family:'Playfair Display',serif;
+  font-size:18px;
+  letter-spacing:2px;
+  text-align:center;
+  opacity:0.7;
+}
+
+.cards-wrapper{
+  display:flex;
+  gap:40px;
+  flex-wrap:wrap;
+  justify-content:center;
+  align-items:center;
+}
+
+/* FRONT CARD */
+.card{
+  width:340px;
+  height:190px;
+  border-radius:16px;
+  position:relative;
+  overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+}
+
+.card-front{
+  background:linear-gradient(135deg, #0a0a0f 0%, #12121e 50%, #0d0d18 100%);
+  border:1px solid rgba(201,168,76,0.25);
+  display:flex;
+  padding:24px 28px;
+  gap:20px;
+  align-items:center;
+}
+
+/* Gold accent line top */
+.card-front::before{
+  content:'';
+  position:absolute;
+  top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,#C9A84C,transparent);
+}
+
+/* Corner decoration */
+.card-front::after{
+  content:'';
+  position:absolute;
+  bottom:-30px;right:-30px;
+  width:120px;height:120px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(201,168,76,0.08),transparent 70%);
+}
+
+.card-logo{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+  flex-shrink:0;
+}
+
+.card-logo svg{
+  filter:drop-shadow(0 0 8px rgba(201,168,76,0.4));
+}
+
+.brand-name{
+  font-family:'Playfair Display',serif;
+  font-size:13px;
+  color:#C9A84C;
+  letter-spacing:2px;
+  font-weight:700;
+}
+
+.divider{
+  width:1px;
+  height:100px;
+  background:linear-gradient(180deg,transparent,rgba(201,168,76,0.4),transparent);
+  flex-shrink:0;
+}
+
+.card-info{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.card-tagline{
+  font-family:'Playfair Display',serif;
+  font-size:15px;
+  color:#f0ede6;
+  font-weight:700;
+  line-height:1.3;
+}
+
+.card-sub{
+  font-size:10px;
+  color:#888;
+  letter-spacing:1px;
+  margin-bottom:10px;
+}
+
+.card-contact{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+
+.contact-item{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:10px;
+  color:#a09888;
+}
+
+.contact-icon{font-size:11px;}
+
+/* BACK CARD */
+.card-back{
+  background:linear-gradient(135deg, #0d0d14 0%, #0a0a10 100%);
+  border:1px solid rgba(201,168,76,0.2);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:14px;
+  padding:24px;
+}
+
+.card-back::before{
+  content:'';
+  position:absolute;
+  bottom:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,#C9A84C,transparent);
+}
+
+.qr-wrapper{
+  background:white;
+  padding:10px;
+  border-radius:10px;
+  width:110px;height:110px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.qr-wrapper img{
+  width:90px;height:90px;
+}
+
+.scan-text{
+  font-size:10px;
+  color:#888;
+  letter-spacing:1px;
+  text-align:center;
+}
+
+.back-url{
+  font-size:9px;
+  color:rgba(201,168,76,0.6);
+  letter-spacing:0.5px;
+}
+
+/* Print styles */
+@media print {
+  body{background:white;padding:10px;}
+  h1{display:none;}
+  .note{display:none;}
+  .card{box-shadow:none;}
+  .card-front{background:linear-gradient(135deg,#f8f6f0,#ede8dc) !important;border:1px solid #C9A84C;}
+  .brand-name,.card-tagline{color:#8B6914 !important;}
+  .divider{background:linear-gradient(180deg,transparent,#C9A84C,transparent) !important;}
+  .card-sub,.contact-item,.scan-text{color:#666 !important;}
+  .back-url{color:#8B6914 !important;}
+  .card-back{background:#f8f6f0 !important;}
+  .card-front::before,.card-back::before{background:#C9A84C !important;}
+}
+
+.note{
+  text-align:center;
+  color:#555;
+  font-size:12px;
+  max-width:500px;
+  line-height:1.6;
+}
+
+.print-btn{
+  background:#C9A84C;
+  color:#000;
+  border:none;
+  padding:12px 32px;
+  border-radius:50px;
+  font-size:14px;
+  font-weight:600;
+  cursor:pointer;
+  font-family:'DM Sans',sans-serif;
+  transition:all 0.2s;
+}
+.print-btn:hover{background:#E8C56A;transform:translateY(-2px);}
+</style>
+</head>
+<body>
+
+<h1>TARJETA DE PRESENTACIÓN — GRADMANAGER</h1>
+
+<div class="cards-wrapper">
+
+  <!-- FRENTE -->
+  <div>
+    <p style="color:#666;font-size:11px;letter-spacing:2px;text-align:center;margin-bottom:12px;">FRENTE</p>
+    <div class="card card-front">
+      <!-- Logo birrete -->
+      <div class="card-logo">
+        <svg width="52" height="52" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="30,8 56,20 30,32 4,20" fill="#C9A84C" opacity="0.95"/>
+          <rect x="22" y="20" width="16" height="10" rx="2" fill="#C9A84C" opacity="0.7"/>
+          <rect x="20" y="29" width="20" height="5" rx="2" fill="#C9A84C"/>
+          <line x1="50" y1="20" x2="50" y2="34" stroke="#C9A84C" stroke-width="2"/>
+          <circle cx="50" cy="36" r="3" fill="#C9A84C"/>
+          <line x1="48" y1="36" x2="46" y2="42" stroke="#C9A84C" stroke-width="1.5"/>
+          <line x1="50" y1="37" x2="50" y2="43" stroke="#C9A84C" stroke-width="1.5"/>
+          <line x1="52" y1="36" x2="54" y2="42" stroke="#C9A84C" stroke-width="1.5"/>
+        </svg>
+        <div class="brand-name">GRADMANAGER</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="card-info">
+        <div class="card-tagline">Tu Graduación,<br/>Bajo Control</div>
+        <div class="card-sub">GESTIÓN INTEGRAL DE GRADUACIONES</div>
+        <div class="card-contact">
+          <div class="contact-item">
+            <span class="contact-icon">💬</span>
+            <span>(939) 642-7190</span>
+          </div>
+          <div class="contact-item">
+            <span class="contact-icon">📧</span>
+            <span>gradmanager.pr@gmail.com</span>
+          </div>
+          <div class="contact-item">
+            <span class="contact-icon">🌐</span>
+            <span>gradmanager.app</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REVERSO -->
+  <div>
+    <p style="color:#666;font-size:11px;letter-spacing:2px;text-align:center;margin-bottom:12px;">REVERSO</p>
+    <div class="card card-back">
+      <div class="qr-wrapper">
+        <!-- QR code pointing to landing page -->
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=https://dianavelez7dv-create.github.io/GradManager/GradManager_Landing.html&color=000000&bgcolor=ffffff" alt="QR GradManager"/>
+      </div>
+      <div class="scan-text">ESCANEA PARA VER LA APP</div>
+      <div class="back-url">dianavelez7dv-create.github.io/GradManager</div>
+    </div>
+  </div>
+
+</div>
+
+<p class="note">💡 Para imprimir: usa papel grueso (300g) y corta en tamaño estándar 3.5" × 2". También puedes guardar como PDF desde el navegador.</p>
+
+<button class="print-btn" onclick="window.print()">🖨️ Imprimir / Guardar PDF</button>
+
+</body>
+</html>
