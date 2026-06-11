@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v127</title>
+<title>GradManager 2025 — v128</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -1534,7 +1534,6 @@ function setupFotoBtn(inputId, previewId){
     var input = document.getElementById(inputId);
     var prev = document.getElementById(previewId);
     if(!input || !prev) return;
-    prev.onclick = function(){ input.click(); };
     input.onchange = function(){
       if(!this.files || !this.files[0]) return;
       var file = this.files[0];
@@ -1565,7 +1564,6 @@ function setupFotoBtn(inputId, previewId){
     var inp2=document.getElementById(inputId);
     var prv2=document.getElementById(previewId);
     if(inp2&&prv2&&!inp2._fotoSetup){
-      prv2.onclick=function(){inp2.click();};
       inp2.onchange=function(){
         if(!this.files||!this.files[0])return;
         var file=this.files[0];
