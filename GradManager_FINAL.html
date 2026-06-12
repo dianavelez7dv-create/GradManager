@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v128</title>
+<title>GradManager 2025 — v130</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -520,8 +520,8 @@ function reRender(){setLang(window._lang||"es");}
 
 
 var CURRENCIES={
-  GTQ:{code:"GTQ",symbol:"Q",  name:"Quetzal",        flag:"🇬🇹"},
   USD:{code:"USD",symbol:"$",  name:"Dolar",           flag:"🇺🇸"},
+  GTQ:{code:"GTQ",symbol:"Q",  name:"Quetzal",        flag:"🇬🇹"},
   MXN:{code:"MXN",symbol:"$",  name:"Peso Mexicano",   flag:"🇲🇽"},
   CRC:{code:"CRC",symbol:"₡",  name:"Colon",           flag:"🇨🇷"},
   HNL:{code:"HNL",symbol:"L",  name:"Lempira",         flag:"🇭🇳"},
@@ -541,8 +541,8 @@ var CURRENCIES={
   BZD:{code:"BZD",symbol:"BZ$",name:"Dolar Beliceno",  flag:"🇧🇿"},
   EUR:{code:"EUR",symbol:"€",  name:"Euro",            flag:"🇪🇺"},
 };
-function getCurrency(){var c=null;try{c=localStorage.getItem("gm_currency");}catch(e){}return CURRENCIES[c||"GTQ"]||CURRENCIES.GTQ;}
-function setCurrency(code){try{localStorage.setItem("gm_currency",code);}catch(e){}window._currency=CURRENCIES[code]||CURRENCIES.GTQ;}
+function getCurrency(){var c=null;try{c=localStorage.getItem("gm_currency");}catch(e){}return CURRENCIES[c||"USD"]||CURRENCIES.USD;}
+function setCurrency(code){try{localStorage.setItem("gm_currency",code);}catch(e){}window._currency=CURRENCIES[code]||CURRENCIES.USD;}
 function loadCurrency(){window._currency=getCurrency();}
 
 var PERMS_DEFAULT={"admin": ["dash", "stud", "awrd", "rifa", "suba", "scan", "prov", "more", "aviso", "voto", "enc", "acta", "fund", "ens", "pres", "prog", "toga", "invit", "chat", "ai", "ventas", "compras", "usuarios", "audit", "reset"], "directiva": ["dash", "stud", "awrd", "rifa", "suba", "scan", "prov", "more", "aviso", "voto", "enc", "acta", "fund", "ens", "pres", "prog", "toga", "invit", "chat", "ventas", "compras", "contador", "venue", "backups", "alertas"], "maestro": ["dash", "stud", "awrd", "scan", "more", "aviso", "enc", "ens", "pres", "prog", "toga", "chat", "contador", "venue", "backups", "alertas"], "proveedor": ["dash", "prov", "more", "aviso", "chat", "contador", "venue", "backups"], "estudiante": ["dash", "more", "aviso", "chat", "contador", "venue", "alertas", "voto", "enc", "ens", "consign"],
@@ -1699,13 +1699,29 @@ function defEntregas(){
 }
 
 function initEntregas(){
-  // Initialize PARTS with defaults if empty
   if(!D.PARTS||D.PARTS.length===0){
     D.PARTS=defEntregas().map(function(e){
       return {id:e.id,label:e.label,icon:e.icon,costo:0};
     });
     SD();
   }
+  var changed=false;
+  D.students=(D.students||[]).map(function(s){
+    var parts=s.parts||[];
+    var entregas=s.entregas||[];
+    var newEntregas=parts.map(function(pid){
+      var existing=entregas.find(function(e){return e.id===pid;});
+      if(existing) return existing;
+      changed=true;
+      var part=gP().find(function(p){return p.id===pid;});
+      return {id:pid,label:part?part.label:pid,entregado:false,fecha:"",entregadoPor:""};
+    });
+    var filtered=entregas.filter(function(e){return !parts.includes(e.id)&&e.entregado;});
+    var combined=newEntregas.concat(filtered);
+    if(combined.length!==entregas.length) changed=true;
+    return Object.assign({},s,{entregas:combined});
+  });
+  if(changed) SD();
 }
 
 // Get student's assigned entregas
@@ -1935,7 +1951,7 @@ function mEntregas(){
   initEntregas();
   var c=CU?CU.color:"#C9A84C";
   var html='<div class="dv"></div>';
-  html+='<input class="inp" placeholder="🔍 Buscar estudiante..." oninput="fSearch(this,\'mc\',\'.srch-item\')" style="margin-bottom:8px;width:100%;"/>';
+  html+='<input class="inp" placeholder="🔍 Buscar estudiante..." oninput="filtrarMC(this)" style="margin-bottom:8px;width:100%;"/>';
   html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">';
   html+='<div class="ct" style="margin:0;">📦 Entregas</div>';
   html+='<div style="display:flex;gap:6px;">';
@@ -9143,6 +9159,16 @@ function mEns(){
 }
 
 
+
+function filtrarMC(inp){
+  var q=(inp.value||"").toLowerCase();
+  var mc=document.getElementById("mc");
+  if(!mc)return;
+  Array.from(mc.children).forEach(function(el){
+    if(el===inp||el.tagName==="INPUT")return;
+    el.style.display=el.textContent.toLowerCase().includes(q)?"":"none";
+  });
+}
 
 function fSearch(inp, containerId, selector){
   var q=(inp.value||"").toLowerCase();
