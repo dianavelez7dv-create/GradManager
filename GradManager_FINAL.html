@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v130</title>
+<title>GradManager 2025 — v131</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -7601,14 +7601,12 @@ function doSearch(){
 
 
 function togChecklist(id){
-  id=parseInt(id);
   D.checklist=(D.checklist||[]).filter(function(i){return i.texto||i.text;});
-  D.checklist=D.checklist.map(function(i){return i.id===id?Object.assign({},i,{done:!i.done}):i;});
+  D.checklist=D.checklist.map(function(i){return String(i.id)===String(id)?Object.assign({},i,{done:!i.done}):i;});
   SD();mContador();
 }
 function delChecklist(id){
-  id=parseInt(id);
-  D.checklist=(D.checklist||[]).filter(function(i){return i.id!==id;});
+  D.checklist=(D.checklist||[]).filter(function(i){return String(i.id)!==String(id);});
   SD();mContador();
 }
 function oAddChecklist(){
