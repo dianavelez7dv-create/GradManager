@@ -1,5 +1,5 @@
-// GradManager Service Worker v128
-const CACHE_NAME = 'gradmanager-v128';
+// GradManager Service Worker v132
+const CACHE_NAME = 'gradmanager-v132';
 
 self.addEventListener('install', function(event) {
   self.skipWaiting();
