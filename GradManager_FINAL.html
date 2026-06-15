@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v140</title>
+<title>GradManager 2025 — v141</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -2854,8 +2854,8 @@ function oKpiDash(){
   var tTotal=tCuotas+tRifa+tFund+tSub+tRecolectas;
   var metaTotal=gFU().reduce(function(s,i){return s+i.meta;},0)+tEsperado;
   var pctRecaud=metaTotal>0?Math.round((tTotal/metaTotal)*100):0;
-  var conDeuda=sts.filter(function(s){return cT(s.parts)>cP(s.pagos||[]);}).length;
-  var alDia=total-conDeuda;
+  var alDia=sts.filter(function(s){return (s.parts||[]).length>0&&cP(s.pagos||[])>=cT(s.parts);}).length;
+  var conDeuda=sts.filter(function(s){return (s.parts||[]).length>0&&cP(s.pagos||[])<cT(s.parts);}).length;
 
   // Student KPIs
   var conActividades=sts.filter(function(s){return (s.parts||[]).length>0;}).length;
