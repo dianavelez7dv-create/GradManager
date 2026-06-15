@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v144</title>
+<title>GradManager 2025 — v145</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -76,6 +76,8 @@ body.light .hdr { background: var(--bg2); border-color: var(--border); }
 body.light .nav { background: var(--bg2); border-color: var(--border); }
 body.light .it { color: var(--text); }
 body.light .is { color: var(--text2); }
+
+.sb:active,.card:active,.btn:active,.nb:active{filter:brightness(1.25);transform:scale(0.98);transition:transform 0.1s;}
 </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
@@ -2818,25 +2820,14 @@ function cerrarKpiYFiltrar(tipo){
   CM();
   go("stud");
   setTimeout(function(){
-    var srch=document.getElementById("stud-srch");
-    if(srch) srch.value="";
-    var cards=document.getElementById("s-stud").querySelectorAll("[data-student]");
-    cards.forEach(function(el){delete el.dataset.activeFilter;});
-    if(tipo==="deuda"){
-      cards.forEach(function(el){
-        var st=el.getAttribute("data-status");
-        var show=(st==="parcial"||st==="sin-pagar");
-        el.style.display=show?"":"none";
-        if(show) el.dataset.activeFilter="deuda";
-      });
-    } else {
-      cards.forEach(function(el){
-        var show=(el.getAttribute("data-status")===tipo);
-        el.style.display=show?"":"none";
-        if(show) el.dataset.activeFilter=tipo;
-      });
+    window._studFilter=tipo;
+    rStudents();
+    var btn=document.getElementById("sbf-"+tipo);
+    if(btn){
+      var col=tipo==="al-dia"?"#4CC97A":tipo==="parcial"?"#C9A84C":tipo==="deuda"?"#C94C7A":"#C9A84C";
+      btn.style.boxShadow="0 0 0 2px "+col;
     }
-  },300);
+  },150);
 }
 
 function oKpiDash(){
@@ -3642,6 +3633,7 @@ function go(id,_skipHistory){if(id!=="dash"&&!canAccess(id)){alert("No tienes pe
   var spt=document.getElementById("s-parts");if(spt) spt.style.zIndex="";
   document.querySelectorAll(".sc").forEach(s=>s.classList.remove("on"));
   document.querySelectorAll(".nb").forEach(b=>{b.classList.remove("on");b.style.color="";b.style.borderTopColor="";});
+  if(id==="stud") window._studFilter=null;
   document.getElementById("s-"+id).classList.add("on");
   const nb=document.getElementById("nb-"+id);
   if(nb){nb.classList.add("on");if(CU){nb.style.color=CU.color;nb.style.borderTopColor=CU.color;}}
@@ -3933,7 +3925,7 @@ function rStudents(){
       <div class="sb" id="sbf-parcial" style="border-color:#C9A84C;cursor:pointer;" data-st="parcial"><div class="sv" style="color:#C9A84C;">${sts.filter(s=>cP(s.pagos)>0&&cP(s.pagos)<cT(s.parts)).length}</div><div class="sl">Parcial</div></div>
       <div class="sb" id="sbf-sin-pagar" style="border-color:#C94C7A;cursor:pointer;" data-st="sin-pagar"><div class="sv" style="color:#C94C7A;">${sts.filter(s=>(s.parts||[]).length>0&&cP(s.pagos)===0).length}</div><div class="sl">Sin pagar</div></div>
     </div>
-    ${sts.map(s=>{
+    ${(window._studFilter?sts.filter(function(s){var t=cT(s.parts),p=cP(s.pagos),sc=(!s.parts||s.parts.length===0)?"none":(t-p)<=0?"al-dia":p>0?"parcial":"sin-pagar";return window._studFilter==="deuda"?(sc==="parcial"||sc==="sin-pagar"):sc===window._studFilter;}):sts).map(s=>{
       const tot=cT(s.parts),pag=cP(s.pagos),sal=tot-pag;
       const sc=sal<=0?"#4CC97A":pag>0?"#C9A84C":"#C94C7A";
       const sinCuotas=(!s.parts||s.parts.length===0);
@@ -3978,6 +3970,8 @@ function rStudents(){
   });
   var si=document.getElementById("stud-srch");
   if(si) si.addEventListener("input",function(){
+    window._studFilter=null;
+    ["al-dia","parcial","sin-pagar"].forEach(function(s2){var b2=document.getElementById("sbf-"+s2);if(b2)b2.style.boxShadow="";});
     var q=this.value.toLowerCase().trim();
     var allSts2=sortByName(gST());
     var filtered=q?allSts2.filter(function(s){return s.nombre.toLowerCase().includes(q);}):allSts2;
@@ -9254,32 +9248,17 @@ function mEns(){
 function verPendientesPago(){
   go("stud");
   setTimeout(function(){
-    var cards=document.getElementById("s-stud").querySelectorAll("[data-student]");
-    cards.forEach(function(el){
-      var st=el.getAttribute("data-status");
-      el.style.display=(st==="parcial"||st==="sin-pagar")?"":"none";
-    });
+    window._studFilter="deuda";
+    rStudents();
   },150);
 }
 
 function filtrarPorEstado(status){
-  var cards=document.getElementById("s-stud").querySelectorAll("[data-student]");
-  var srch=document.getElementById("stud-srch");
-  if(srch) srch.value="";
-  var btn=document.getElementById("sbf-"+status);
-  var anyActive=btn&&btn.dataset.on==="1";
-  ["al-dia","parcial","sin-pagar"].forEach(function(s2){
-    var b2=document.getElementById("sbf-"+s2);
-    if(b2){b2.dataset.on="0";b2.style.boxShadow="";}
-  });
-  if(anyActive){
-    cards.forEach(function(el){el.style.display="";});
-  }else{
-    cards.forEach(function(el){
-      el.style.display=(el.getAttribute("data-status")===status)?"":"none";
-    });
+  window._studFilter=(window._studFilter===status)?null:status;
+  rStudents();
+  if(window._studFilter){
+    var btn=document.getElementById("sbf-"+status);
     if(btn){
-      btn.dataset.on="1";
       var col=status==="al-dia"?"#4CC97A":status==="parcial"?"#C9A84C":"#C94C7A";
       btn.style.boxShadow="0 0 0 2px "+col;
     }
