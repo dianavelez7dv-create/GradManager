@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v135</title>
+<title>GradManager 2025 — v136</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -6118,6 +6118,7 @@ function expSubPDF(sid){const sub=gSU().find(x=>x.id===sid);exportPDF(`Subasta �
 function rMore(){
   var c=CU?CU.color:"#C9A84C";
   var html="";
+  html+='<div id="mc"></div>';
   html+='<div class="ct">☰ Mas Mas</div>';
   html+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;">';
   var modulos=[
@@ -8244,6 +8245,8 @@ function mTab(t){
   if(mc) mc.innerHTML="";
   if(fs[t]){fs[t]();}
   else alert("Modulo no encontrado: "+t);
+  var smore=document.getElementById("s-more");
+  if(smore) smore.scrollTop=0;
 }
 
 
