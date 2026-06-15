@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v138</title>
+<title>GradManager 2025 — v139</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -2818,18 +2818,25 @@ function cerrarKpiYFiltrar(tipo){
   CM();
   go("stud");
   setTimeout(function(){
+    var srch=document.getElementById("stud-srch");
+    if(srch) srch.value="";
     var cards=document.getElementById("s-stud").querySelectorAll("[data-student]");
+    cards.forEach(function(el){delete el.dataset.activeFilter;});
     if(tipo==="deuda"){
       cards.forEach(function(el){
         var st=el.getAttribute("data-status");
-        el.style.display=(st==="parcial"||st==="sin-pagar")?"":"none";
+        var show=(st==="parcial"||st==="sin-pagar");
+        el.style.display=show?"":"none";
+        if(show) el.dataset.activeFilter="deuda";
       });
     } else {
       cards.forEach(function(el){
-        el.style.display=(el.getAttribute("data-status")===tipo)?"":"none";
+        var show=(el.getAttribute("data-status")===tipo);
+        el.style.display=show?"":"none";
+        if(show) el.dataset.activeFilter=tipo;
       });
     }
-  },200);
+  },300);
 }
 
 function oKpiDash(){
@@ -2916,21 +2923,21 @@ function oKpiDash(){
   }
 
   html+='<div style="font-size:11px;color:#555;letter-spacing:2px;margin-bottom:10px;">💵 FINANCIERO</div>';
-  html+=kpiCard("💰","Recaudación Total",fD(tTotal),"Meta: "+fD(metaTotal),pctRecaud,pctRecaud>=100?"#4CC97A":pctRecaud>=70?"#C9A84C":"#C94C7A");
+  html+=kpiCard("💰","Recaudación Total",fD(tTotal),"Meta: "+fD(metaTotal),pctRecaud,pctRecaud>=100?"#4CC97A":pctRecaud>=70?"#C9A84C":"#C94C7A","CM();mTab('fund');go('more')");
   html+='<div class="g2" style="margin-bottom:10px;">';
   html+='<div class="sb" style="border-color:#4CC97A;cursor:pointer;" onclick="cerrarKpiYFiltrar(' + chr(39) + 'al-dia' + chr(39) + ')"><div class="sv" style="color:#4CC97A;">'+alDia+'</div><div class="sl">Al día</div></div>';
   html+='<div class="sb" style="border-color:#C94C7A;cursor:pointer;" onclick="cerrarKpiYFiltrar(' + chr(39) + 'deuda' + chr(39) + ')"><div class="sv" style="color:#C94C7A;">'+conDeuda+'</div><div class="sl">Con deuda</div></div>';
   html+='</div>';
 
   html+='<div style="font-size:11px;color:#555;letter-spacing:2px;margin-bottom:10px;">👥 ESTUDIANTES</div>';
-  html+=kpiCard("📋","Actividades Asignadas",conActividades+"/"+total,"Sin asignar: "+(total-conActividades),total>0?Math.round((conActividades/total)*100):0,c);
+  html+=kpiCard("📋","Actividades Asignadas",conActividades+"/"+total,"Sin asignar: "+(total-conActividades),total>0?Math.round((conActividades/total)*100):0,c,"cerrarKpiYFiltrar('none')");
   html+=kpiCard("👘","Togas Entregadas",togasOk+"/"+total,"Pendientes: "+(total-togasOk),total>0?Math.round((togasOk/total)*100):0,"#7C6CD4","CM();mTab('toga');go('more')");
 
   html+='<div style="font-size:11px;color:#555;letter-spacing:2px;margin-bottom:10px;">⚙️ OPERACIONAL</div>';
   html+=kpiCard("🤝","Proveedores",provContrat+"/"+provTotal,"Contratados",provTotal>0?Math.round((provContrat/provTotal)*100):0,"#4CA8C9","CM();go('prov')");
-  html+=kpiCard("💰","Presupuesto Ejecutado",fD(presGast),"de "+fD(presTot),pctPres,pctPres>100?"#C94C7A":pctPres>80?"#C9A84C":"#4CC97A");
+  html+=kpiCard("💰","Presupuesto Ejecutado",fD(presGast),"de "+fD(presTot),pctPres,pctPres>100?"#C94C7A":pctPres>80?"#C9A84C":"#4CC97A","CM();mTab('pres');go('more')");
   if(checkTotal>0){
-    html+=kpiCard("✅","Checklist del Evento",checkDone+"/"+checkTotal,"Tareas completadas",pctCheck,pctCheck>=100?"#4CC97A":pctCheck>=50?"#C9A84C":"#C94C7A");
+    html+=kpiCard("✅","Checklist del Evento",checkDone+"/"+checkTotal,"Tareas completadas",pctCheck,pctCheck>=100?"#4CC97A":pctCheck>=50?"#C9A84C":"#C94C7A","CM();mTab('contador');go('more')");
   }
 
   // Critical alerts
