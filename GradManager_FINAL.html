@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v139</title>
+<title>GradManager 2025 — v140</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -2925,8 +2925,8 @@ function oKpiDash(){
   html+='<div style="font-size:11px;color:#555;letter-spacing:2px;margin-bottom:10px;">💵 FINANCIERO</div>';
   html+=kpiCard("💰","Recaudación Total",fD(tTotal),"Meta: "+fD(metaTotal),pctRecaud,pctRecaud>=100?"#4CC97A":pctRecaud>=70?"#C9A84C":"#C94C7A","CM();mTab('fund');go('more')");
   html+='<div class="g2" style="margin-bottom:10px;">';
-  html+='<div class="sb" style="border-color:#4CC97A;cursor:pointer;" onclick="cerrarKpiYFiltrar(' + chr(39) + 'al-dia' + chr(39) + ')"><div class="sv" style="color:#4CC97A;">'+alDia+'</div><div class="sl">Al día</div></div>';
-  html+='<div class="sb" style="border-color:#C94C7A;cursor:pointer;" onclick="cerrarKpiYFiltrar(' + chr(39) + 'deuda' + chr(39) + ')"><div class="sv" style="color:#C94C7A;">'+conDeuda+'</div><div class="sl">Con deuda</div></div>';
+  html+='<div class="sb" style="border-color:#4CC97A;cursor:pointer;" onclick="cerrarKpiYFiltrar(\'al-dia\')"><div class="sv" style="color:#4CC97A;">'+alDia+'</div><div class="sl">Al día</div></div>';
+  html+='<div class="sb" style="border-color:#C94C7A;cursor:pointer;" onclick="cerrarKpiYFiltrar(\'deuda\')"><div class="sv" style="color:#C94C7A;">'+conDeuda+'</div><div class="sl">Con deuda</div></div>';
   html+='</div>';
 
   html+='<div style="font-size:11px;color:#555;letter-spacing:2px;margin-bottom:10px;">👥 ESTUDIANTES</div>';
