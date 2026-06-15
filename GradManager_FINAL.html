@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v143</title>
+<title>GradManager 2025 — v144</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -3929,9 +3929,9 @@ function rStudents(){
       </div>
     </div>
     <div class="g3">
-      <div class="sb" style="border-color:#4CC97A;cursor:pointer;" onclick="filtrarPorEstado(this.dataset.st)" data-st="al-dia"><div class="sv" style="color:#4CC97A;">${sts.filter(s=>(s.parts||[]).length>0&&cP(s.pagos)>=cT(s.parts)).length}</div><div class="sl">Al dia</div></div>
-      <div class="sb" style="border-color:#C9A84C;cursor:pointer;" onclick="filtrarPorEstado(this.dataset.st)" data-st="parcial"><div class="sv" style="color:#C9A84C;">${sts.filter(s=>cP(s.pagos)>0&&cP(s.pagos)<cT(s.parts)).length}</div><div class="sl">Parcial</div></div>
-      <div class="sb" style="border-color:#C94C7A;cursor:pointer;" onclick="filtrarPorEstado(this.dataset.st)" data-st="sin-pagar"><div class="sv" style="color:#C94C7A;">${sts.filter(s=>(s.parts||[]).length>0&&cP(s.pagos)===0).length}</div><div class="sl">Sin pagar</div></div>
+      <div class="sb" id="sbf-al-dia" style="border-color:#4CC97A;cursor:pointer;" data-st="al-dia"><div class="sv" style="color:#4CC97A;">${sts.filter(s=>(s.parts||[]).length>0&&cP(s.pagos)>=cT(s.parts)).length}</div><div class="sl">Al dia</div></div>
+      <div class="sb" id="sbf-parcial" style="border-color:#C9A84C;cursor:pointer;" data-st="parcial"><div class="sv" style="color:#C9A84C;">${sts.filter(s=>cP(s.pagos)>0&&cP(s.pagos)<cT(s.parts)).length}</div><div class="sl">Parcial</div></div>
+      <div class="sb" id="sbf-sin-pagar" style="border-color:#C94C7A;cursor:pointer;" data-st="sin-pagar"><div class="sv" style="color:#C94C7A;">${sts.filter(s=>(s.parts||[]).length>0&&cP(s.pagos)===0).length}</div><div class="sl">Sin pagar</div></div>
     </div>
     ${sts.map(s=>{
       const tot=cT(s.parts),pag=cP(s.pagos),sal=tot-pag;
@@ -3971,6 +3971,11 @@ function rStudents(){
       </div>`;
     }).join("")}`;
   // Search listener
+  // Status filter buttons (Al dia / Parcial / Sin pagar)
+  ["al-dia","parcial","sin-pagar"].forEach(function(st){
+    var btn=document.getElementById("sbf-"+st);
+    if(btn) btn.addEventListener("click",function(){filtrarPorEstado(st);});
+  });
   var si=document.getElementById("stud-srch");
   if(si) si.addEventListener("input",function(){
     var q=this.value.toLowerCase().trim();
@@ -9261,20 +9266,24 @@ function filtrarPorEstado(status){
   var cards=document.getElementById("s-stud").querySelectorAll("[data-student]");
   var srch=document.getElementById("stud-srch");
   if(srch) srch.value="";
-  var anyActive=Array.from(cards).some(function(el){return el.dataset.activeFilter===status;});
-  cards.forEach(function(el){
-    if(anyActive){
-      el.style.display="";
-      delete el.dataset.activeFilter;
-    }else{
-      if(el.getAttribute("data-status")===status){
-        el.style.display="";
-        el.dataset.activeFilter=status;
-      }else{
-        el.style.display="none";
-      }
-    }
+  var btn=document.getElementById("sbf-"+status);
+  var anyActive=btn&&btn.dataset.on==="1";
+  ["al-dia","parcial","sin-pagar"].forEach(function(s2){
+    var b2=document.getElementById("sbf-"+s2);
+    if(b2){b2.dataset.on="0";b2.style.boxShadow="";}
   });
+  if(anyActive){
+    cards.forEach(function(el){el.style.display="";});
+  }else{
+    cards.forEach(function(el){
+      el.style.display=(el.getAttribute("data-status")===status)?"":"none";
+    });
+    if(btn){
+      btn.dataset.on="1";
+      var col=status==="al-dia"?"#4CC97A":status==="parcial"?"#C9A84C":"#C94C7A";
+      btn.style.boxShadow="0 0 0 2px "+col;
+    }
+  }
 }
 
 function filtrarMC(inp){
