@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v157</title>
+<title>GradManager 2025 — v158</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -9058,7 +9058,7 @@ function mFund(){
   html+='<div class="ct" style="margin:0;">💵 Recaudacion</div>';
   html+='<button class="btn bs" onclick="oAddFund()">+ Agregar</button></div>';
   html+='<div class="g3" style="margin-bottom:10px;">';
-  html+='<div class="sb" id="sbff-meta" style="border-color:#C9A84C;cursor:pointer;" onclick="filtrarFundEstado(\'meta\')"><div class="sv" style="color:#C9A84C;font-size:15px;">'+fD(meta)+'</div><div class="sl">Meta</div></div>';
+  html+='<div class="sb" id="sbff-meta" style="border-color:#C9A84C;cursor:pointer;" onclick="filtrarFundEstado(\'todo\')"><div class="sv" style="color:#C9A84C;font-size:15px;">'+fD(meta)+'</div><div class="sl">Meta</div></div>';
   html+='<div class="sb" id="sbff-recaudado" style="border-color:#4CC97A;cursor:pointer;" onclick="filtrarFundEstado(\'recaudado\')"><div class="sv" style="color:#4CC97A;font-size:15px;">'+fD(rec)+'</div><div class="sl">Recaudado</div></div>';
   html+='<div class="sb" id="sbff-restante" style="border-color:#C94C7A;cursor:pointer;" onclick="filtrarFundEstado(\'restante\')"><div class="sv" style="color:#C94C7A;font-size:15px;">'+fD(meta-rec)+'</div><div class="sl">Restante</div></div>';
   html+='</div>';
@@ -9106,8 +9106,9 @@ function mFund(){
     html+='<div class="sb" style="border-color:#C9A84C;"><div class="sv" style="color:#C9A84C;">'+fD(totalVal)+'</div><div class="sl">Recaudado</div></div>';
     html+='</div>';
     var _recFiltered=window._fundFilter?D.recolectas.filter(function(r){
-    return window._fundFilter==="recaudado"?(r.valor||0)>0:window._fundFilter==="restante"?!(r.firmó||r.firmo):true;
-  }):D.recolectas;
+      var _total=(r.donaciones||[]).reduce(function(s,d){return s+(parseFloat(d.valor)||0);},0);
+      return window._fundFilter==="recaudado"?_total>0:window._fundFilter==="restante"?!r.firmaron:window._fundFilter==="todo"?true:true;
+    }):D.recolectas;
   _recFiltered.forEach(function(r){
       var sc=r.firmaron?"#4CC97A":"#888";
       var dons=r.donaciones||[];
@@ -9296,7 +9297,7 @@ function expRecolectasPDF(){
   var rows=[];
   (D.recolectas||[]).forEach(function(r){
     var totalR=(r.donaciones||[]).reduce(function(s,d){return s+(d.valor||0);},0);
-    rows.push([r.negocio,r.contacto||"—",r.fecha,r.firmaron?"✓ Firmó":"✗ No firmó",(r.donaciones||[]).map(function(d){return d.descripcion;}).join(", ")||"—",fD(totalR)]);
+    rows.push([r.negocio||"—",r.contacto||"—",r.fecha||"—",r.firmaron?"✓ Firmó":"✗ No firmó",(r.donaciones||[]).map(function(d){return d.descripcion+(d.valor?" $"+d.valor:"");}).join(", ")||"Sin donaciones",fD(totalR)]);
   });
   var totalGen=(D.recolectas||[]).reduce(function(s,r){return s+(r.donaciones||[]).reduce(function(s2,d){return s2+(d.valor||0);},0);},0);
   rows.push(["","","","TOTAL","",(D.recolectas||[]).filter(function(r){return r.firmaron;}).length+" firmaron | "+fD(totalGen)]);
