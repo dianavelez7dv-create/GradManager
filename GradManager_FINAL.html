@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v150</title>
+<title>GradManager 2025 — v151</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -3289,8 +3289,10 @@ function defData(){return{
     {id:2,empresa:"Video Producciones Elite",cont:"Maria Colon",tel:"787-555-0201",email:"elite@videopro.com",srv:"Video y Edicion",estado:"cotizado",nit:"",ctr:"",notas:"",pagos:[],contrato:""},
   ],
   awards:[
-    {id:1,tipo:"academico",nombre:"Mejor Promedio General",ganador:"Valeria Cruz Morales",icono:"🥇",descripcion:"Promedio mas alto",monto:0,ok:true,orden:1},
-    {id:2,tipo:"academico",nombre:"Honor al Merito",ganador:"Sofia Ramirez Torres",icono:"🏆",descripcion:"Excelencia academica",monto:0,ok:true,orden:2},
+    {id:1,tid:"alto_honor",sid:5,nota:"Promedio mas alto de la clase",ok:true,orden:1},
+    {id:2,tid:"honor",sid:1,nota:"Excelencia academica",ok:true,orden:2},
+    {id:3,tid:"liderazgo",sid:6,nota:"Representante estudiantil",ok:false,orden:3},
+    {id:4,tid:"cultural",sid:3,nota:"Participacion destacada en eventos",ok:false,orden:4},
   ],
   mensajes:[],anuncios:[],recolectas:[],ensayos:[],subastas:[],rifas:[],checklist:[
     {id:1,texto:"Confirmar salon de eventos",resp:"Coordinadora",ok:true},
