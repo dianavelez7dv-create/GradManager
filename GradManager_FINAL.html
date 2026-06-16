@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v154</title>
+<title>GradManager 2025 — v155</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -4813,7 +4813,7 @@ function oAddAw(){
   html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">';
   html+='<input class="inp" id="na-g" type="number" step="0.1" placeholder="GPA (opcional)"/>';
   html+='<input class="inp" id="na-or" type="number" placeholder="Orden en ceremonia"/></div>';
-  html+='<textarea class="inp" id="na-m" placeholder="Descripcion del merito *" style="min-height:60px;"></textarea>';
+  html+='<textarea class="inp" id="na-m" placeholder="Descripcion del merito (opcional)" style="min-height:60px;"></textarea>';
   html+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:10px;background:#0d0d16;border-radius:8px;">';
   html+='<input type="checkbox" id="na-ok" style="width:18px;height:18px;"/>';
   html+='<label for="na-ok" style="font-size:13px;color:#aaa;">Marcar como aprobado</label></div>';
@@ -4905,7 +4905,6 @@ function selAT(id){
 
 function saveNewAw(){
   const m=document.getElementById("na-m").value.trim();
-  if(!m){alert("Escribe la descripcion del merito.");return;}
   var _rawSids=window._selAwSts&&window._selAwSts.length>0?window._selAwSts:[];
   var _sidMap={};_rawSids.forEach(function(x){_sidMap[x]=true;});
   const sids=Object.keys(_sidMap).map(Number);
@@ -4956,7 +4955,7 @@ function oEditAw(id){
   html+='<input class="inp" id="ea-g" type="number" step="0.1" value="'+(aw.gpa||"")+'" placeholder="GPA"/>';
   html+='<input class="inp" id="ea-or" type="number" value="'+aw.orden+'" placeholder="Orden"/>';
   html+='</div>';
-  html+='<textarea class="inp" id="ea-m" placeholder="Descripcion del merito *">'+aw.merito+'</textarea>';
+  html+='<textarea class="inp" id="ea-m" placeholder="Descripcion del merito (opcional)">'+aw.merito+'</textarea>';
   html+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:10px;background:#0d0d16;border-radius:8px;">';
   html+='<input type="checkbox" id="ea-ok"'+(aw.ok?" checked":"")+' style="width:18px;height:18px;"/>';
   html+='<label for="ea-ok" style="font-size:13px;color:#aaa;">Aprobado</label></div>';
