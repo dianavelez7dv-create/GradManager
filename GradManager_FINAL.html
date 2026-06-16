@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v146</title>
+<title>GradManager 2025 — v147</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -5114,6 +5114,19 @@ function expContratoProvPDF(pid){
 
 
 
+
+function filtrarProvEstado(status){
+  window._provFilter=(window._provFilter===status)?null:status;
+  rProviders();
+  setTimeout(function(){
+    var btn=document.getElementById("sbfp-"+status);
+    if(btn&&window._provFilter){
+      var col=status==="contratado"?"#4CC97A":status==="cotizado"?"#C9A84C":"#C94C7A";
+      btn.style.boxShadow="0 0 0 2px "+col;
+    }
+  },50);
+}
+
 function rProviders(){
   const c=CU?CU.color:"#C9A84C";
   document.getElementById("s-prov").innerHTML=`
@@ -5125,11 +5138,11 @@ function rProviders(){
       </div>
     </div>
     <div class="g3">
-      <div class="sb" style="border-color:#4CC97A;"><div class="sv" style="color:#4CC97A;">${gPR().filter(p=>p.estado==="contratado").length}</div><div class="sl">Contratados</div></div>
-      <div class="sb" style="border-color:#C9A84C;"><div class="sv" style="color:#C9A84C;">${gPR().filter(p=>p.estado==="cotizado").length}</div><div class="sl">Cotizados</div></div>
-      <div class="sb" style="border-color:#C94C7A;"><div class="sv" style="color:#C94C7A;">${gPR().filter(p=>p.estado==="pendiente").length}</div><div class="sl">Pendiente</div></div>
+      <div class="sb" id="sbfp-contratado" style="border-color:#4CC97A;cursor:pointer;" onclick="filtrarProvEstado('contratado')"><div class="sv" style="color:#4CC97A;">${gPR().filter(p=>p.estado==="contratado").length}</div><div class="sl">Contratados</div></div>
+      <div class="sb" id="sbfp-cotizado" style="border-color:#C9A84C;cursor:pointer;" onclick="filtrarProvEstado('cotizado')"><div class="sv" style="color:#C9A84C;">${gPR().filter(p=>p.estado==="cotizado").length}</div><div class="sl">Cotizados</div></div>
+      <div class="sb" id="sbfp-pendiente" style="border-color:#C94C7A;cursor:pointer;" onclick="filtrarProvEstado('pendiente')"><div class="sv" style="color:#C94C7A;">${gPR().filter(p=>p.estado==="pendiente").length}</div><div class="sl">Pendiente</div></div>
     </div>
-    ${sortProvs(gPR()).map(p=>`<div class="card" style="margin-bottom:10px;">
+    ${(window._provFilter?sortProvs(gPR()).filter(function(p){return p.estado===window._provFilter;}):sortProvs(gPR())).map(p=>`<div class="card" style="margin-bottom:10px;">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
         <div style="flex:1;"><div style="font-size:15px;color:#ddd;margin-bottom:3px;">${p.empresa}</div><div style="font-size:11px;color:#666;">👤 ${p.cont} · 📞 ${p.tel||"—"}</div><div style="font-size:11px;color:#666;">✉ ${p.email||"—"}</div><div style="margin-top:5px;"><span class="badge" style="color:${c};border:1px solid ${c}40;font-size:10px;">${p.srv}</span></div>${p.notas?`<div style="font-size:11px;color:#555;margin-top:4px;">📝 ${p.notas}</div>`:""}</div>
         <div style="text-align:right;flex-shrink:0;margin-left:8px;"><span class="badge" style="color:${ESTC[p.estado]};border:1px solid ${ESTC[p.estado]};">${p.estado}</span><div style="font-size:15px;color:#fff;font-weight:bold;margin-top:5px;">${fD(p.ctr)}</div><div style="font-size:10px;color:#555;">NRC: ${p.nit||"—"}</div></div>
@@ -9341,6 +9354,19 @@ function togEnsAsist(eid,sid){D.ensayos=gEN().map(e=>e.id===eid?{...e,asist:e.as
 function oAddEns(){OM(`<div class="moh"><span class="mot">🎭 Nuevo Ensayo</span><button class="moc" onclick="CM()">✕</button></div><input class="inp" id="ne2-t" placeholder="Titulo *"/><div class="r2"><input class="inp" id="ne2-f" type="date"/><input class="inp" id="ne2-h" type="time"/></div><input class="inp" id="ne2-l" placeholder="Lugar"/><input class="inp" id="ne2-n" placeholder="Notas..."/><div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:10px;background:#0d0d16;border-radius:8px;"><input type="checkbox" id="ne2-ob" checked style="width:18px;height:18px;"/><label for="ne2-ob" style="font-size:13px;color:#aaa;">Obligatorio</label></div><div style="display:flex;gap:8px;"><button class="btn" style="flex:1;" onclick="saveEns()">Guardar</button><button class="btn" style="border-color:#666;color:#666;" onclick="CM()">Cancelar</button></div>`);}
 function saveEns(){const t=document.getElementById("ne2-t").value.trim();if(!t)return;if(!D.ensayos)D.ensayos=[];D.ensayos.push({id:Date.now(),titulo:t,fecha:document.getElementById("ne2-f").value,hora:document.getElementById("ne2-h").value,lugar:document.getElementById("ne2-l").value,notas:document.getElementById("ne2-n").value,oblig:document.getElementById("ne2-ob").checked,asist:[]});SD();addN(`🎭 ${t}`);CM();mEns();}
 
+
+function filtrarPresEstado(status){
+  window._presFilter=(window._presFilter===status)?null:status;
+  mPres();
+  setTimeout(function(){
+    var btn=document.getElementById("sbfpr-"+status);
+    if(btn&&window._presFilter){
+      var col=status==="gastado"?"#C94C7A":status==="restante"?"#4CC97A":"#C9A84C";
+      btn.style.boxShadow="0 0 0 2px "+col;
+    }
+  },50);
+}
+
 function mPres(){
   var items=gBU();
   var total=items.reduce(function(s,b){return s+b.pres;},0);
@@ -9363,9 +9389,9 @@ function mPres(){
 
   // Summary cards
   html+='<div class="g3" style="margin-bottom:12px;">';
-  html+='<div class="sb" style="border-color:'+c+';"><div class="sv" style="color:'+c+';font-size:14px;">'+fD(total)+'</div><div class="sl">Presupuesto</div></div>';
-  html+='<div class="sb" style="border-color:#C94C7A;"><div class="sv" style="color:#C94C7A;font-size:14px;">'+fD(gast)+'</div><div class="sl">Gastado</div></div>';
-  html+='<div class="sb" style="border-color:'+(restante>=0?"#4CC97A":"#C94C7A")+';"><div class="sv" style="color:'+(restante>=0?"#4CC97A":"#C94C7A")+';font-size:14px;">'+fD(Math.abs(restante))+'</div><div class="sl">'+(restante>=0?"Disponible":"Excedido")+'</div></div>';
+  html+='<div class="sb" id="sbfpr-presupuesto" style="border-color:'+c+';cursor:pointer;" onclick="filtrarPresEstado(\'presupuesto\')"><div class="sv" style="color:'+c+';font-size:14px;">'+fD(total)+'</div><div class="sl">Presupuesto</div></div>';
+  html+='<div class="sb" id="sbfpr-gastado" style="border-color:#C94C7A;cursor:pointer;" onclick="filtrarPresEstado(\'gastado\')"><div class="sv" style="color:#C94C7A;font-size:14px;">'+fD(gast)+'</div><div class="sl">Gastado</div></div>';
+  html+='<div class="sb" id="sbfpr-restante" style="border-color:'+(restante>=0?"#4CC97A":"#C94C7A")+';cursor:pointer;" onclick="filtrarPresEstado(\'restante\')">"><div class="sv" style="color:'+(restante>=0?"#4CC97A":"#C94C7A")+';font-size:14px;">'+fD(Math.abs(restante))+'</div><div class="sl">'+(restante>=0?"Disponible":"Excedido")+'</div></div>';
   html+='</div>';
 
   // Progress bar total
@@ -9384,7 +9410,7 @@ function mPres(){
   if(!items.length){
     html+='<div style="font-size:13px;color:#555;padding:8px 0;">Sin categorías. Toca + Agregar.</div>';
   }
-  sortByName(items,"cat").forEach(function(b){
+  (window._presFilter?sortByName(items,"cat").filter(function(b){return window._presFilter==="gastado"?b.gast>0:window._presFilter==="restante"?b.gast<b.pres:true;}):sortByName(items,"cat")).forEach(function(b){
     var over=b.gast>b.pres;
     var pct=Math.min((b.gast/Math.max(b.pres,1))*100,100);
     var col=over?"#C94C7A":pct>80?"#C9A84C":"#4CC97A";
@@ -9594,6 +9620,19 @@ function expProcesionalPDF(){
 
 function expProgPDF(){exportPDF("Programa Graduacion 2025",["#","Hora","Actividad","Responsable","Duracion"],[...gPG()].sort((a,b)=>a.ord-b.ord).map(p=>[p.ord,p.hora,p.act,p.resp,`${p.dur} min`]));}
 
+
+function filtrarTogasEstado(status){
+  window._togaFilter=(window._togaFilter===status)?null:status;
+  mToga();
+  setTimeout(function(){
+    var btn=document.getElementById("sbft-"+status);
+    if(btn&&window._togaFilter){
+      var col=status==="entregadas"?"#4CC97A":"#C94C7A";
+      btn.style.boxShadow="0 0 0 2px "+col;
+    }
+  },50);
+}
+
 function mToga(){
   const sts=sortByName(gST());const ent=sts.filter(s=>(s.toga&&s.toga.ok)).length;
   sMC(`<div class="dv"></div><div style="display:flex;
@@ -9610,10 +9649,10 @@ function mToga(){
   if(_mc){var _fc=_mc.querySelector('.card,.li');if(_fc)_mc.insertBefore(_si,_fc);else _mc.insertBefore(_si,_mc.firstChild);}justify-content:space-between;align-items:center;margin-bottom:12px;"><div class="ct" style="margin:0;">👘 Control de Togas</div><button class="btn bs bb" onclick="expTogPDF()">📄</button></div>
     <div class="g3" style="margin-bottom:12px;">
       <div class="sb"><div class="sv" style="color:#C9A84C;">${sts.length}</div><div class="sl">Total</div></div>
-      <div class="sb" style="border-color:#4CC97A;"><div class="sv" style="color:#4CC97A;">${ent}</div><div class="sl">Entregadas</div></div>
-      <div class="sb" style="border-color:#C94C7A;"><div class="sv" style="color:#C94C7A;">${sts.length-ent}</div><div class="sl">Pendiente</div></div>
+      <div class="sb" id="sbft-entregadas" style="border-color:#4CC97A;cursor:pointer;" onclick="filtrarTogasEstado('entregadas')"><div class="sv" style="color:#4CC97A;">${ent}</div><div class="sl">Entregadas</div></div>
+      <div class="sb" id="sbft-pendiente" style="border-color:#C94C7A;cursor:pointer;" onclick="filtrarTogasEstado('pendiente')"><div class="sv" style="color:#C94C7A;">${sts.length-ent}</div><div class="sl">Pendiente</div></div>
     </div>
-    ${sts.map(s=>`<div style="background:#12121a;border:1px solid #2a2a3a;border-radius:10px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+    ${(window._togaFilter?sts.filter(function(s){return window._togaFilter==="entregadas"?(s.toga&&s.toga.ok):!(s.toga&&s.toga.ok);}):sts).map(s=>`<div style="background:#12121a;border:1px solid #2a2a3a;border-radius:10px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
       <div><div style="font-size:14px;color:#ddd;">${s.nombre}</div><div style="font-size:11px;color:#666;">Talla: <strong style="color:#C9A84C;">${(s.toga?s.toga.talla:"—")||"—"}</strong></div></div>
       <button data-id="${s.id}" onclick="togToga(parseInt(this.dataset.id))" class="btn bs ${(s.toga&&s.toga.ok)?"bg":""}" style="font-size:12px;">${(s.toga&&s.toga.ok)?"✓ "+s.toga.fechaEntrega:"Marcar entregada"}</button>
     </div>`).join("")}`);
