@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v155</title>
+<title>GradManager 2025 — v157</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -3667,6 +3667,7 @@ function go(id,_skipHistory){if(id!=="dash"&&!canAccess(id)){alert("No tienes pe
   if(id==="stud") window._studFilter=null;
   if(id==="awrd") window._awrdFilter=null;
   if(id==="rifa") window._rifaFilter=null;
+  if(id==="suba") window._subaFilter=null;
   document.getElementById("s-"+id).classList.add("on");
   const nb=document.getElementById("nb-"+id);
   if(nb){nb.classList.add("on");if(CU){nb.style.color=CU.color;nb.style.borderTopColor=CU.color;}}
@@ -5794,13 +5795,32 @@ function expBolPDF(rid){const r=gRI().find(x=>x.id===rid);exportPDF(`Boletos —
 // ═══════════════════════════════════
 // SUBASTAS
 // ═══════════════════════════════════
+
+function filtrarSubaEstado(status){
+  window._subaFilter=(window._subaFilter===status)?null:status;
+  rSubastas();
+  setTimeout(function(){
+    var btn=document.getElementById("sbfsub-"+status);
+    if(btn&&window._subaFilter){
+      var col=status==="activa"?"#4CC97A":status==="cerrada"?"#C94C7A":"#C9A84C";
+      btn.style.boxShadow="0 0 0 2px "+col;
+    }
+  },50);
+}
+
 function rSubastas(){
   const c=CU?CU.color:"#C9A84C";
-  const sus=sortByName(gSU(),'nombre');
+  const _allSus=sortByName(gSU(),'nombre');
+  const sus=window._subaFilter?_allSus.filter(function(s){return window._subaFilter==="recaudado"?(s.rec||0)>0:s.estado===window._subaFilter;}):_allSus;
   document.getElementById("s-suba").innerHTML=`
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-      <span style="font-size:16px;color:#ddd;">🔨 Subastas</span>
+      <span style="font-size:16px;color:#ddd;">🔨 Subastas (${sus.length})</span>
       <button class="btn bs" style="border-color:${c};color:${c};background:${c}20;" onclick="oNewSub()">+ Nuevo</button>
+    </div>
+    <div class="g3" style="margin-bottom:12px;">
+      <div class="sb" id="sbfsub-activa" style="border-color:#4CC97A;cursor:pointer;" onclick="filtrarSubaEstado('activa')"><div class="sv" style="color:#4CC97A;">${gSU().filter(s=>s.estado==="activa").length}</div><div class="sl">Activas</div></div>
+      <div class="sb" id="sbfsub-cerrada" style="border-color:#C94C7A;cursor:pointer;" onclick="filtrarSubaEstado('cerrada')"><div class="sv" style="color:#C94C7A;">${gSU().filter(s=>s.estado==="cerrada").length}</div><div class="sl">Cerradas</div></div>
+      <div class="sb" id="sbfsub-recaudado" style="border-color:#C9A84C;cursor:pointer;" onclick="filtrarSubaEstado('recaudado')"><div class="sv" style="color:#C9A84C;">${fD(gSU().reduce((s,sub)=>s+(sub.rec||0),0))}</div><div class="sl">Recaudado</div></div>
     </div>
     ${sus.length===0?'<div class="card" style="text-align:center;padding:28px;"><div style="font-size:36px;margin-bottom:10px;">🔨</div><div style="font-size:14px;color:#555;">Sin subastas aun</div><button class="btn" style="margin-top:12px;" onclick="oNewSub()">Crear primera subasta</button></div>':sus.map(sub=>{
       const tc={silenciosa:"#7C6CD4",vivo:"#C94C7A",articulos:"#4CC97A",experiencias:"#4CA8C9"}[sub.tipo]||c;
@@ -9009,6 +9029,19 @@ function expFundPDF(){
   exportPDF("Recaudacion — "+hoy,["Fecha","Concepto","Descripcion","Monto"],rows);
 }
 
+
+function filtrarFundEstado(status){
+  window._fundFilter=(window._fundFilter===status)?null:status;
+  mFund();
+  setTimeout(function(){
+    var btn=document.getElementById("sbff-"+status);
+    if(btn&&window._fundFilter){
+      var col=status==="recaudado"?"#4CC97A":status==="restante"?"#C94C7A":"#C9A84C";
+      btn.style.boxShadow="0 0 0 2px "+col;
+    }
+  },50);
+}
+
 function mFund(){
   var meta=gFU().reduce(function(s,i){return s+i.meta;},0);
   var rec=gFU().reduce(function(s,i){return s+i.rec;},0);
@@ -9025,9 +9058,9 @@ function mFund(){
   html+='<div class="ct" style="margin:0;">💵 Recaudacion</div>';
   html+='<button class="btn bs" onclick="oAddFund()">+ Agregar</button></div>';
   html+='<div class="g3" style="margin-bottom:10px;">';
-  html+='<div class="sb" style="border-color:#C9A84C;"><div class="sv" style="color:#C9A84C;font-size:15px;">'+fD(meta)+'</div><div class="sl">Meta</div></div>';
-  html+='<div class="sb" style="border-color:#4CC97A;"><div class="sv" style="color:#4CC97A;font-size:15px;">'+fD(rec)+'</div><div class="sl">Recaudado</div></div>';
-  html+='<div class="sb" style="border-color:#C94C7A;"><div class="sv" style="color:#C94C7A;font-size:15px;">'+fD(meta-rec)+'</div><div class="sl">Restante</div></div>';
+  html+='<div class="sb" id="sbff-meta" style="border-color:#C9A84C;cursor:pointer;" onclick="filtrarFundEstado(\'meta\')"><div class="sv" style="color:#C9A84C;font-size:15px;">'+fD(meta)+'</div><div class="sl">Meta</div></div>';
+  html+='<div class="sb" id="sbff-recaudado" style="border-color:#4CC97A;cursor:pointer;" onclick="filtrarFundEstado(\'recaudado\')"><div class="sv" style="color:#4CC97A;font-size:15px;">'+fD(rec)+'</div><div class="sl">Recaudado</div></div>';
+  html+='<div class="sb" id="sbff-restante" style="border-color:#C94C7A;cursor:pointer;" onclick="filtrarFundEstado(\'restante\')"><div class="sv" style="color:#C94C7A;font-size:15px;">'+fD(meta-rec)+'</div><div class="sl">Restante</div></div>';
   html+='</div>';
   html+=pbHTML(rec,meta,c,10);
   html+='<div style="font-size:11px;color:'+c+';text-align:right;margin:4px 0 12px;">'+Math.round((rec/Math.max(meta,1))*100)+'%</div>';
@@ -9072,7 +9105,10 @@ function mFund(){
     html+='<div class="sb" style="border-color:#4CC97A;"><div class="sv" style="color:#4CC97A;">'+firmaron+'</div><div class="sl">Firmaron</div></div>';
     html+='<div class="sb" style="border-color:#C9A84C;"><div class="sv" style="color:#C9A84C;">'+fD(totalVal)+'</div><div class="sl">Recaudado</div></div>';
     html+='</div>';
-    D.recolectas.forEach(function(r){
+    var _recFiltered=window._fundFilter?D.recolectas.filter(function(r){
+    return window._fundFilter==="recaudado"?(r.valor||0)>0:window._fundFilter==="restante"?!(r.firmó||r.firmo):true;
+  }):D.recolectas;
+  _recFiltered.forEach(function(r){
       var sc=r.firmaron?"#4CC97A":"#888";
       var dons=r.donaciones||[];
       var totalR=dons.reduce(function(s,d){return s+(parseFloat(d.valor)||0);},0);
