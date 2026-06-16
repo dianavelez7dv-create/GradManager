@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v148</title>
+<title>GradManager 2025 — v149</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -3634,6 +3634,7 @@ function go(id,_skipHistory){if(id!=="dash"&&!canAccess(id)){alert("No tienes pe
   document.querySelectorAll(".sc").forEach(s=>s.classList.remove("on"));
   document.querySelectorAll(".nb").forEach(b=>{b.classList.remove("on");b.style.color="";b.style.borderTopColor="";});
   if(id==="stud") window._studFilter=null;
+  if(id==="awrd") window._awrdFilter=null;
   document.getElementById("s-"+id).classList.add("on");
   const nb=document.getElementById("nb-"+id);
   if(nb){nb.classList.add("on");if(CU){nb.style.color=CU.color;nb.style.borderTopColor=CU.color;}}
@@ -4667,6 +4668,19 @@ function printRecibo(sid,pid){
 // ═══════════════════════════════════
 // AWARDS
 // ═══════════════════════════════════
+
+function filtrarAwrdEstado(status){
+  window._awrdFilter=(window._awrdFilter===status)?null:status;
+  rAwards();
+  setTimeout(function(){
+    var btn=document.getElementById("sbfa-"+status);
+    if(btn&&window._awrdFilter){
+      var col=status==="aprobados"?"#4CC97A":"#C94C7A";
+      btn.style.boxShadow="0 0 0 2px "+col;
+    }
+  },50);
+}
+
 function rAwards(){
   const c=CU?CU.color:"#C9A84C";
   // Group by tipo for summary
@@ -4681,11 +4695,11 @@ function rAwards(){
     </div>
     <div class="g3" style="margin-bottom:14px;">
       <div class="sb" style="border-color:${c};"><div class="sv" style="color:${c};">${gAW().length}</div><div class="sl">Total</div></div>
-      <div class="sb" style="border-color:#4CC97A;"><div class="sv" style="color:#4CC97A;">${gAW().filter(a=>a.ok).length}</div><div class="sl">Aprobados</div></div>
-      <div class="sb" style="border-color:#C94C7A;"><div class="sv" style="color:#C94C7A;">${gAW().filter(a=>!a.ok).length}</div><div class="sl">Pendiente</div></div>
+      <div class="sb" id="sbfa-aprobados" style="border-color:#4CC97A;cursor:pointer;" onclick="filtrarAwrdEstado('aprobados')"><div class="sv" style="color:#4CC97A;">${gAW().filter(a=>a.ok).length}</div><div class="sl">Aprobados</div></div>
+      <div class="sb" id="sbfa-pendiente" style="border-color:#C94C7A;cursor:pointer;" onclick="filtrarAwrdEstado('pendiente')"><div class="sv" style="color:#C94C7A;">${gAW().filter(a=>!a.ok).length}</div><div class="sl">Pendiente</div></div>
     </div>
 
-    ${gAW().length>0?`
+    ${(window._awrdFilter?gAW().filter(a=>window._awrdFilter==="aprobados"?a.ok:!a.ok):gAW()).length>0?`
     <div class="srch-item" style="background:#0d0d16;border:1px solid #2a2a3a;border-radius:10px;padding:12px;margin-bottom:14px;">
       <div style="font-size:10px;color:#555;letter-spacing:2px;margin-bottom:10px;">ORDEN DE CEREMONIA</div>
       ${[...gAW()].filter(a=>a.ok).sort((a,b)=>a.orden-b.orden).map(aw=>{
