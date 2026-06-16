@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v147</title>
+<title>GradManager 2025 — v148</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -3844,17 +3844,17 @@ function rDash(){
   html+='<div class="card" style="margin-bottom:10px;">';
   html+='<div style="font-size:12px;color:#aaa;margin-bottom:10px;font-weight:bold;">📊 Recaudacion por fuente</div>';
   var fuentes=[
-    {l:"Cuotas",v:tR,c:"#C9A84C"},
-    {l:"Rifas",v:tRifa,c:"#7C6CD4"},
-    {l:"Subastas",v:tSub,c:"#C94C7A"},
-    {l:"Recaudacion",v:tFund,c:"#4CC97A"},
-    {l:"Ventas",v:tVentas,c:"#4CA8C9"},
+    {l:"Cuotas",v:tR,c:"#C9A84C",fn:"go('stud')"},
+    {l:"Rifas",v:tRifa,c:"#7C6CD4",fn:"go('rifa')"},
+    {l:"Subastas",v:tSub,c:"#C94C7A",fn:"go('suba')"},
+    {l:"Recaudacion",v:tFund,c:"#4CC97A",fn:"go('more');mTab('fund')"},
+    {l:"Ventas",v:tVentas,c:"#4CA8C9",fn:"go('more');mTab('ventas')"},
   ];
   var maxV=1;
   fuentes.forEach(function(f){if(f.v>maxV)maxV=f.v;});
   fuentes.forEach(function(f){
     if(!f.v)return;
-    html+='<div style="margin-bottom:8px;">';
+    html+='<div style="margin-bottom:8px;cursor:pointer;" onclick="'+f.fn+'">';
     html+='<div style="display:flex;justify-content:space-between;font-size:12px;color:#aaa;margin-bottom:3px;"><span>'+f.l+'</span><span style="color:'+f.c+';">'+fD(f.v)+'</span></div>';
     html+=pbHTML(f.v,maxV,f.c,8);
     html+='</div>';
@@ -3897,7 +3897,7 @@ function rDash(){
   }
 
   if(conDeuda_count>0){
-    html+='<div style="background:#C94C7A15;border:1px solid #C94C7A40;border-radius:10px;padding:12px;margin-bottom:10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="irAlertas()">';
+    html+='<div style="background:#C94C7A15;border:1px solid #C94C7A40;border-radius:10px;padding:12px;margin-bottom:10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="verPendientesPago()">';
     html+='<div><div style="font-size:13px;color:#C94C7A;font-weight:bold;">🔔 '+conDeuda_count+' estudiante(s) con deuda</div>';
     html+='<div style="font-size:12px;color:#888;margin-top:2px;">Toca para ver y enviar recordatorios</div></div>';
     html+='<div style="font-size:20px;color:#C94C7A;">→</div></div>';
