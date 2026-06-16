@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v158</title>
+<title>GradManager 2025 — v161</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -3323,7 +3323,11 @@ function defData(){return{
     {id:3,tid:"liderazgo",sid:6,nota:"Representante estudiantil",ok:false,orden:3},
     {id:4,tid:"cultural",sid:3,nota:"Participacion destacada en eventos",ok:false,orden:4},
   ],
-  mensajes:[],anuncios:[],recolectas:[],ensayos:[],subastas:[],rifas:[],checklist:[
+  mensajes:[],anuncios:[],recolectas:[
+    {id:"rc1",negocio:"Panaderia La Esperanza",contacto:"Rosa Mejia",tel:"787-555-0301",firmaron:true,firmaImg:"",donaciones:[{tipo:"dinero",descripcion:"Donacion efectivo",valor:150}],notas:"Muy amable",fecha:"10/6/2025"},
+    {id:"rc2",negocio:"Ferreteria El Martillo",contacto:"Pedro Santos",tel:"787-555-0302",firmaron:false,firmaImg:"",donaciones:[{tipo:"articulo",descripcion:"Materiales decoracion",valor:80}],notas:"",fecha:"11/6/2025"},
+    {id:"rc3",negocio:"Salon de Belleza Kary",contacto:"Karla Vega",tel:"787-555-0303",firmaron:true,firmaImg:"",donaciones:[{tipo:"dinero",descripcion:"Aporte voluntario",valor:200}],notas:"",fecha:"12/6/2025"},
+  ],ensayos:[],subastas:[],rifas:[],checklist:[
     {id:1,texto:"Confirmar salon de eventos",resp:"Coordinadora",ok:true},
     {id:2,texto:"Ordenar togas y birretes",resp:"Administracion",ok:true},
     {id:3,texto:"Confirmar fotografo",resp:"Coordinadora",ok:false},
@@ -3334,7 +3338,16 @@ function defData(){return{
     {id:2,categoria:"Fotografia y Video",presupuesto:1500,gastado:500},
     {id:3,categoria:"Flores y Decoracion",presupuesto:800,gastado:200},
   ],
-  procesional:[],ventas:[],productos:[],compras:[],encuestas:[],votaciones:[],permisos:{},notifs:[],venues:[]}}
+  procesional:[],ventas:[],productos:[],compras:[],encuestas:[],votaciones:[],permisos:{},notifs:[],venues:[],
+  fundraising:[
+    {id:"fu1",nombre:"Cuotas de Graduacion",desc:"Pago de actividades",meta:3955,rec:2205,estado:"activa",aportes:[{quien:"Sofia Ramirez",monto:315,fecha:"2025-03-01"},{quien:"Natalia Herrera",monto:365,fecha:"2025-03-15"}]}
+  ],
+  recolectas:[
+    {id:"rc1",negocio:"Panaderia La Esperanza",contacto:"Rosa Mejia",tel:"787-555-0301",firmaron:true,firmaImg:"",donaciones:[{tipo:"dinero",descripcion:"Donacion efectivo",valor:150}],notas:"Muy amable",fecha:"10/6/2025"},
+    {id:"rc2",negocio:"Ferreteria El Martillo",contacto:"Pedro Santos",tel:"787-555-0302",firmaron:false,firmaImg:"",donaciones:[],notas:"",fecha:"10/6/2025"},
+    {id:"rc3",negocio:"Farmacia Salud PR",contacto:"Ana Rivera",tel:"787-555-0303",firmaron:true,firmaImg:"",donaciones:[{tipo:"producto",descripcion:"Kit primeros auxilios",valor:80}],notas:"",fecha:"10/6/2025"}
+  ]
+}}
 
 // ═══════════════════════════════════
 // STATE
