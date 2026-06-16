@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v145</title>
+<title>GradManager 2025 — v146</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -3665,7 +3665,13 @@ function OM(html){
       inputs[i].style.zIndex="601";
       inputs[i].style.position="relative";
     }
-    // Also force mob itself to be interactive
+    // Force ALL clickable elements (including divs) to be interactive
+    var clk=mob.querySelectorAll("[onclick]");
+    for(var j=0;j<clk.length;j++){
+      clk[j].style.pointerEvents="auto";
+      clk[j].style.position="relative";
+      clk[j].style.zIndex="601";
+    }
     mob.style.pointerEvents="auto";
     mob.style.zIndex="501";
     mob.style.position="relative";
