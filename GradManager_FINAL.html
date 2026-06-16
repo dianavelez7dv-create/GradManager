@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v151</title>
+<title>GradManager 2025 — v152</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -1700,6 +1700,33 @@ function defEntregas(){
   ];
 }
 
+
+function migrateAwards(){
+  if(!D.awards||!D.awards.length) return;
+  var needsMigration=D.awards.some(function(a){return a.tipo!==undefined||a.ganador!==undefined;});
+  if(!needsMigration) return;
+  // Map old tipo to ATY tid
+  var tipoMap={"academico":"honor","deportivo":"deportivo","cultural":"cultural","liderazgo":"liderazgo","especial":"especial"};
+  // Try to match ganador name to student id
+  D.awards=D.awards.map(function(a,i){
+    if(a.sid&&a.tid) return a; // already migrated
+    var sid=null;
+    if(a.ganador){
+      var st=gST().find(function(s){return s.nombre&&s.nombre.toLowerCase().includes(a.ganador.toLowerCase().split(" ")[0].toLowerCase());});
+      if(st) sid=st.id;
+    }
+    return {
+      id:a.id||Date.now()+i,
+      tid:tipoMap[a.tipo]||"especial",
+      sid:sid||null,
+      nota:a.descripcion||a.nombre||"",
+      ok:a.ok!==undefined?a.ok:false,
+      orden:a.orden||i+1
+    };
+  });
+  SD();
+}
+
 function initEntregas(){
   if(!D.PARTS||D.PARTS.length===0){
     D.PARTS=defEntregas().map(function(e){
@@ -1830,6 +1857,7 @@ function desmarcarEntrega(sid,eid){
 // Open entregas assignment modal for student
 function oEntregas(sid){
   initEntregas();
+  migrateAwards();
   var s=gST().find(function(x){return x.id===sid;});if(!s)return;
   var c=CU?CU.color:"#C9A84C";
   var html="";
