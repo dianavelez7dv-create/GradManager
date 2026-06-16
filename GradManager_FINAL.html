@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v153</title>
+<title>GradManager 2025 — v154</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -3666,6 +3666,7 @@ function go(id,_skipHistory){if(id!=="dash"&&!canAccess(id)){alert("No tienes pe
   document.querySelectorAll(".nb").forEach(b=>{b.classList.remove("on");b.style.color="";b.style.borderTopColor="";});
   if(id==="stud") window._studFilter=null;
   if(id==="awrd") window._awrdFilter=null;
+  if(id==="rifa") window._rifaFilter=null;
   document.getElementById("s-"+id).classList.add("on");
   const nb=document.getElementById("nb-"+id);
   if(nb){nb.classList.add("on");if(CU){nb.style.color=CU.color;nb.style.borderTopColor=CU.color;}}
@@ -5635,6 +5636,19 @@ function doScanQR(qr){
 // ═══════════════════════════════════
 // RIFAS
 // ═══════════════════════════════════
+
+function filtrarRifaEstado(status){
+  window._rifaFilter=(window._rifaFilter===status)?null:status;
+  rRifas();
+  setTimeout(function(){
+    var btn=document.getElementById("sbfr-"+status);
+    if(btn&&window._rifaFilter){
+      var col=status==="activa"?"#4CC97A":status==="ganador"?"#7C6CD4":"#C94C7A";
+      btn.style.boxShadow="0 0 0 2px "+col;
+    }
+  },50);
+}
+
 function rRifas(){
   const c=CU?CU.color:"#C9A84C";
   document.getElementById("s-rifa").innerHTML=`
@@ -5643,11 +5657,11 @@ function rRifas(){
       <button class="btn bs" style="border-color:${c};color:${c};background:${c}20;" onclick="oNewRifa()">+ Nuevo</button>
     </div>
     <div class="g3">
-      <div class="sb" style="border-color:#4CC97A;"><div class="sv" style="color:#4CC97A;">${gRI().filter(r=>r.estado==="activa").length}</div><div class="sl">Activas</div></div>
-      <div class="sb" style="border-color:#C94C7A;"><div class="sv" style="color:#C94C7A;">${fD(gRI().reduce((s,r)=>s+r.rec,0))}</div><div class="sl">Recaudado</div></div>
-      <div class="sb" style="border-color:#7C6CD4;"><div class="sv" style="color:#7C6CD4;">${gRI().filter(r=>r.ganador).length}</div><div class="sl">Con Ganador</div></div>
+      <div class="sb" id="sbfr-activa" style="border-color:#4CC97A;cursor:pointer;" onclick="filtrarRifaEstado('activa')"><div class="sv" style="color:#4CC97A;">${gRI().filter(r=>r.estado==="activa").length}</div><div class="sl">Activas</div></div>
+      <div class="sb" id="sbfr-recaudado" style="border-color:#C94C7A;cursor:pointer;" onclick="filtrarRifaEstado('recaudado')"><div class="sv" style="color:#C94C7A;">${fD(gRI().reduce((s,r)=>s+r.rec,0))}</div><div class="sl">Recaudado</div></div>
+      <div class="sb" id="sbfr-ganador" style="border-color:#7C6CD4;cursor:pointer;" onclick="filtrarRifaEstado('ganador')"><div class="sv" style="color:#7C6CD4;">${gRI().filter(r=>r.ganador).length}</div><div class="sl">Con Ganador</div></div>
     </div>
-    ${sortByName(gRI(),'nombre').map(r=>{const v=r.boletos.filter(b=>b.pagado).length;const pct=Math.round((v/r.totalB)*100);const sc=r.estado==="activa"?"#4CC97A":r.ganador?"#7C6CD4":"#888";return`<div class="card" style="border-color:${sc}40;margin-bottom:12px;">
+    ${sortByName(window._rifaFilter?gRI().filter(function(r){return window._rifaFilter==="activa"?r.estado==="activa":window._rifaFilter==="ganador"?!!r.ganador:r.rec>0;}):gRI(),'nombre').map(r=>{const v=r.boletos.filter(b=>b.pagado).length;const pct=Math.round((v/r.totalB)*100);const sc=r.estado==="activa"?"#4CC97A":r.ganador?"#7C6CD4":"#888";return`<div class="card" style="border-color:${sc}40;margin-bottom:12px;">
       <div style="display:flex;gap:12px;margin-bottom:8px;">
         <div style="font-size:30px;">${r.emoji}</div>
         ${r.foto?`<img src="${r.foto}" style="width:100%;height:130px;object-fit:cover;border-radius:8px;margin-bottom:8px;"/>`:""}<div style="flex:1;"><div style="font-size:15px;color:#ddd;margin-bottom:3px;">${r.nombre}</div><div style="font-size:12px;color:#555;margin-bottom:5px;">${r.desc}</div><div style="display:flex;gap:6px;flex-wrap:wrap;"><span class="badge" style="color:${sc};border:1px solid ${sc}40;">${r.estado==="activa"?"🟢 Activa":r.ganador?"🏆 Ganador":"🔴 Cerrada"}</span><span class="badge" style="color:#4CA8C9;border:1px solid #4CA8C940;">Sorteo: ${r.fechaS}</span></div></div>
