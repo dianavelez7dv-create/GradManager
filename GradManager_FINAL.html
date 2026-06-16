@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v152</title>
+<title>GradManager 2025 — v153</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -1245,6 +1245,7 @@ function loginEstudiante(studentId, password){
           document.getElementById("lgs").style.display="none";
           document.getElementById("app").style.display="block";
           applyTheme();
+          migrateAwards();
           go("dash");
         }catch(e){showEstErr("⚠ Error de conexion.");}
       } else {
@@ -10070,6 +10071,7 @@ if(CU){
   document.getElementById("app").style.display="block";
   applyTheme();
   rNDot();
+  migrateAwards();
   go("dash");
   checkGradCelebration();
   checkTutorial();
