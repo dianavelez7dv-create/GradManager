@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v163</title>
+<title>GradManager 2025 — v164</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -6341,11 +6341,19 @@ function rMore(){
 function sMC(h){
   var el=document.getElementById("mc");
   if(!el){
-    // mc not found - render rMore first then retry
     rMore();
     el=document.getElementById("mc");
   }
-  if(el) el.innerHTML=h;
+  if(el){
+    el.innerHTML=h;
+    // Enable pointer events on all clickable divs (same fix as OM)
+    var clk=el.querySelectorAll("[onclick]");
+    for(var j=0;j<clk.length;j++){
+      clk[j].style.pointerEvents="auto";
+      clk[j].style.position="relative";
+      clk[j].style.zIndex="1";
+    }
+  }
 }
 function mVentas(){
   var c=CU?CU.color:"#C9A84C";
@@ -8382,6 +8390,8 @@ function mTab(t){
   else alert("Modulo no encontrado: "+t);
   var smore=document.getElementById("s-more");
   if(smore) smore.scrollTop=0;
+  var mc=document.getElementById("mc");
+  if(mc) mc.scrollTop=0;
 }
 
 
