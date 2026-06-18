@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v183</title>
+<title>GradManager 2025 — v184</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -9083,6 +9083,11 @@ function fRC_sindonar(){filtrarFundEstado("sindonar");}
 
 function filtrarFundEstado(status){
   window._fundFilter=(window._fundFilter===status)?null:status;
+  var _cnt=window._fundFilter?D.recolectas.filter(function(r){
+    var _t=(r.donaciones||[]).reduce(function(s,d){return s+(parseFloat(d.valor)||0);},0);
+    return window._fundFilter==="firmaron"?r.firmaron:window._fundFilter==="recaudado"?_t>0:window._fundFilter==="sindonar"?(!r.donaciones||!r.donaciones.length):true;
+  }).length:(D.recolectas||[]).length;
+  alert("Filtro activo: ["+(window._fundFilter||"ninguno")+"] Resultado: "+_cnt+" de "+(D.recolectas||[]).length);
   mFund();
   setTimeout(function(){
     var btn=document.getElementById("sbfrc-"+status);
