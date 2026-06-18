@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v187</title>
+<title>GradManager 2025 — v190</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -874,8 +874,8 @@ function rPortalEstudiante(){
     html+='<div style="font-size:11px;color:#555;letter-spacing:2px;margin-bottom:8px;">ESTADO DE PAGOS</div>';
     html+=pbHTML(pagado,Math.max(total,1),saldo<=0?"#4CC97A":"#C9A84C",10);
     html+='<div class="g3" style="margin-top:10px;">';
-    html+='<div class="sb" style="border-color:#4CC97A;"><div class="sv" style="color:#4CC97A;font-size:15px;">'+fD(pagado)+'</div><div class="sl">Pagado</div></div>';
-    html+='<div class="sb" style="border-color:#C94C7A;"><div class="sv" style="color:#C94C7A;font-size:15px;">'+fD(saldo)+'</div><div class="sl">Pendiente</div></div>';
+    html+='<div class="sb" id="sbfc-pendiente" style="border-color:#C94C7A;cursor:pointer;" onclick="fCO_pendiente()"><div class="sv" style="color:#4CC97A;font-size:15px;">'+fD(pagado)+'</div><div class="sl">Pagado</div></div>';
+    html+='<div class="sb" id="sbfc-listo" style="border-color:#4CC97A;cursor:pointer;" onclick="fCO_listo()"><div class="sv" style="color:#C94C7A;font-size:15px;">'+fD(saldo)+'</div><div class="sl">Pendiente</div></div>';
     html+='<div class="sb" style="border-color:'+c+';"><div class="sv" style="color:'+c+';font-size:15px;">'+pct+'%</div><div class="sl">Completado</div></div>';
     html+='</div></div>';
 
@@ -7232,6 +7232,14 @@ function delUsuario(uid){
   });
 }
 
+
+
+
+function fCO_pendiente(){filtComp("pendiente");}
+function fCO_listo(){filtComp("listo");}
+function fCO_urgente(){filtComp("urgente");}
+function fCO_todos(){filtComp("todos");}
+
 function mCompras(){
   var c=CU?CU.color:"#C9A84C";
   var items=gCO();
@@ -7249,7 +7257,7 @@ function mCompras(){
   html+='<div class="g3" style="margin-bottom:12px;">';
   html+='<div class="sb" style="border-color:#C94C7A;"><div class="sv" style="color:#C94C7A;">'+pend+'</div><div class="sl">Pendiente</div></div>';
   html+='<div class="sb" style="border-color:#4CC97A;"><div class="sv" style="color:#4CC97A;">'+listos+'</div><div class="sl">Listo</div></div>';
-  html+='<div class="sb" style="border-color:#FFD700;"><div class="sv" style="color:#FFD700;">'+urgentes+'</div><div class="sl">Urgente</div></div>';
+  html+='<div class="sb" id="sbfc-urgente" style="border-color:#FFD700;cursor:pointer;" onclick="fCO_urgente()"><div class="sv" style="color:#FFD700;">'+urgentes+'</div><div class="sl">Urgente</div></div>';
   html+='</div>';
   html+='<div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:12px;scrollbar-width:none;">';
   ["todos","pendiente","listo","urgente"].forEach(function(f){
