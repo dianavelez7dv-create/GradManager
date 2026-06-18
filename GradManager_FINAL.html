@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v182</title>
+<title>GradManager 2025 — v183</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -9294,10 +9294,7 @@ function mFund(){
   html+='<div class="dv"></div>';
   html+='<button class="btn bs bb bw" style="width:100%;" onclick="expRecolectasPDF()">📄 PDF Recolectas</button>';
     sMC(html);
-  ["todos","firmaron","recaudado","sindonar"].forEach(function(st){
-    var btn=document.getElementById("sbfrc-"+st);
-    if(btn) btn.addEventListener("click",function(){filtrarFundEstado(st);});
-  });
+
 }
 function oAddRecolecta(){
   var html='<div class="moh"><span class="mot">🏪 Nueva Recolecta</span><button class="moc" onclick="CM()">✕</button></div>';
