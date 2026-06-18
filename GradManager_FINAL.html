@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v185</title>
+<title>GradManager 2025 — v187</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -9087,7 +9087,20 @@ function filtrarFundEstado(status){
   setTimeout(function(){
     var countEl=document.getElementById("rc-count-label");
     if(countEl) countEl.scrollIntoView({behavior:"smooth",block:"start"});
-  },100);
+    // Highlight active button
+    ["todos","firmaron","recaudado","sindonar"].forEach(function(s){
+      var b=document.getElementById("sbfrc-"+s);
+      if(b) b.style.boxShadow="";
+    });
+    if(window._fundFilter){
+      var active=document.getElementById("sbfrc-"+window._fundFilter);
+      if(active){
+        var col=window._fundFilter==="firmaron"?"#4CC97A":window._fundFilter==="recaudado"?"#C9A84C":window._fundFilter==="sindonar"?"#C94C7A":"#888";
+        active.style.boxShadow="0 0 0 3px "+col;
+        active.style.background=col+"30";
+      }
+    }
+  },150);
   setTimeout(function(){
     var btn=document.getElementById("sbfrc-"+status);
     if(btn&&window._fundFilter){
@@ -9248,19 +9261,18 @@ function mFund(){
   } else {
     var firmaron=D.recolectas.filter(function(r){return r.firmaron;}).length;
     var totalVal=(D.recolectas||[]).reduce(function(s,r){return s+(r.donaciones||[]).reduce(function(s2,d){return s2+(parseFloat(d.valor||d.monto||0)||0);},0);},0);
-    html+='<div class="g3" style="margin-bottom:10px;">';
-    html+='<div class="g3" style="margin-bottom:10px;">';
-    html+='<button class="btn bs" id="sbfrc-todos" style="flex-direction:column;height:auto;padding:8px;" onclick="fRC_todos()"><div class="sv">'+D.recolectas.length+'</div><div style="font-size:10px;">Visitados</div></button>';
-    html+='<button class="btn bs" id="sbfrc-firmaron" style="flex-direction:column;height:auto;padding:8px;border-color:#4CC97A;color:#4CC97A;background:#4CC97A15;" onclick="fRC_firmaron()"><div class="sv" style="color:#4CC97A;">'+firmaron+'</div><div style="font-size:10px;">Firmaron</div></button>';
-    html+='<button class="btn bs" id="sbfrc-recaudado" style="flex-direction:column;height:auto;padding:8px;border-color:#C9A84C;color:#C9A84C;background:#C9A84C15;" onclick="fRC_recaudado()"><div class="sv" style="color:#C9A84C;">'+fD(totalVal)+'</div><div style="font-size:10px;">Recaudado</div></button>';
-    html+='<button class="btn bs" id="sbfrc-sindonar" style="flex-direction:column;height:auto;padding:8px;border-color:#C94C7A;color:#C94C7A;background:#C94C7A15;" onclick="fRC_sindonar()">'+D.recolectas.filter(function(r){return !(r.donaciones&&r.donaciones.length);}).length+'<div style="font-size:10px;">Sin Donar</div></button>';
+    html+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px;">';
+    html+='<div class="sb" id="sbfrc-todos" style="cursor:pointer;" onclick="fRC_todos()"><div class="sv">'+D.recolectas.length+'</div><div class="sl">Visitados</div></div>';
+    html+='<div class="sb" id="sbfrc-firmaron" style="border-color:#4CC97A;cursor:pointer;" onclick="fRC_firmaron()"><div class="sv" style="color:#4CC97A;">'+firmaron+'</div><div class="sl">Firmaron</div></div>';
+    html+='<div class="sb" id="sbfrc-recaudado" style="border-color:#C9A84C;cursor:pointer;" onclick="fRC_recaudado()"><div class="sv" style="color:#C9A84C;">'+fD(totalVal)+'</div><div class="sl">Recaudado</div></div>';
+    html+='<div class="sb" id="sbfrc-sindonar" style="border-color:#C94C7A;cursor:pointer;" onclick="fRC_sindonar()"><div class="sv" style="color:#C94C7A;">'+D.recolectas.filter(function(r){return !(r.donaciones&&r.donaciones.length);}).length+'</div><div class="sl">Sin Donar</div></div>';
     html+='</div>';
     var _recFiltered=window._fundFilter?D.recolectas.filter(function(r){
       var _total=(r.donaciones||[]).reduce(function(s,d){return s+(parseFloat(d.valor)||0);},0);
       return window._fundFilter==="firmaron"?r.firmaron:window._fundFilter==="recaudado"?_total>0:window._fundFilter==="sindonar"?!r.donaciones||!r.donaciones.length:true;
     }):D.recolectas;
   var _countLabel='Mostrando '+_recFiltered.length+' de '+D.recolectas.length;
-  html+='<div id="rc-count-label" style="font-size:13px;color:#C9A84C;font-weight:bold;margin-bottom:8px;padding:6px;background:#C9A84C15;border-radius:6px;">'+_countLabel+'</div>';
+  
   _recFiltered.forEach(function(r){
       var sc=r.firmaron?"#4CC97A":"#888";
       var dons=r.donaciones||[];
