@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v193</title>
+<title>GradManager 2025 — v197</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -6606,6 +6606,7 @@ function saveNewProd(){
   var precio=parseFloat(document.getElementById("np3-p")?document.getElementById("np3-p").value:0)||0;
   var stock=parseInt(document.getElementById("np3-s")?document.getElementById("np3-s").value:0)||0;
   if(!D.ventas)D.ventas={productos:[],ventas:[]};
+  if(!D.ventas.productos)D.ventas.productos=[];
   var foto_prod=getUploadedFoto("np3-foto-prev");
   D.ventas.productos.push({id:Date.now(),nombre:n,emoji:emj,precio:precio,stock:stock,vendido:0,foto:foto_prod});
   SD();addN("🛒 Nuevo producto: "+n);CM();mVentas();
