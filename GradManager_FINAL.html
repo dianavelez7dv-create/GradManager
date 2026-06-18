@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v184</title>
+<title>GradManager 2025 — v185</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -9083,12 +9083,11 @@ function fRC_sindonar(){filtrarFundEstado("sindonar");}
 
 function filtrarFundEstado(status){
   window._fundFilter=(window._fundFilter===status)?null:status;
-  var _cnt=window._fundFilter?D.recolectas.filter(function(r){
-    var _t=(r.donaciones||[]).reduce(function(s,d){return s+(parseFloat(d.valor)||0);},0);
-    return window._fundFilter==="firmaron"?r.firmaron:window._fundFilter==="recaudado"?_t>0:window._fundFilter==="sindonar"?(!r.donaciones||!r.donaciones.length):true;
-  }).length:(D.recolectas||[]).length;
-  alert("Filtro activo: ["+(window._fundFilter||"ninguno")+"] Resultado: "+_cnt+" de "+(D.recolectas||[]).length);
   mFund();
+  setTimeout(function(){
+    var countEl=document.getElementById("rc-count-label");
+    if(countEl) countEl.scrollIntoView({behavior:"smooth",block:"start"});
+  },100);
   setTimeout(function(){
     var btn=document.getElementById("sbfrc-"+status);
     if(btn&&window._fundFilter){
@@ -9261,7 +9260,7 @@ function mFund(){
       return window._fundFilter==="firmaron"?r.firmaron:window._fundFilter==="recaudado"?_total>0:window._fundFilter==="sindonar"?!r.donaciones||!r.donaciones.length:true;
     }):D.recolectas;
   var _countLabel='Mostrando '+_recFiltered.length+' de '+D.recolectas.length;
-  html+='<div style="font-size:12px;color:#888;margin-bottom:8px;">'+_countLabel+'</div>';
+  html+='<div id="rc-count-label" style="font-size:13px;color:#C9A84C;font-weight:bold;margin-bottom:8px;padding:6px;background:#C9A84C15;border-radius:6px;">'+_countLabel+'</div>';
   _recFiltered.forEach(function(r){
       var sc=r.firmaron?"#4CC97A":"#888";
       var dons=r.donaciones||[];
