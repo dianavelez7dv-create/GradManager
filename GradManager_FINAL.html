@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v173</title>
+<title>GradManager 2025 — v176</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -9060,19 +9060,18 @@ function saveActa(){const t=document.getElementById("ac-t").value.trim();if(!t)r
 
 function expFundPDF(){
   var items=gFU();
-  if(!items.length){alert("No hay registros de recaudación.");return;}
+  if(!items.length){alert("No hay registros.");return;}
   var now=new Date();var hoy=now.getDate()+"/"+(now.getMonth()+1)+"/"+now.getFullYear();
-  var rows=[];
-  var totalGen=0;
+  var rows=[];var totalGen=0;
   items.forEach(function(item){
-    rows.push(["","▸ "+item.nombre,"Meta: "+fD(item.meta||0),"Recaudado: "+fD(item.rec||0)]);
+    rows.push(["","| "+item.nombre,"Meta: "+fD(item.meta||0),"Rec: "+fD(item.rec||0)]);
     (item.aportes||[]).forEach(function(a){
-      rows.push([a.fecha||"—",a.quien||"—",item.nombre,fD(parseFloat(a.monto)||0)]);
+      rows.push([a.fecha||"--",a.quien||"--",item.nombre,fD(parseFloat(a.monto)||0)]);
       totalGen+=parseFloat(a.monto)||0;
     });
   });
-  rows.push(["","","TOTAL RECAUDADO",fD(totalGen)]);
-  exportPDF("Recaudacion — "+hoy,["Fecha","Quien","Concepto","Monto"],rows);
+  rows.push(["","","TOTAL",fD(totalGen)]);
+  exportPDF("Recaudacion -- "+hoy,["Fecha","Quien","Concepto","Monto"],rows);
 }
 
 
@@ -9161,6 +9160,27 @@ function saveEditRecolecta(id){
   SD();addN("✓ Recolecta actualizada");CM();mFund();
 }
 
+
+function oEditFund(id){
+  var item=gFU().find(function(x){return String(x.id)===String(id);});
+  if(!item)return;
+  var h='<div class="moh"><span class="mot">Editar Recaudacion</span><button class="moc" onclick="CM()">X</button></div>';
+  h+='<input class="inp" id="ef-nombre" value="'+item.nombre+'" placeholder="Nombre"/>';
+  h+='<input class="inp" id="ef-meta" type="number" value="'+(item.meta||0)+'" placeholder="Meta $"/>';
+  h+='<input class="inp" id="ef-rec" type="number" value="'+(item.rec||0)+'" placeholder="Recaudado $"/>';
+  h+='<button class="btn bw" style="width:100%;margin-top:10px;" data-id="'+id+'" onclick="saveEditFund(this.dataset.id)">Guardar</button>';
+  OM(h);
+}
+function saveEditFund(id){
+  D.fundraising=(D.fundraising||[]).map(function(i){
+    if(String(i.id)!==String(id)) return i;
+    var n=document.getElementById('ef-nombre');
+    var m=document.getElementById('ef-meta');
+    var r=document.getElementById('ef-rec');
+    return Object.assign({},i,{nombre:n?n.value.trim():i.nombre,meta:m?parseFloat(m.value)||i.meta:i.meta,rec:r?parseFloat(r.value)||i.rec:i.rec});
+  });
+  SD();addN('Guardado!');CM();mFund();
+}
 function mFund(){
   var meta=gFU().reduce(function(s,i){return s+(i.meta||0);},0)||0;
   var rec=gFU().reduce(function(s,i){return s+(i.rec||0);},0)||0;
@@ -9204,6 +9224,7 @@ function mFund(){
       html+='</div>';
     }
     html+='<button class="btn bs bw" style="border-color:'+sc+';color:'+sc+';background:'+sc+'15;" data-id="'+item.id+'" onclick="oAporte(parseInt(this.dataset.id))">+ Registrar Aporte</button>';
+    html+='<button class="btn bs" style="margin-top:4px;width:100%;" data-id="'+item.id+'" onclick="oEditFund(this.dataset.id)">Editar</button>';
     html+='</div>';
   });
     html+='<div class="dv"></div>';
