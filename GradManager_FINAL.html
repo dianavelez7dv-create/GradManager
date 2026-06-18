@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v176</title>
+<title>GradManager 2025 — v177</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -3939,7 +3939,7 @@ function rDash(){
   html+='</div>';
 
   // Quick stats
-  html+='<div class="g3" style="margin-bottom:10px;">';
+  html+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px;">';
   html+='<div class="sb" style="border-color:#4CA8C9;cursor:pointer;" data-sec="prov" onclick="go(this.dataset.sec)"><div style="font-size:18px;">🤝</div><div class="sv" style="color:#4CA8C9;">'+provContrat+'</div><div class="sl">Proveedores</div></div>';
   html+='<div class="sb" style="border-color:#4CC97A;cursor:pointer;" onclick="irEns()"><div style="font-size:18px;">🎭</div><div class="sv" style="color:#4CC97A;">'+ensTotal+'</div><div class="sl">Ensayos</div></div>';
   html+='<div class="sb" style="border-color:#C94C7A;cursor:pointer;" onclick="irCompras()"><div style="font-size:18px;">📋</div><div class="sv" style="color:#C94C7A;">'+compPend+'</div><div class="sl">Compras pend.</div></div>';
@@ -9083,7 +9083,7 @@ function filtrarFundEstado(status){
     if(smore) smore.scrollTop=0;
     var btn=document.getElementById("sbfrc-"+status);
     if(btn&&window._fundFilter){
-      var col=status==="firmaron"?"#4CC97A":status==="recaudado"?"#C9A84C":"#888";
+      var col=status==="firmaron"?"#4CC97A":status==="recaudado"?"#C9A84C":status==="sindonar"?"#C94C7A":"#888";
       btn.style.boxShadow="0 0 0 2px "+col;
     }
   },100);
@@ -9245,10 +9245,11 @@ function mFund(){
     html+='<button class="btn bs" id="sbfrc-todos" style="flex-direction:column;height:auto;padding:8px;" onclick="filtrarFundEstado(\'todos\')"><div class="sv">'+D.recolectas.length+'</div><div style="font-size:10px;">Visitados</div></button>';
     html+='<button class="btn bs" id="sbfrc-firmaron" style="flex-direction:column;height:auto;padding:8px;border-color:#4CC97A;color:#4CC97A;background:#4CC97A15;" onclick="filtrarFundEstado(\'firmaron\')"><div class="sv" style="color:#4CC97A;">'+firmaron+'</div><div style="font-size:10px;">Firmaron</div></button>';
     html+='<button class="btn bs" id="sbfrc-recaudado" style="flex-direction:column;height:auto;padding:8px;border-color:#C9A84C;color:#C9A84C;background:#C9A84C15;" onclick="filtrarFundEstado(\'recaudado\')"><div class="sv" style="color:#C9A84C;">'+fD(totalVal)+'</div><div style="font-size:10px;">Recaudado</div></button>';
+    html+='<button class="btn bs" id="sbfrc-sindonar" style="flex-direction:column;height:auto;padding:8px;border-color:#C94C7A;color:#C94C7A;background:#C94C7A15;" onclick="filtrarFundEstado(\'sindonar\')">'+D.recolectas.filter(function(r){return !(r.donaciones&&r.donaciones.length);}).length+'<div style="font-size:10px;">Sin Donar</div></button>';
     html+='</div>';
     var _recFiltered=window._fundFilter?D.recolectas.filter(function(r){
       var _total=(r.donaciones||[]).reduce(function(s,d){return s+(parseFloat(d.valor)||0);},0);
-      return window._fundFilter==="firmaron"?r.firmaron:window._fundFilter==="recaudado"?_total>0:true;
+      return window._fundFilter==="firmaron"?r.firmaron:window._fundFilter==="recaudado"?_total>0:window._fundFilter==="sindonar"?!r.donaciones||!r.donaciones.length:true;
     }):D.recolectas;
   _recFiltered.forEach(function(r){
       var sc=r.firmaron?"#4CC97A":"#888";
@@ -9287,7 +9288,7 @@ function mFund(){
   html+='<div class="dv"></div>';
   html+='<button class="btn bs bb bw" style="width:100%;" onclick="expRecolectasPDF()">📄 PDF Recolectas</button>';
     sMC(html);
-  ["todos","firmaron","recaudado"].forEach(function(st){
+  ["todos","firmaron","recaudado","sindonar"].forEach(function(st){
     var btn=document.getElementById("sbfrc-"+st);
     if(btn) btn.addEventListener("click",function(){filtrarFundEstado(st);});
   });
