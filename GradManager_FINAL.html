@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v179</title>
+<title>GradManager 2025 — v180</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -9075,6 +9075,12 @@ function expFundPDF(){
 }
 
 
+
+function fRC_todos(){filtrarFundEstado("todos");}
+function fRC_firmaron(){filtrarFundEstado("firmaron");}
+function fRC_recaudado(){filtrarFundEstado("recaudado");}
+function fRC_sindonar(){filtrarFundEstado("sindonar");}
+
 function filtrarFundEstado(status){
   window._fundFilter=(window._fundFilter===status)?null:status;
   mFund();
@@ -9242,10 +9248,10 @@ function mFund(){
     var totalVal=(D.recolectas||[]).reduce(function(s,r){return s+(r.donaciones||[]).reduce(function(s2,d){return s2+(parseFloat(d.valor||d.monto||0)||0);},0);},0);
     html+='<div class="g3" style="margin-bottom:10px;">';
     html+='<div class="g3" style="margin-bottom:10px;">';
-    html+='<button class="btn bs" id="sbfrc-todos" style="flex-direction:column;height:auto;padding:8px;" data-st="todos" onclick="filtrarFundEstado(this.dataset.st)"><div class="sv">'+D.recolectas.length+'</div><div style="font-size:10px;">Visitados</div></button>';
-    html+='<button class="btn bs" id="sbfrc-firmaron" style="flex-direction:column;height:auto;padding:8px;border-color:#4CC97A;color:#4CC97A;background:#4CC97A15;" data-st="firmaron" onclick="filtrarFundEstado(this.dataset.st)"><div class="sv" style="color:#4CC97A;">'+firmaron+'</div><div style="font-size:10px;">Firmaron</div></button>';
-    html+='<button class="btn bs" id="sbfrc-recaudado" style="flex-direction:column;height:auto;padding:8px;border-color:#C9A84C;color:#C9A84C;background:#C9A84C15;" data-st="recaudado" onclick="filtrarFundEstado(this.dataset.st)"><div class="sv" style="color:#C9A84C;">'+fD(totalVal)+'</div><div style="font-size:10px;">Recaudado</div></button>';
-    html+='<button class="btn bs" id="sbfrc-sindonar" style="flex-direction:column;height:auto;padding:8px;border-color:#C94C7A;color:#C94C7A;background:#C94C7A15;" data-st="sindonar" onclick="filtrarFundEstado(this.dataset.st)">'+D.recolectas.filter(function(r){return !(r.donaciones&&r.donaciones.length);}).length+'<div style="font-size:10px;">Sin Donar</div></button>';
+    html+='<button class="btn bs" id="sbfrc-todos" style="flex-direction:column;height:auto;padding:8px;" onclick="fRC_todos()"><div class="sv">'+D.recolectas.length+'</div><div style="font-size:10px;">Visitados</div></button>';
+    html+='<button class="btn bs" id="sbfrc-firmaron" style="flex-direction:column;height:auto;padding:8px;border-color:#4CC97A;color:#4CC97A;background:#4CC97A15;" onclick="fRC_firmaron()"><div class="sv" style="color:#4CC97A;">'+firmaron+'</div><div style="font-size:10px;">Firmaron</div></button>';
+    html+='<button class="btn bs" id="sbfrc-recaudado" style="flex-direction:column;height:auto;padding:8px;border-color:#C9A84C;color:#C9A84C;background:#C9A84C15;" onclick="fRC_recaudado()"><div class="sv" style="color:#C9A84C;">'+fD(totalVal)+'</div><div style="font-size:10px;">Recaudado</div></button>';
+    html+='<button class="btn bs" id="sbfrc-sindonar" style="flex-direction:column;height:auto;padding:8px;border-color:#C94C7A;color:#C94C7A;background:#C94C7A15;" onclick="fRC_sindonar()">'+D.recolectas.filter(function(r){return !(r.donaciones&&r.donaciones.length);}).length+'<div style="font-size:10px;">Sin Donar</div></button>';
     html+='</div>';
     var _recFiltered=window._fundFilter?D.recolectas.filter(function(r){
       var _total=(r.donaciones||[]).reduce(function(s,d){return s+(parseFloat(d.valor)||0);},0);
