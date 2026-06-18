@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v190</title>
+<title>GradManager 2025 — v193</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -6371,6 +6371,12 @@ function sMC(h){
     }
   }
 }
+
+function fVT_recaudado(){window._vtFilter="recaudado";mVentas();}
+function fVT_vendidos(){window._vtFilter="vendidos";mVentas();}
+function fVT_productos(){window._vtFilter="productos";mVentas();}
+function fVT_todos(){window._vtFilter=null;mVentas();}
+
 function mVentas(){
   var c=CU?CU.color:"#C9A84C";
   var prods=gPR2();
@@ -6387,16 +6393,17 @@ function mVentas(){
   if(isConsig){sMC(html);mConsig();return;}
   html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">';
   html+='<div class="ct" style="margin:0;">🛒 Ventas Directas</div>';
-  html+='<button class="btn bs" onclick="oAddProd()">+ Producto</button></div>';
+  html+='<button class="btn bs" onclick="oAddProdBtn()">+ Producto</button></div>';
   // Stats
   html+='<div class="g3" style="margin-bottom:14px;">';
-  html+='<div class="sb" style="border-color:'+c+';"><div class="sv" style="color:'+c+';">'+fD(totalRec)+'</div><div class="sl">Recaudado</div></div>';
-  html+='<div class="sb" style="border-color:#4CC97A;"><div class="sv" style="color:#4CC97A;">'+totalVend+'</div><div class="sl">Vendidos</div></div>';
-  html+='<div class="sb" style="border-color:#7C6CD4;"><div class="sv" style="color:#7C6CD4;">'+prods.length+'</div><div class="sl">Productos</div></div>';
+  html+='<div class="sb" id="sbvt-recaudado" onclick="fVT_recaudado()" style="border-color:'+c+';"><div class="sv" style="color:'+c+';">'+fD(totalRec)+'</div><div class="sl">Recaudado</div></div>';
+  html+='<div class="sb" id="sbvt-vendidos" onclick="fVT_vendidos()" style="border-color:#4CC97A;"><div class="sv" style="color:#4CC97A;">'+totalVend+'</div><div class="sl">Vendidos</div></div>';
+  html+='<div class="sb" id="sbvt-productos" onclick="fVT_productos()" style="border-color:#7C6CD4;"><div class="sv" style="color:#7C6CD4;">'+prods.length+'</div><div class="sl">Productos</div></div>';
   html+='</div>';
   // Products
   html+='<div class="ct">Catalogo de Productos</div>';
-  prods.forEach(function(p){
+  var filteredProds=window._vtFilter==="vendidos"?prods.filter(function(p){return p.vendido>0;}):window._vtFilter==="recaudado"?prods.filter(function(p){return p.vendido>0;}).sort(function(a,b){return (b.precio*b.vendido)-(a.precio*a.vendido);}):prods;
+  filteredProds.forEach(function(p){
     var pct=p.stock>0?Math.round((p.vendido/p.stock)*100):0;
     var sc=p.vendido>=p.stock?"#C94C7A":p.vendido>0?"#C9A84C":"#4CC97A";
     html+='<div class="card" style="margin-bottom:10px;border-color:'+sc+'40;">';
@@ -6535,6 +6542,8 @@ function saveStock(pid){
   SD();addN("📦 Stock repuesto: +"+cant);CM();mVentas();
 }
 
+
+function oAddProdBtn(){oAddProd();}
 function oAddProd(){
   window._prodEmj="🛒";
   var html="";
@@ -6542,8 +6551,10 @@ function oAddProd(){
   html+='<input class="inp" id="np3-n" placeholder="Nombre *"/>';
   html+='<div class="r2"><input class="inp" id="np3-p" type="number" placeholder="Precio ($)"/><input class="inp" id="np3-s" type="number" placeholder="Stock inicial"/></div>';
   html+='<div style="font-size:11px;color:#555;letter-spacing:2px;margin-bottom:6px;">FOTO DEL PRODUCTO (opcional)</div>';
-  html+='<div id="np3-foto-prev" data-input="np3-foto-inp" style="width:100%;height:110px;background:#0d0d16;border:1px dashed #333;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;font-size:12px;color:#555;cursor:pointer;" onclick="triggerFotoInput(this)">📷 Agregar foto</div>';
-  html+='<input type="file" id="np3-foto-inp" capture="camera" accept="image/*" style="display:none;" onchange="loadFotoPreview(this)"/>';
+  html+='<label id="np3-foto-prev" style="width:100%;height:110px;background:#0d0d16;border:1px dashed #333;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;font-size:12px;color:#555;cursor:pointer;">';
+  html+='📷 Agregar foto';
+  html+='<input type="file" id="np3-foto-inp" accept="*/*" style="display:none;" onchange="loadFotoPreview(this)"/>';
+  html+='</label>';
   html+='<div style="font-size:11px;color:#555;letter-spacing:2px;margin-bottom:6px;">EMOJI</div>';
   html+='<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;" id="prod-emj-row">';
   html+='<button data-emj="🍫" onclick="selProdEmj(this)" style="font-size:22px;padding:5px;border-radius:6px;cursor:pointer;border:1px solid #2a2a3a;background:transparent;">🍫</button>';
@@ -6580,7 +6591,6 @@ function oAddProd(){
   html+='<div style="font-size:13px;color:#C9A84C;margin-bottom:12px;">Seleccionado: <span id="prod-emj-sel">🛒</span></div>';
   html+='<button class="btn bw bg" onclick="saveNewProd()">✓ Agregar Producto</button>';
   OM(html);  _currentFoto['np3-foto-prev']='';
-  setupFotoBtn('np3-foto-inp','np3-foto-prev');
 }
 function selProdEmj(btn){
   document.querySelectorAll("#prod-emj-row button").forEach(function(b){b.style.background="transparent";b.style.borderColor="#2a2a3a";});
@@ -7255,8 +7265,8 @@ function mCompras(){
   html+='<button class="btn bs" style="border-color:'+c+';color:'+c+';background:'+c+'20;" onclick="oAddCompra()">+ Agregar</button>';
   html+='</div></div>';
   html+='<div class="g3" style="margin-bottom:12px;">';
-  html+='<div class="sb" style="border-color:#C94C7A;"><div class="sv" style="color:#C94C7A;">'+pend+'</div><div class="sl">Pendiente</div></div>';
-  html+='<div class="sb" style="border-color:#4CC97A;"><div class="sv" style="color:#4CC97A;">'+listos+'</div><div class="sl">Listo</div></div>';
+  html+='<div class="sb" id="sbfc-pendiente" style="border-color:#C94C7A;cursor:pointer;" onclick="fCO_pendiente()"><div class="sv" style="color:#C94C7A;">'+pend+'</div><div class="sl">Pendiente</div></div>';
+  html+='<div class="sb" id="sbfc-listo" style="border-color:#4CC97A;cursor:pointer;" onclick="fCO_listo()"><div class="sv" style="color:#4CC97A;">'+listos+'</div><div class="sl">Listo</div></div>';
   html+='<div class="sb" id="sbfc-urgente" style="border-color:#FFD700;cursor:pointer;" onclick="fCO_urgente()"><div class="sv" style="color:#FFD700;">'+urgentes+'</div><div class="sl">Urgente</div></div>';
   html+='</div>';
   html+='<div style="display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:12px;scrollbar-width:none;">';
@@ -8239,8 +8249,8 @@ function mAlertas(){
   var sinDeuda=gST().filter(function(s){return cP(s.pagos)>=cT(s.parts);});
   var totalDeuda=conDeuda.reduce(function(s,st){return s+(cT(st.parts)-cP(st.pagos));},0);
   html+='<div class="g3" style="margin-bottom:14px;">';
-  html+='<div class="sb" style="border-color:#C94C7A;"><div class="sv" style="color:#C94C7A;">'+conDeuda.length+'</div><div class="sl">Con deuda</div></div>';
-  html+='<div class="sb" style="border-color:#4CC97A;"><div class="sv" style="color:#4CC97A;">'+sinDeuda.length+'</div><div class="sl">Al dia</div></div>';
+  html+='<div class="sb" id="sbfc-pendiente" style="border-color:#C94C7A;cursor:pointer;" onclick="fCO_pendiente()"><div class="sv" style="color:#C94C7A;">'+conDeuda.length+'</div><div class="sl">Con deuda</div></div>';
+  html+='<div class="sb" id="sbfc-listo" style="border-color:#4CC97A;cursor:pointer;" onclick="fCO_listo()"><div class="sv" style="color:#4CC97A;">'+sinDeuda.length+'</div><div class="sl">Al dia</div></div>';
   html+='<div class="sb" style="border-color:#C9A84C;"><div class="sv" style="color:#C9A84C;font-size:13px;">'+fD(totalDeuda)+'</div><div class="sl">Pendiente</div></div>';
   html+='</div>';
   if(!conDeuda.length){
@@ -10276,7 +10286,7 @@ Incluye: Resumen, Finanzas, Alertas, Recomendaciones. Max 250 palabras. Emojis.`
     const d=await r.json();
     if((d.content&&d.content[0]&&d.content[0].text)){res.innerHTML=`<div style="background:#0d0d16;border-radius:8px;padding:14px;border:1px solid #C9A84C30;"><div style="font-size:10px;letter-spacing:2px;color:#C9A84C;margin-bottom:10px;">REPORTE GENERADO</div><div style="font-size:13px;color:#ccc;line-height:1.8;white-space:pre-wrap;">${d.content[0].text}</div></div>`;}
     else res.innerHTML=`<div style="color:#C94C7A;font-size:13px;">Error al generar el reporte.</div>`;
-  }catch(e){res.innerHTML=`<div style="color:#C94C7A;font-size:13px;">Error de conexion con la IA.</div>`;}
+  }catch(e){res.innerHTML=`<div class="sb" id="sbvt-recaudado" style="border-color:-size:13px;">Error de conexion con la IA.</div>`;}
   btn.textContent="✦ Generar de nuevo";btn.disabled=false;
 }
 
