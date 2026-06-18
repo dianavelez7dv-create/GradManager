@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v170</title>
+<title>GradManager 2025 — v172</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -9060,12 +9060,19 @@ function saveActa(){const t=document.getElementById("ac-t").value.trim();if(!t)r
 
 function expFundPDF(){
   var items=gFU();
-  if(!items.length){alert("No hay registros.");return;}
-  var total=items.reduce(function(s,i){return s+(i.monto||0);},0);
+  if(!items.length){alert("No hay registros de recaudación.");return;}
   var now=new Date();var hoy=now.getDate()+"/"+(now.getMonth()+1)+"/"+now.getFullYear();
-  var rows=items.map(function(i){return[i.fecha||"—",i.concepto||"—",i.desc||"—",fD(i.monto||0)];});
-  rows.push(["","","TOTAL",fD(total)]);
-  exportPDF("Recaudacion — "+hoy,["Fecha","Concepto","Descripcion","Monto"],rows);
+  var rows=[];
+  var totalGen=0;
+  items.forEach(function(item){
+    rows.push(["","▸ "+item.nombre,"Meta: "+fD(item.meta||0),"Recaudado: "+fD(item.rec||0)]);
+    (item.aportes||[]).forEach(function(a){
+      rows.push([a.fecha||"—",a.quien||"—",item.nombre,fD(parseFloat(a.monto)||0)]);
+      totalGen+=parseFloat(a.monto)||0;
+    });
+  });
+  rows.push(["","","TOTAL RECAUDADO",fD(totalGen)]);
+  exportPDF("Recaudacion — "+hoy,["Fecha","Quien","Concepto","Monto"],rows);
 }
 
 
@@ -9081,6 +9088,77 @@ function filtrarFundEstado(status){
       btn.style.boxShadow="0 0 0 2px "+col;
     }
   },100);
+}
+
+
+
+function oEditFund(id){
+  var item=gFU().find(function(x){return String(x.id)===String(id);});
+  if(!item)return;
+  var html='<div class="moh"><span class="mot">✎ Editar Recaudación</span><button class="moc" onclick="CM()">✕</button></div>';
+  html+='<input class="inp" id="ef-nombre" value="'+(item.nombre||'')+'" placeholder="Nombre"/>';
+  html+='<input class="inp" id="ef-desc" value="'+(item.desc||'')+'" placeholder="Descripción"/>';
+  html+='<input class="inp" id="ef-meta" type="number" value="'+(item.meta||0)+'" placeholder="Meta $"/>';
+  html+='<input class="inp" id="ef-rec" type="number" value="'+(item.rec||0)+'" placeholder="Recaudado $"/>';
+  html+='<button class="btn bw" style="width:100%;margin-top:12px;" data-id="'+id+'" onclick="saveEditFund(this.dataset.id)">✓ Guardar</button>';
+  OM(html);
+}
+
+function saveEditFund(id){
+  D.fundraising=(D.fundraising||[]).map(function(i){
+    if(String(i.id)!==String(id)) return i;
+    return Object.assign({},i,{
+      nombre:document.getElementById("ef-nombre")?document.getElementById("ef-nombre").value.trim():i.nombre,
+      desc:document.getElementById("ef-desc")?document.getElementById("ef-desc").value.trim():i.desc,
+      meta:parseFloat(document.getElementById("ef-meta")?document.getElementById("ef-meta").value:0)||i.meta,
+      rec:parseFloat(document.getElementById("ef-rec")?document.getElementById("ef-rec").value:0)||i.rec
+    });
+  });
+  SD();addN("✓ Recaudación actualizada");CM();mFund();
+}
+
+function oEditarRecolecta(id){
+  var r=(D.recolectas||[]).find(function(x){return x.id===id;});
+  if(!r)return;
+  window._rcDons=(r.donaciones||[]).map(function(d){return Object.assign({},d);});
+  var donHtml="";
+  window._rcDons.forEach(function(d,i){
+    donHtml+='<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #1e1e28;font-size:12px;color:#aaa;">';
+    donHtml+='<span>'+(d.tipo==="dinero"?"💵":"📦")+' '+d.descripcion+(d.valor?' — '+fD(parseFloat(d.valor)||0):'')+'</span>';
+    donHtml+='<button type="button" data-i="'+i+'" onclick="delRcDon(parseInt(this.dataset.i))" style="background:none;border:none;color:#C94C7A;cursor:pointer;font-size:14px;">✕</button>';
+    donHtml+='</div>';
+  });
+  var html='<div class="moh"><span class="mot">✎ Editar Recolecta</span><button class="moc" onclick="CM()">✕</button></div>';
+  html+='<input class="inp" id="rc-neg" value="'+r.negocio+'" placeholder="Negocio"/>';
+  html+='<input class="inp" id="rc-con" value="'+(r.contacto||'')+'" placeholder="Contacto"/>';
+  html+='<input class="inp" id="rc-tel" value="'+(r.tel||'')+'" placeholder="Teléfono"/>';
+  html+='<input class="inp" id="rc-notas" value="'+(r.notas||'')+'" placeholder="Notas"/>';
+  html+='<div style="font-size:11px;color:#555;margin:8px 0 4px;">DONACIONES</div>';
+  html+='<div style="display:flex;gap:6px;margin-bottom:6px;">';
+  html+='<select class="inp" id="rc-don-tipo" style="flex:0 0 100px;"><option value="dinero">💵 Dinero</option><option value="especie">📦 Especie</option></select>';
+  html+='<input class="inp" id="rc-don-desc" placeholder="Descripción" style="flex:1;"/>';
+  html+='<input class="inp" id="rc-don-val" type="number" placeholder="$" style="flex:0 0 70px;"/>';
+  html+='</div>';
+  html+='<button class="btn bs bw" style="width:100%;margin-bottom:8px;" onclick="addRcDon()">+ Agregar donación</button>';
+  html+='<div id="rc-dons-list">'+donHtml+'</div>';
+  html+='<button class="btn bw" style="width:100%;margin-top:12px;" data-id="'+id+'" onclick="saveEditRecolecta(this.dataset.id)">✓ Guardar cambios</button>';
+  OM(html);
+}
+
+function saveEditRecolecta(id){
+  var neg=document.getElementById("rc-neg")?document.getElementById("rc-neg").value.trim():"";
+  if(!neg){alert("Escribe el nombre del negocio.");return;}
+  D.recolectas=(D.recolectas||[]).map(function(r){
+    if(r.id!==id) return r;
+    return Object.assign({},r,{
+      negocio:neg,
+      contacto:document.getElementById("rc-con")?document.getElementById("rc-con").value.trim():"",
+      tel:document.getElementById("rc-tel")?document.getElementById("rc-tel").value.trim():"",
+      notas:document.getElementById("rc-notas")?document.getElementById("rc-notas").value.trim():"",
+      donaciones:(window._rcDons||[])
+    });
+  });
+  SD();addN("✓ Recolecta actualizada");CM();mFund();
 }
 
 function mFund(){
