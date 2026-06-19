@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v209</title>
+<title>GradManager 2025 — v211</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -1520,6 +1520,7 @@ function loadFotoPreview(input){
   }
   if(!previewId)return;
   compressImage(input.files[0],600,function(dataUrl){
+    _currentFoto[previewId]=dataUrl;
     var prev=document.getElementById(previewId);
     if(prev){
       prev.innerHTML='<img src="'+dataUrl+'" style="width:100%;height:100%;object-fit:cover;border-radius:8px;"/>';
@@ -6382,14 +6383,12 @@ function fDEL_venta(vid){
   vid=Number(vid);
   var v=gVT().find(function(x){return x.id===vid;});
   if(!v){addN("Error: venta no encontrada");mVentas();return;}
-  confirmarAccion("Eliminar venta de "+v.comprador+"?",function(){
-    D.ventas.productos=gPR2().map(function(p){
-      if(p.id!==v.pid)return p;
-      return Object.assign({},p,{vendido:Math.max(0,(p.vendido||0)-v.cant)});
-    });
-    D.ventas.ventas=gVT().filter(function(x){return x.id!==vid;});
-    SD();addN("Venta eliminada");mVentas();
+  D.ventas.productos=gPR2().map(function(p){
+    if(p.id!==v.pid)return p;
+    return Object.assign({},p,{vendido:Math.max(0,(p.vendido||0)-v.cant)});
   });
+  D.ventas.ventas=gVT().filter(function(x){return x.id!==vid;});
+  SD();addN("🗑️ Venta de "+v.comprador+" eliminada");mVentas();
 }
 
 
