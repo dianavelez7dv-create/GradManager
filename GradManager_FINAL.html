@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v208</title>
+<title>GradManager 2025 — v209</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -6380,17 +6380,16 @@ function fVT_todos(){window._vtFilter=null;mVentas();}
 
 function fDEL_venta(vid){
   vid=Number(vid);
-  if(!confirm("Eliminar esta venta?"))return;
   var v=gVT().find(function(x){return x.id===vid;});
-  if(v){
+  if(!v){addN("Error: venta no encontrada");mVentas();return;}
+  confirmarAccion("Eliminar venta de "+v.comprador+"?",function(){
     D.ventas.productos=gPR2().map(function(p){
       if(p.id!==v.pid)return p;
       return Object.assign({},p,{vendido:Math.max(0,(p.vendido||0)-v.cant)});
     });
     D.ventas.ventas=gVT().filter(function(x){return x.id!==vid;});
-    SD();addN("Venta eliminada");
-  }
-  mVentas();
+    SD();addN("Venta eliminada");mVentas();
+  });
 }
 
 
