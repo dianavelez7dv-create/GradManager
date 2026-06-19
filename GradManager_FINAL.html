@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v214</title>
+<title>GradManager 2025 — v216</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -10006,20 +10006,20 @@ function filtrarTogasEstado(status){
   },50);
 }
 
+
+function filtTogaSearch(q){
+  q=q.toLowerCase();
+  var mc=document.getElementById("mc");
+  if(!mc)return;
+  mc.querySelectorAll(".card,.li,[style*='border-radius']").forEach(function(el){
+    el.style.display=el.textContent.toLowerCase().includes(q)?"":"none";
+  });
+}
+
 function mToga(){
   const sts=sortByName(gST());const ent=sts.filter(s=>(s.toga&&s.toga.ok)).length;
-  sMC(`<div class="dv"></div><div style="display:flex;
-  var _si=document.createElement('input');
-  _si.className='inp';_si.placeholder='🔍 Buscar estudiante...';
-  _si.style.cssText='width:100%;margin-bottom:8px;';
-  _si.addEventListener('input',function(){
-    var q=this.value.toLowerCase();
-    document.getElementById('mc').querySelectorAll('.card,.li,[style*="border-radius"]').forEach(function(el){
-      el.style.display=el.textContent.toLowerCase().includes(q)?'':'none';
-    });
-  });
-  var _mc=document.getElementById('mc');
-  if(_mc){var _fc=_mc.querySelector('.card,.li');if(_fc)_mc.insertBefore(_si,_fc);else _mc.insertBefore(_si,_mc.firstChild);}justify-content:space-between;align-items:center;margin-bottom:12px;"><div class="ct" style="margin:0;">👘 Control de Togas</div><button class="btn bs bb" onclick="expTogPDF()">📄</button></div>
+  sMC(`<div class="dv"></div><input class="inp" id="toga-search" placeholder="🔍 Buscar estudiante..." oninput="filtTogaSearch(this.value)" style="margin-bottom:8px;"/><div style="display:flex;
+justify-content:space-between;align-items:center;margin-bottom:12px;"><div class="ct" style="margin:0;">👘 Control de Togas</div><button class="btn bs bb" onclick="expTogPDF()">📄</button></div>
     <div class="g3" style="margin-bottom:12px;">
       <div class="sb"><div class="sv" style="color:#C9A84C;">${sts.length}</div><div class="sl">Total</div></div>
       <div class="sb" id="sbft-entregadas" style="border-color:#4CC97A;cursor:pointer;" onclick="filtrarTogasEstado('entregadas')"><div class="sv" style="color:#4CC97A;">${ent}</div><div class="sl">Entregadas</div></div>
@@ -10089,6 +10089,20 @@ function togToga(sid){
 }
 function expTogPDF(){exportPDF("Control de Togas",["Nombre","Carnet","Talla","Entregada","Fecha Entrega"],gST().map(s=>[s.nombre,s.carnet,(s.toga?s.toga.talla:"—")||"—",(s.toga&&s.toga.ok)?"Si":"No",(s.toga&&s.toga.fechaEntrega)?s.toga.fechaEntrega:"—"]));}
 
+
+function filtInvitSearch(q){
+  q=q.toLowerCase();
+  var mc=document.getElementById("mc");
+  if(!mc)return;
+  mc.querySelectorAll(".card,.li,.btn").forEach(function(el){
+    var card=el.closest("[style*='border-radius']")||el.closest(".card");
+    if(card)card.style.display=card.textContent.toLowerCase().includes(q)?"":"none";
+  });
+  mc.querySelectorAll(".g2>div,.g2>[class]").forEach(function(el){
+    el.style.display=el.textContent.toLowerCase().includes(q)?"":"none";
+  });
+}
+
 function mInvit(){
   var c=CU?CU.color:"#C9A84C";
   var ic=gIC();
@@ -10109,6 +10123,7 @@ function mInvit(){
   if(ic.direccion) html+='<div style="font-size:11px;color:#666;">'+ic.direccion+'</div>';
   html+='<div style="font-size:11px;color:'+ic.color+';margin-top:8px;font-style:italic;">'+ic.mensaje+'</div>';
   html+='</div>';
+  html+='<input class="inp" placeholder="🔍 Buscar estudiante..." oninput="filtInvitSearch(this.value)" style="margin-bottom:8px;"/>';
   html+='<div class="g2">';
   sortByName(gST()).forEach(function(s){
     var tiSaldo=tieneSaldo(s.id);
@@ -10435,4 +10450,4 @@ if('serviceWorker' in navigator){window.addEventListener('load',function(){navig
 
 
 </body>
-</html>
+  >
