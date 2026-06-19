@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v216</title>
+<title>GradManager 2025 — v217</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -10130,8 +10130,8 @@ function mInvit(){
     html+='<div style="background:#12121a;border:1px solid '+(tiSaldo?"#C94C7A40":"#2a2a3a")+';border-radius:10px;padding:12px;text-align:center;cursor:pointer;" onclick="printInv('+s.id+')">';
     html+='<div style="font-size:24px;margin-bottom:5px;">'+(tiSaldo?"🚫":"🎓")+'</div>';
     html+='<div style="font-size:13px;color:#ddd;margin-bottom:3px;">'+s.nombre+'</div>';
-    html+='<div style="font-size:10px;color:#666;margin-bottom:6px;">'+s.carrera+'</div>';
-    html+='<div style="background:#0d0d16;border:1px solid '+c+'40;border-radius:6px;padding:5px;font-size:11px;color:'+(tiSaldo?"#C94C7A":c)+';font-weight:bold;letter-spacing:2px;">'+s.qr+'</div>';
+    html+='<div style="font-size:10px;color:#666;margin-bottom:6px;">'+(s.carrera||s.grado||s.grupo||'')+'</div>';
+    html+='<div style="background:#0d0d16;border:1px solid '+c+'40;border-radius:6px;padding:5px;font-size:11px;color:'+(tiSaldo?"#C94C7A":c)+';font-weight:bold;letter-spacing:2px;">'+(s.qr||'EST-'+s.id)+'</div>';
     html+='<div style="font-size:10px;color:'+(tiSaldo?"#C94C7A":"#555")+';margin-top:5px;">'+(tiSaldo?"Saldo pendiente":"Toca para imprimir")+'</div>';
     html+='</div>';
   });
