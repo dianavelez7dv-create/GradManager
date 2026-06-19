@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v212</title>
+<title>GradManager 2025 — v213</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -6479,9 +6479,10 @@ function mVentas(){
       html+='<div style="font-size:16px;color:#4CC97A;font-weight:bold;">'+fD(s.total)+'</div>';
       html+='</div>';
       s.items.forEach(function(it){
-        html+='<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#888;padding:2px 0;">';
-        html+='<span>'+it.emoji+' '+it.producto+' x'+it.cant+' · '+fD(it.total)+'</span>';
-        html+='<button style="background:none;border:none;color:#C94C7A;cursor:pointer;font-size:13px;padding:0 4px;" data-vid="'+it.id+'" onclick="fDEL_venta(this.dataset.vid)">✕</button>';
+        html+='<div class="li" style="padding:6px 0;">';
+        html+='<div><div style="font-size:12px;color:#ddd;">'+it.emoji+' '+it.producto+'</div>';
+        html+='<div style="font-size:11px;color:#555;">x'+it.cant+' · '+fD(it.total)+'</div></div>';
+        html+='<button class="btn bs" style="border-color:#C94C7A;color:#C94C7A;background:#C94C7A15;padding:4px 10px;font-size:12px;" data-vid="'+it.id+'" onclick="fDEL_venta(this.dataset.vid)">✕ Cancelar</button>';
         html+='</div>';
       });
       html+='</div>';
