@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v220</title>
+<title>GradManager 2025 — v221</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -4021,7 +4021,15 @@ function rStudents(){
         ${pb(pag,tot,sc)}
         <div class="g2" style="margin-top:10px;gap:6px;">
 
-          ${(cP(s.pagos)<cT(s.parts))?`<div style="grid-column:span 2;font-size:11px;color:#C94C7A;text-align:center;padding:7px;background:#C94C7A10;border-radius:8px;border:1px solid #C94C7A30;">⚠ Saldo pendiente: ${fD(cT(s.parts)-cP(s.pagos))} — entregas y eventos bloqueados</div>`:""}
+          ${(()=>{
+  const _tot=cT(s.parts),_pag=cP(s.pagos),_sal=_tot-_pag;
+  if(_sal>0)return `<div style="grid-column:span 2;font-size:11px;color:#C94C7A;text-align:center;padding:7px;background:#C94C7A10;border-radius:8px;border:1px solid #C94C7A30;">⚠ Saldo pendiente: ${fD(_sal)} — entregas y eventos bloqueados</div>`;
+  if(_pag>0&&_tot>0&&_sal<=0){
+    const _disp=_pag-_tot;
+    return `<div style="grid-column:span 2;font-size:11px;color:#4CC97A;text-align:center;padding:7px;background:#4CC97A10;border-radius:8px;border:1px solid #4CC97A30;">✅ $${_pag.toFixed(2)} pagado cubre actividades ($${_tot.toFixed(2)})${_disp>0?' · '+fD(_disp)+' disponible':' · Pagado exacto'}</div>`;
+  }
+  return "";
+})()}
           ${CU&&CU.role!=="estudiante"&&CU.role!=="padres"?`<button class="btn bs bb" style="font-size:11px;" data-id="${s.id}" onclick="oEditSt(parseInt(this.dataset.id))">Editar datos</button>
           <button class="btn bs" style="font-size:11px;border-color:#7C6CD4;color:#7C6CD4;background:#7C6CD420;" data-id="${s.id}" onclick="mEntregasDetalle(parseInt(this.dataset.id))">📦 Entregas</button>
           <button class="btn bs br" style="font-size:11px;" data-id="${s.id}" onclick="delSt(parseInt(this.dataset.id))">🗑️</button>
