@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v211</title>
+<title>GradManager 2025 — v212</title>
 <style>
 :root{--app-color:#C9A84C;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -6380,6 +6380,7 @@ function fVT_todos(){window._vtFilter=null;mVentas();}
 
 
 function fDEL_venta(vid){
+  addN('Eliminando venta...');
   vid=Number(vid);
   var v=gVT().find(function(x){return x.id===vid;});
   if(!v){addN("Error: venta no encontrada");mVentas();return;}
