@@ -10,9 +10,12 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v221</title>
+<title>GradManager 2025 — v235</title>
 <style>
 :root{--app-color:#C9A84C;}
+html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;font-size:16px;}
+@media (max-width:360px){html{font-size:14px;}}
+@media (min-width:600px){html{font-size:17px;}}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 body{font-family:Georgia,serif;background:#0a0a0f;color:#e8e0d0;min-height:100vh;}
 .sc{display:none;padding:14px;padding-bottom:90px;}.sc.on{display:block;}
@@ -3690,9 +3693,13 @@ function updateNavForRole(){
 function canAccess(id){if(!CU)return false;if(CU.role==="admin")return true;return gPerms(CU.role).indexOf(id)!==-1;}
 function go(id,_skipHistory){if(id!=="dash"&&!canAccess(id)){alert("No tienes permiso para acceder a este modulo.");return;}
   if(!_skipHistory){try{history.pushState({screen:id},"","#"+id);}catch(e){}}
-  // Reset custom screens z-index
-  var sp=document.getElementById("s-pay");if(sp) sp.style.zIndex="";
+  // Reset custom screens z-index and content
+  var sp=document.getElementById("s-pay");
+  if(sp){sp.style.zIndex="";sp.innerHTML="";}
   var spt=document.getElementById("s-parts");if(spt) spt.style.zIndex="";
+  // Restore modal overlay in case oPay messed with it
+  var movEl=document.getElementById("mov");
+  if(movEl){movEl.style.display="";movEl.style.pointerEvents="";movEl.style.zIndex="";}
   document.querySelectorAll(".sc").forEach(s=>s.classList.remove("on"));
   document.querySelectorAll(".nb").forEach(b=>{b.classList.remove("on");b.style.color="";b.style.borderTopColor="";});
   if(id==="stud") window._studFilter=null;
@@ -3975,6 +3982,12 @@ function rDash(){
   document.getElementById("s-dash").innerHTML=html;
 }
 
+
+function fST_aldia(){filtrarPorEstado("al-dia");}
+function fST_parcial(){filtrarPorEstado("parcial");}
+function fST_sinpagar(){filtrarPorEstado("sin-pagar");}
+function fST_deuda(){filtrarPorEstado("deuda");}
+
 function rStudents(){
   const c=CU?CU.color:"#C9A84C";
   // Students only see their own card
@@ -3992,9 +4005,9 @@ function rStudents(){
       </div>
     </div>
     <div class="g3">
-      <div class="sb" id="sbf-al-dia" style="border-color:#4CC97A;cursor:pointer;" data-st="al-dia"><div class="sv" style="color:#4CC97A;">${sts.filter(s=>(s.parts||[]).length>0&&cP(s.pagos)>=cT(s.parts)).length}</div><div class="sl">Al dia</div></div>
-      <div class="sb" id="sbf-parcial" style="border-color:#C9A84C;cursor:pointer;" data-st="parcial"><div class="sv" style="color:#C9A84C;">${sts.filter(s=>cP(s.pagos)>0&&cP(s.pagos)<cT(s.parts)).length}</div><div class="sl">Parcial</div></div>
-      <div class="sb" id="sbf-sin-pagar" style="border-color:#C94C7A;cursor:pointer;" data-st="sin-pagar"><div class="sv" style="color:#C94C7A;">${sts.filter(s=>(s.parts||[]).length>0&&cP(s.pagos)===0).length}</div><div class="sl">Sin pagar</div></div>
+      <div class="sb" id="sbf-al-dia" style="border-color:#4CC97A;cursor:pointer;" onclick="fST_aldia()" data-st="al-dia"><div class="sv" style="color:#4CC97A;">${sts.filter(s=>(s.parts||[]).length>0&&cP(s.pagos)>=cT(s.parts)).length}</div><div class="sl">Al dia</div></div>
+      <div class="sb" id="sbf-parcial" style="border-color:#C9A84C;cursor:pointer;" onclick="fST_parcial()" data-st="parcial"><div class="sv" style="color:#C9A84C;">${sts.filter(s=>cP(s.pagos)>0&&cP(s.pagos)<cT(s.parts)).length}</div><div class="sl">Parcial</div></div>
+      <div class="sb" id="sbf-sin-pagar" style="border-color:#C94C7A;cursor:pointer;" onclick="fST_sinpagar()" data-st="sin-pagar"><div class="sv" style="color:#C94C7A;">${sts.filter(s=>(s.parts||[]).length>0&&cP(s.pagos)===0).length}</div><div class="sl">Sin pagar</div></div>
     </div>
     ${(window._studFilter?sts.filter(function(s){var t=cT(s.parts),p=cP(s.pagos),sc=(!s.parts||s.parts.length===0)?"none":(t-p)<=0?"al-dia":p>0?"parcial":"sin-pagar";return window._studFilter==="deuda"?(sc==="parcial"||sc==="sin-pagar"):sc===window._studFilter;}):sts).map(s=>{
       const tot=cT(s.parts),pag=cP(s.pagos),sal=tot-pag;
@@ -4021,15 +4034,7 @@ function rStudents(){
         ${pb(pag,tot,sc)}
         <div class="g2" style="margin-top:10px;gap:6px;">
 
-          ${(()=>{
-  const _tot=cT(s.parts),_pag=cP(s.pagos),_sal=_tot-_pag;
-  if(_sal>0)return `<div style="grid-column:span 2;font-size:11px;color:#C94C7A;text-align:center;padding:7px;background:#C94C7A10;border-radius:8px;border:1px solid #C94C7A30;">⚠ Saldo pendiente: ${fD(_sal)} — entregas y eventos bloqueados</div>`;
-  if(_pag>0&&_tot>0&&_sal<=0){
-    const _disp=_pag-_tot;
-    return `<div style="grid-column:span 2;font-size:11px;color:#4CC97A;text-align:center;padding:7px;background:#4CC97A10;border-radius:8px;border:1px solid #4CC97A30;">✅ $${_pag.toFixed(2)} pagado cubre actividades ($${_tot.toFixed(2)})${_disp>0?' · '+fD(_disp)+' disponible':' · Pagado exacto'}</div>`;
-  }
-  return "";
-})()}
+          ${(function(){var _sal=cT(s.parts)-cP(s.pagos);if(_sal>0){var _pag=cP(s.pagos);return '<div style="grid-column:span 2;font-size:11px;color:#C94C7A;text-align:center;padding:7px;background:#C94C7A10;border-radius:8px;border:1px solid #C94C7A30;">\u26a0 Saldo pendiente: '+fD(_sal)+'</div>';}var _pag2=cP(s.pagos),_tot2=cT(s.parts);if(_pag2>0&&_tot2>0&&_pag2>=_tot2){return '<div style="grid-column:span 2;font-size:11px;color:#4CC97A;text-align:center;padding:7px;background:#4CC97A10;border-radius:8px;border:1px solid #4CC97A30;">✅ '+fD(_pag2)+' cubre actividades ('+fD(_tot2)+')</div>';}return '';})()}
           ${CU&&CU.role!=="estudiante"&&CU.role!=="padres"?`<button class="btn bs bb" style="font-size:11px;" data-id="${s.id}" onclick="oEditSt(parseInt(this.dataset.id))">Editar datos</button>
           <button class="btn bs" style="font-size:11px;border-color:#7C6CD4;color:#7C6CD4;background:#7C6CD420;" data-id="${s.id}" onclick="mEntregasDetalle(parseInt(this.dataset.id))">📦 Entregas</button>
           <button class="btn bs br" style="font-size:11px;" data-id="${s.id}" onclick="delSt(parseInt(this.dataset.id))">🗑️</button>
@@ -4043,10 +4048,7 @@ function rStudents(){
     }).join("")}`;
   // Search listener
   // Status filter buttons (Al dia / Parcial / Sin pagar)
-  ["al-dia","parcial","sin-pagar"].forEach(function(st){
-    var btn=document.getElementById("sbf-"+st);
-    if(btn) btn.addEventListener("click",function(){filtrarPorEstado(st);});
-  });
+  // sbf buttons use inline onclick - no addEventListener needed
   var si=document.getElementById("stud-srch");
   if(si) si.addEventListener("input",function(){
     window._studFilter=null;
@@ -4063,7 +4065,13 @@ function rStudents(){
     tmp.innerHTML=filtered.map(function(s){
       var tot=cT(s.parts),pag=cP(s.pagos),sal=tot-pag;
       var sc2=sal<=0?"#4CC97A":pag>0?"#C9A84C":"#C94C7A";
-      return '<div class="card" data-student="true" data-nombre="'+s.nombre+'" style="border-color:'+sc2+'33;margin-bottom:10px;padding:12px;"><div style="font-size:14px;color:#ddd;margin-bottom:4px;">'+s.nombre+'</div><div style="font-size:11px;color:#666;">'+s.carnet+' · '+s.carrera+'</div><div style="font-size:12px;color:'+sc2+';margin-top:4px;">'+(sal<=0?"Al dia":pag>0?"Parcial - $"+sal+" pendiente":"Sin pagar")+'</div></div>';
+      var btns='';
+      if(CU&&CU.role!=="estudiante"&&CU.role!=="padres"){
+        btns+='<button class="btn bs" style="font-size:11px;margin-right:4px;" data-id="'+s.id+'" onclick="oParts(parseInt(this.dataset.id))">✎ Act.</button>';
+        btns+='<button class="btn bs bp" style="font-size:11px;margin-right:4px;" data-id="'+s.id+'" onclick="oPay(parseInt(this.dataset.id))">🧾 Pagos</button>';
+      }
+      btns+='<button class="btn bs" style="font-size:11px;border-color:#4CA8C9;color:#4CA8C9;" data-id="'+s.id+'" onclick="oVerQR(parseInt(this.dataset.id),\'\')">QR</button>';
+      return '<div class="card" data-student="true" data-nombre="'+s.nombre+'" style="border-color:'+sc2+'33;margin-bottom:10px;padding:12px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><div><div style="font-size:14px;color:#ddd;margin-bottom:2px;">'+s.nombre+'</div><div style="font-size:11px;color:#666;">'+s.carnet+' · '+s.carrera+'</div></div><span style="font-size:11px;color:'+sc2+';">'+( sal<=0?"✅ Al dia":pag>0?"⚠ $"+sal.toFixed(2)+" pend.":"❌ Sin pagar")+'</span></div>'+btns+'</div>';
     }).join("");
     while(tmp.firstChild) container.appendChild(tmp.firstChild);
   });
@@ -5559,7 +5567,7 @@ function rScanner(){
   // Add PARTS activities as scannable events
   gP().forEach(function(p){
     if(!window._scanEvts[p.id]){
-      window._scanEvts[p.id]={l:p.label,i:p.icon||"🎟️",isPart:true};
+      window._scanEvts[p.id]={l:p.label,i:p.icon||"📦",isPart:true};
       window._scanKeys.push(p.id);
     }
   });
@@ -5613,7 +5621,7 @@ function doScanQR(qr){
   // Rebuild evts in case rScanner wasn't called
   if(!window._scanEvts){
     window._scanEvts={jarana:{l:"Jarana/Fiesta",i:"🎉"},bformal:{l:"Baile Formal",i:"💃"},cere:{l:"Ceremonia",i:"🎓"}};
-    gP().forEach(function(p){window._scanEvts[p.id]={l:p.label,i:"🎟️",isPart:true,partId:p.id};});
+    gP().forEach(function(p){window._scanEvts[p.id]={l:p.label,i:p.icon||"📦",isPart:true,partId:p.id};});
   }
   var evts=window._scanEvts;
   const s=gST().find(x=>x.qr===qr.trim().toUpperCase());
@@ -5658,7 +5666,20 @@ function doScanQR(qr){
   D.students=gST().map(function(x){
     if(x.id!==s.id)return x;
     var na=Object.assign({},x.asis||{});na[scanEv]=nuevo;
-    return Object.assign({},x,{asis:na});
+    var updX=Object.assign({},x,{asis:na});
+    // Sync with Entregas system for PART-based scan events
+    if(currentEvt&&currentEvt.isPart&&nuevo==="entrada"){
+      var pid2=currentEvt.partId;
+      var ents=(x.entregas||[]).slice();
+      var idxE=ents.findIndex(function(e){return e.id===pid2;});
+      var nowD=new Date();
+      var fechaE=nowD.getDate()+"/"+(nowD.getMonth()+1)+"/"+nowD.getFullYear();
+      var entregadoPor2=CU?CU.name:"Escaner";
+      if(idxE>=0){ents[idxE]=Object.assign({},ents[idxE],{entregado:true,fecha:fechaE,entregadoPor:entregadoPor2});}
+      else{ents.push({id:pid2,entregado:true,fecha:fechaE,entregadoPor:entregadoPor2});}
+      updX.entregas=ents;
+    }
+    return updX;
   });
   if(!D.scanLog)D.scanLog=[];
   var n2=new Date();
@@ -5861,7 +5882,7 @@ function rSubastas(){
       <div class="sb" id="sbfsub-cerrada" style="border-color:#C94C7A;cursor:pointer;" onclick="filtrarSubaEstado('cerrada')"><div class="sv" style="color:#C94C7A;">${gSU().filter(s=>s.estado==="cerrada").length}</div><div class="sl">Cerradas</div></div>
       <div class="sb" id="sbfsub-recaudado" style="border-color:#C9A84C;cursor:pointer;" onclick="filtrarSubaEstado('recaudado')"><div class="sv" style="color:#C9A84C;">${fD(gSU().reduce((s,sub)=>s+(sub.rec||0),0))}</div><div class="sl">Recaudado</div></div>
     </div>
-    ${sus.length===0?'<div class="card" style="text-align:center;padding:28px;"><div style="font-size:36px;margin-bottom:10px;">🔨</div><div style="font-size:14px;color:#555;">Sin subastas aun</div><button class="btn" style="margin-top:12px;" onclick="oNewSub()">Crear primera subasta</button></div>':sus.map(sub=>{
+    ${sus.length===0?'<div class="card" style="text-align:center;padding:28px;"><div style="font-size:36px;margin-bottom:10px;">🔨</div><div style="font-size:14px;color:#555;">Sin subastas aun</div></div>':sus.map(sub=>{
       const tc={silenciosa:"#7C6CD4",vivo:"#C94C7A",articulos:"#4CC97A",experiencias:"#4CA8C9"}[sub.tipo]||c;
       return`<div class="card" style="border-color:${tc}40;margin-bottom:12px;">
         ${sub.foto?`<img src="${sub.foto}" style="width:100%;height:140px;object-fit:cover;border-radius:8px;margin-bottom:8px;"/>`:""}
@@ -6296,7 +6317,6 @@ function rMore(){
     {i:"💬",l:"Mensajes",f:"chat"},
     {i:"🤖",l:"Reporte IA",f:"ai"},
     {i:"🛒",l:"Ventas",f:"ventas"},
-    {i:"🤝",l:"Consignacion",f:"consign"},
     {i:"📊",l:"Reportes",f:"reportes"},
     {i:"🎓",l:"Tutorial",f:"tutorial"},
     {i:"📋",l:"Compras",f:"compras"},
@@ -8515,7 +8535,7 @@ function storageBar(){
 function mTab(t){
   // Check access
   if(CU&&CU.role!=="admin"&&!canAccess(t)&&t!==""){alert("No tienes permiso.");return;}
-  var fs={aviso:mAviso,voto:mVoto,enc:mEnc,acta:mActa,fund:mFund,ens:mEns,pres:mPres,prog:mProg,toga:mToga,invit:mInvit,chat:mChat,ai:mAI,ventas:mVentas,usuarios:mUsuarios,compras:mCompras,audit:mAudit,permisos:mPermisos,contador:mContador,venue:mVenue,backups:mBackups,alertas:mAlertas,registros:mRegistrosEstudiantes,entregas:mEntregas,consign:mConsign,reportes:mReportes,tutorial:function(){mostrarTutorial();}};
+  var fs={aviso:mAviso,voto:mVoto,enc:mEnc,acta:mActa,fund:mFund,ens:mEns,pres:mPres,prog:mProg,toga:mToga,invit:mInvit,chat:mChat,ai:mAI,ventas:mVentas,usuarios:mUsuarios,compras:mCompras,audit:mAudit,permisos:mPermisos,contador:mContador,venue:mVenue,backups:mBackups,alertas:mAlertas,registros:mRegistrosEstudiantes,entregas:mEntregas,reportes:mReportes,tutorial:function(){mostrarTutorial();}};
   // Ensure #mc exists
   var mc=document.getElementById("mc");
   if(!mc){
@@ -8739,7 +8759,7 @@ function mVoto(){
   html+='<div class="ct" style="margin:0;">🗳️ Votaciones</div>';
   if(CU&&(CU.role==="admin"||CU.role==="directiva")) html+='<button class="btn bs" onclick="oAddVoto()">+ Nuevo</button>';
   html+='</div>';
-  gVO().forEach(function(v){
+  [].concat(gVO()).sort(function(a,b){return a.titulo.localeCompare(b.titulo);}).forEach(function(v){
     var votos=v.votos||{};
     var total=Object.values(votos).filter(Boolean).length;
     var cerrada=v.estado==="cerrada";
@@ -8815,9 +8835,10 @@ function regVotoDir(btn){
     var nv={};
     Object.keys(x.votos||{}).forEach(function(k){nv[k]=x.votos[k];});
     nv[key]=op;
-    return {id:x.id,titulo:x.titulo,opciones:x.opciones,votos:nv,deadline:x.deadline,estado:x.estado};
+    return Object.assign({},x,{votos:nv});
   });
   SD();
+  mVoto();
   document.querySelectorAll("#vot-ops button").forEach(function(b){
     b.style.borderColor=b.dataset.op===op?"#4CC97A":"#2a2a3a";
     b.style.background=b.dataset.op===op?"#4CC97A20":"#12121a";
@@ -8936,7 +8957,7 @@ function mEnc(){
   html+='<div class="ct" style="margin:0;">📊 Encuestas</div>';
   if(CU&&(CU.role==="admin"||CU.role==="directiva")) html+='<button class="btn bs" onclick="oAddEnc()">+ Nuevo</button>';
   html+='</div>';
-  gEC().forEach(function(enc){
+  [].concat(gEC()).sort(function(a,b){return a.pregunta.localeCompare(b.pregunta);}).forEach(function(enc){
     var resp=enc.resp||{};
     var total=Object.values(resp).filter(Boolean).length;
     var cerrada=!enc.activa;
@@ -9015,9 +9036,10 @@ function regEncResp(btn){
     var nr={};
     Object.keys(x.resp||{}).forEach(function(k){nr[k]=x.resp[k];});
     nr[key]=op;
-    return {id:x.id,pregunta:x.pregunta,opciones:x.opciones,resp:nr,activa:x.activa};
+    return Object.assign({},x,{resp:nr});
   });
   SD();
+  mEnc();
   // Visual feedback
   document.querySelectorAll("#enc-ops button").forEach(function(b){
     b.style.borderColor=b.dataset.op===op?"#4CC97A":"#2a2a3a";
