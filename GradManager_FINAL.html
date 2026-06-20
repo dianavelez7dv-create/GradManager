@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v235</title>
+<title>GradManager 2025 — v238</title>
 <style>
 :root{--app-color:#C9A84C;}
 html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;font-size:16px;}
@@ -8365,6 +8365,10 @@ function saveVenue(){
   SD();addN("📍 Venue: "+n);CM();mVenue();
 }
 
+
+function fAL_deuda(){window._alFiltro="deuda";mAlertas();}
+function fAL_aldia(){window._alFiltro="aldia";mAlertas();}
+
 function mAlertas(){
   var html='<div class="dv"></div><div class="ct">🔔 Alertas de Pagos</div>';
   var _allDeuda=sortByName(gST().filter(function(s){return cP(s.pagos)<cT(s.parts);}));
@@ -8372,8 +8376,8 @@ function mAlertas(){
   var sinDeuda=gST().filter(function(s){return cP(s.pagos)>=cT(s.parts);});
   var totalDeuda=conDeuda.reduce(function(s,st){return s+(cT(st.parts)-cP(st.pagos));},0);
   html+='<div class="g3" style="margin-bottom:14px;">';
-  html+='<div class="sb" id="sbfc-pendiente" style="border-color:#C94C7A;cursor:pointer;" onclick="fCO_pendiente()"><div class="sv" style="color:#C94C7A;">'+conDeuda.length+'</div><div class="sl">Con deuda</div></div>';
-  html+='<div class="sb" id="sbfc-listo" style="border-color:#4CC97A;cursor:pointer;" onclick="fCO_listo()"><div class="sv" style="color:#4CC97A;">'+sinDeuda.length+'</div><div class="sl">Al dia</div></div>';
+  html+='<div class="sb" id="sbfal-deuda" style="border-color:#C94C7A;cursor:pointer;" onclick="fAL_deuda()"><div class="sv" style="color:#C94C7A;">'+conDeuda.length+'</div><div class="sl">Con deuda</div></div>';
+  html+='<div class="sb" id="sbfal-aldia" style="border-color:#4CC97A;cursor:pointer;" onclick="fAL_aldia()"><div class="sv" style="color:#4CC97A;">'+sinDeuda.length+'</div><div class="sl">Al dia</div></div>';
   html+='<div class="sb" style="border-color:#C9A84C;"><div class="sv" style="color:#C9A84C;font-size:13px;">'+fD(totalDeuda)+'</div><div class="sl">Pendiente</div></div>';
   html+='</div>';
   if(!conDeuda.length){
@@ -9620,6 +9624,21 @@ function saveFund(){const n=document.getElementById("nf-n").value.trim();if(!n)r
 function oAporte(fid){OM(`<div class="moh"><span class="mot">💰 Registrar Aporte</span><button class="moc" onclick="CM()">✕</button></div><input class="inp" id="ap-q" placeholder="Quien aporta"/><input class="inp" id="ap-m" type="number" placeholder="Monto ($)"/><div style="display:flex;gap:8px;"><button class="btn" style="flex:1;" data-id="${fid}" onclick="saveAporte(parseInt(this.dataset.id))">✓ Registrar</button><button class="btn" style="border-color:#666;color:#666;" onclick="CM()">Cancelar</button></div>`);}
 function saveAporte(fid){const m=parseFloat(document.getElementById("ap-m").value);const q=document.getElementById("ap-q").value.trim();if(!m||!q)return;D.fundraising=gFU().map(i=>i.id===fid?{...i,rec:i.rec+m,aportes:[...i.aportes,{quien:q,monto:m,fecha:tod()}]}:i);SD();addN(`💰 Aporte ${fD(m)}`);CM();mFund();}
 
+
+function avisarPendientesEns(eid){
+  var e=gEN().find(function(x){return x.id===eid;});
+  if(!e)return;
+  var pendientes=gST().filter(function(s){return e.asist.indexOf(s.id)<0;});
+  if(pendientes.length===0){addN("Todos los estudiantes ya confirmaron asistencia");return;}
+  if(!D.mensajes)D.mensajes=[];
+  var txt="🎭 Recordatorio: "+e.titulo+" — 📅 "+e.fecha+" · 🕐 "+e.hora+" · 📍 "+e.lugar+(e.oblig?" (Obligatorio)":"");
+  pendientes.forEach(function(s){
+    D.mensajes.push({id:Date.now()+s.id,from:ckey(CU),to:ckey({id:s.id,role:"estudiante"}),txt:txt,fecha:tod(),hora:nowT(),read:false});
+  });
+  SD();
+  addN("📨 Recordatorio enviado a "+pendientes.length+" estudiante(s) pendiente(s)");
+}
+
 function mEns(){
   var c=CU?CU.color:"#C9A84C";
   var mc=document.getElementById("mc");
@@ -9648,6 +9667,7 @@ function mEns(){
     html+='</div>';
     if(!CU||CU.role!=="estudiante"){
       html+=pbHTML(e.asist.length,gST().length,c);
+      html+='<button class="btn bs" style="width:100%;margin-bottom:8px;border-color:#4CA8C9;color:#4CA8C9;" data-eid="'+e.id+'" onclick="avisarPendientesEns(parseInt(this.dataset.eid))">📨 Avisar a pendientes</button>';
     html+='<input class="inp" placeholder="🔍 Buscar estudiante..." oninput="filtrarEnsInline(this)" style="margin-bottom:6px;"/>';
       html+='<div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:5px;">';
       sortByName(gST()).forEach(function(s){
@@ -10303,18 +10323,24 @@ function filtrarChats(q){
   }
 }
 
+
+function ckey(u){ return (u.role==="estudiante"?"s":"u")+u.id; }
+
 function mChat(){
   var c=CU?CU.color:"#C9A84C";
   if(!D.mensajes)D.mensajes=[];
   var _allMsgs=gMS();
   if(CU&&CU.role==="estudiante"){
-    D.mensajes=_allMsgs.filter(function(m){return m.from===CU.id||m.to===CU.id||m.to==="all";});
+    var _myKey=ckey(CU);
+    D.mensajes=_allMsgs.filter(function(m){return m.from===_myKey||m.to===_myKey||m.to==="all";});
   }
   // Get conversations for current user
   // Combine staff and students for messaging
-  var staffUsers=getUsuarios();
+  var staffUsers=getUsuarios().map(function(u){return Object.assign({},u,{ckey:ckey(u)});});
   var studentUsers=gST().map(function(s){
-    return {id:s.id,name:s.nombre,role:"estudiante",color:"#C94C7A",av:(s.nombre?s.nombre.charAt(0):"?")};
+    var su={id:s.id,name:s.nombre,role:"estudiante",color:"#C94C7A",av:(s.nombre?s.nombre.charAt(0):"?")};
+    su.ckey=ckey(su);
+    return su;
   });
   // Estudiante only sees staff, not other students
   var todos=(CU&&CU.role==="estudiante")?staffUsers:staffUsers.concat(studentUsers);
@@ -10329,10 +10355,11 @@ function mChat(){
     todos.forEach(function(u){
       if(u.id===CU.id)return;
       // Count unread
-      var msgs=D.mensajes.filter(function(m){return (m.from===u.id&&m.to===CU.id)||(m.from===CU.id&&m.to===u.id);});
-      var unread=D.mensajes.filter(function(m){return m.from===u.id&&m.to===CU.id&&!m.read;}).length;
+      var myKey2=ckey(CU);
+      var msgs=D.mensajes.filter(function(m){return (m.from===u.ckey&&m.to===myKey2)||(m.from===myKey2&&m.to===u.ckey);});
+      var unread=D.mensajes.filter(function(m){return m.from===u.ckey&&m.to===myKey2&&!m.read;}).length;
       var last=msgs.length?msgs[msgs.length-1]:null;
-      html+='<div style="background:#12121a;border:1px solid '+(unread?"#C9A84C40":"#2a2a3a")+';border-radius:10px;padding:12px;margin-bottom:8px;cursor:pointer;display:flex;align-items:center;gap:12px;" data-uid="'+u.id+'" data-name="'+u.name+'" onclick="openChat(parseInt(this.dataset.uid))">';
+      html+='<div style="background:#12121a;border:1px solid '+(unread?"#C9A84C40":"#2a2a3a")+';border-radius:10px;padding:12px;margin-bottom:8px;cursor:pointer;display:flex;align-items:center;gap:12px;" data-uid="'+u.ckey+'" data-name="'+u.name+'" onclick="openChat(this.dataset.uid)">';
       html+='<div style="width:40px;height:40px;border-radius:50%;background:'+u.color+'20;border:2px solid '+u.color+'60;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:bold;color:'+u.color+';flex-shrink:0;">'+((u.name||u.av||"?").charAt(0).toUpperCase())+'</div>';
       html+='<div style="flex:1;">';
       html+='<div style="font-size:14px;color:#ddd;">'+u.name+'</div>';
@@ -10344,17 +10371,17 @@ function mChat(){
     html+='</div>'; // end chat-user-list
   } else {
     // Show conversation
-    var otherUser=todos.find(function(u){return u.id===window._chatWith;});
+    var otherUser=todos.find(function(u){return u.ckey===window._chatWith;});
     if(!otherUser){window._chatWith=null;mChat();return;}
     html+='<button class="btn bs" style="margin-bottom:12px;" onclick="window._chatWith=null;mChat()">← Volver</button>';
     html+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:10px;background:#12121a;border-radius:10px;">';
     html+='<div style="width:36px;height:36px;border-radius:50%;background:'+otherUser.color+'20;border:2px solid '+otherUser.color+'60;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:bold;color:'+otherUser.color+';">'+(( otherUser.name||'?').charAt(0).toUpperCase())+'</div>';
     html+='<div><div style="font-size:14px;color:#ddd;">'+otherUser.name+'</div><div style="font-size:11px;color:'+otherUser.color+';">'+otherUser.role+'</div></div></div>';
     // Messages
-    var convMsgs=D.mensajes.filter(function(m){return (m.from===CU.id&&m.to===window._chatWith)||(m.from===window._chatWith&&m.to===CU.id);});
+    var convMsgs=(function(){var mk=ckey(CU);return D.mensajes.filter(function(m){return (m.from===mk&&m.to===window._chatWith)||(m.from===window._chatWith&&m.to===mk);});})();
     // Mark as read
     D.mensajes=D.mensajes.map(function(m){
-      if(m.from===window._chatWith&&m.to===CU.id) return {id:m.id,from:m.from,to:m.to,txt:m.txt,fecha:m.fecha,hora:m.hora,read:true};
+      if(m.from===window._chatWith&&m.to===ckey(CU)) return {id:m.id,from:m.from,to:m.to,txt:m.txt,fecha:m.fecha,hora:m.hora,read:true};
       return m;
     });
     SD();
@@ -10386,7 +10413,7 @@ function sendChatMsg(){
   var txt=document.getElementById("chat-msg")?document.getElementById("chat-msg").value.trim():"";
   if(!txt)return;
   if(!D.mensajes)D.mensajes=[];
-  D.mensajes.push({id:Date.now(),from:CU.id,to:window._chatWith,txt:txt,fecha:tod(),hora:nowT(),read:false});
+  D.mensajes.push({id:Date.now(),from:ckey(CU),to:window._chatWith,txt:txt,fecha:tod(),hora:nowT(),read:false});
   SD();addN("💬 Mensaje a "+getUsuarios().find(function(u){return u.id===window._chatWith;}).name);
   mChat();
 }
