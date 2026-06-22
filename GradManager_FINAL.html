@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v255</title>
+<title>GradManager 2025 — v256</title>
 <style>
 :root{--app-color:#C9A84C;}
 html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;font-size:16px;}
@@ -8278,8 +8278,62 @@ function crearRespaldoManual(){
     mBackups();
   }catch(e){alert("Error: "+e.message);}
 }
+
+function exportarSync(){
+  try{
+    var data=JSON.stringify(D,null,2);
+    var blob=new Blob([data],{type:"application/json"});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement("a");
+    var fecha=new Date();
+    var ts=fecha.getDate()+"_"+(fecha.getMonth()+1)+"_"+fecha.getFullYear()+"_"+fecha.getHours()+"h"+fecha.getMinutes();
+    a.href=url;
+    a.download="GradManager_SYNC_"+ts+".json";
+    a.click();
+    URL.revokeObjectURL(url);
+    addN("📤 Archivo de sincronizacion exportado");
+  }catch(e){alert("Error al exportar: "+e.message);}
+}
+
+function importarSync(input){
+  var file=input.files[0];
+  if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var data=JSON.parse(e.target.result);
+      if(!data||typeof data!=="object"){alert("Archivo no valido.");return;}
+      window._syncData=data;
+      confirmarAccion("Importar datos de '"+file.name+"'? Los datos actuales de ESTE dispositivo seran reemplazados.",function(){
+        var d=window._syncData;
+        if(!d){alert("Error: datos perdidos. Intenta de nuevo.");return;}
+        // Restore everything from sync file
+        Object.keys(d).forEach(function(k){D[k]=d[k];});
+        window._syncData=null;
+        SD();
+        addN("✅ Sincronizacion completada");
+        CM();
+        go("dash");
+      });
+    }catch(err){alert("Error al leer archivo: "+err.message);}
+  };
+  reader.readAsText(file);
+  input.value="";
+}
+
 function mBackups(){
-  var html='<div class="dv"></div><div class="ct">Respaldos Automaticos</div>';
+  var html='<div class="dv"></div>';
+  // SYNC SECTION
+  html+='<div style="background:#0d0d16;border:1px solid #C9A84C40;border-radius:12px;padding:14px;margin-bottom:16px;">';
+  html+='<div style="font-size:13px;color:#C9A84C;font-weight:bold;margin-bottom:6px;">📲 Sincronizar entre dispositivos</div>';
+  html+='<div style="font-size:11px;color:#888;margin-bottom:12px;">Exporta los datos de este dispositivo e importalos en el otro para tenerlos iguales.</div>';
+  html+='<button class="btn bs bg" style="width:100%;margin-bottom:8px;" onclick="exportarSync()">📤 Exportar para sincronizar</button>';
+  html+='<label style="display:block;width:100%;">';
+  html+='<div class="btn bs bw" style="text-align:center;cursor:pointer;">📥 Importar de otro dispositivo</div>';
+  html+='<input type="file" accept="*/*" style="display:none;" onchange="importarSync(this)"/>';
+  html+='</label>';
+  html+='</div>';
+  html+='<div class="ct">Respaldos Automaticos</div>';
   html+='<button class="btn bs bg" style="width:100%;margin-bottom:14px;padding:13px;" onclick="crearRespaldoManual()">💾 Respaldos Automaticos</button>';
   var backups=[];
   try{backups=JSON.parse(localStorage.getItem("gm_backups")||"[]");}catch(e){}
