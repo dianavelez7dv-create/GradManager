@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v251</title>
+<title>GradManager 2025 — v252</title>
 <style>
 :root{--app-color:#C9A84C;}
 html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;font-size:16px;}
@@ -3532,8 +3532,25 @@ function exportPDF(title,headers,rows){
 // LOGIN / LOGOUT
 // ═══════════════════════════════════
 
+
+function confirmarNuevoAnio(){
+  confirmarAccion("Iniciar nuevo ano: se conservan los usuarios pero se borraran estudiantes, pagos, rifas, subastas, premios, ventas, consignaciones, ensayos, encuestas, votaciones, compras, recaudacion, proveedores y alertas. Los usuarios y configuracion se mantienen.",function(){
+    var usuarios=D.usuarios||[];
+    var gradConfig=D.gradConfig||{};
+    var licencia=D.licencia||null;
+    var notifs=D.notifs||[];
+    // Reset to blank but keep users and config
+    D={};
+    if(usuarios.length) D.usuarios=usuarios;
+    if(gradConfig.nombre||gradConfig.color) D.gradConfig=gradConfig;
+    if(licencia) D.licencia=licencia;
+    SD();
+    location.reload();
+  });
+}
+
 function adminResetBtn(){
-  return '<div style="height:1px;background:#1e1e28;margin:8px 0;"></div><button class="btn bs br bw" onclick="confirmarResetAdmin()">🗑️ Resetear todos los datos (solo admin)</button>';
+  return '<div style="height:1px;background:#1e1e28;margin:8px 0;"></div><button class="btn bs bw" style="margin-bottom:6px;width:100%;border-color:#4CA8C9;color:#4CA8C9;" onclick="confirmarNuevoAnio()">🎓 Nuevo Ano (conservar usuarios)</button>' + '<button class="btn bs br bw" onclick="confirmarResetAdmin()">🗑️ Resetear todos los datos (solo admin)</button>';
 }
 function confirmarResetAdmin(){
   confirmarAccion("Se borraran TODOS los datos de la app. Esta accion NO se puede deshacer.",function(){
