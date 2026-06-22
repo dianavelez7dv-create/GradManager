@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v269</title>
+<title>GradManager 2025 — v270</title>
 <style>
 :root{--app-color:#C9A84C;}
 html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;font-size:18px;}
@@ -4058,36 +4058,39 @@ function rStudents(){
       const sc=sal<=0?"#4CC97A":pag>0?"#C9A84C":"#C94C7A";
       const sinCuotas=(!s.parts||s.parts.length===0);
       const slbl=sinCuotas?"⚠️ Sin cuotas":sal<=0?"Al dia":pag>0?"Parcial":"Pendiente";
-      const scolor=sinCuotas?"#C9A84C":sal<=0?"#4CC97A":"#C94C7A";
       const aw=gAW().filter(a=>a.sid===s.id&&a.ok).map(a=>{const t=ATY.find(x=>x.id===a.tid);return t?t.icon:"";}).join("");
-      var _stat=sinCuotas?"none":sal<=0?"al-dia":pag>0?"parcial":"sin-pagar";
-      return `<div class="card" data-student="true" data-nombre="${s.nombre}" data-status="${_stat}" style="border-color:${sc}33;margin-bottom:10px;">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-          ${s.foto?`<img src="${s.foto}" style="width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid ${c};flex-shrink:0;"/>`:`<div style="width:42px;height:42px;border-radius:50%;background:${c}25;border:2px solid ${c};display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:bold;color:${c};flex-shrink:0;">${s.nombre[0]}</div>`}
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:16px;color:#ddd;font-weight:bold;">${s.nombre} ${aw}</div>
-            <div style="font-size:12px;color:#666;">🪪 ${s.carnet||""}${s.carrera||s.grado?` · 📚 ${s.carrera||s.grado}`:""}</div>
-            ${s.tel?`<div style="font-size:12px;color:#666;">📞 ${s.tel}</div>`:""}
-          </div>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-          <span class="badge" style="color:${sc};border:1px solid ${sc};">${slbl}</span>
-          <div style="font-size:14px;color:#ddd;">${fD(pag)}<span style="color:#555;font-size:12px;">/${fD(tot)}</span></div>
-        </div>
-        ${pb(pag,tot,sc)}
-        <div class="g2" style="margin-top:10px;gap:6px;">
-
-          ${(function(){var _sal=cT(s.parts)-cP(s.pagos);if(_sal>0){var _pag=cP(s.pagos);return '<div style="grid-column:span 2;font-size:11px;color:#C94C7A;text-align:center;padding:7px;background:#C94C7A10;border-radius:8px;border:1px solid #C94C7A30;">\u26a0 Saldo pendiente: '+fD(_sal)+'</div>';}var _pag2=cP(s.pagos),_tot2=cT(s.parts);if(_pag2>0&&_tot2>0&&_pag2>=_tot2){return '<div style="grid-column:span 2;font-size:11px;color:#4CC97A;text-align:center;padding:7px;background:#4CC97A10;border-radius:8px;border:1px solid #4CC97A30;">✅ '+fD(_pag2)+' cubre actividades ('+fD(_tot2)+')</div>';}return '';})()}
-          ${CU&&CU.role!=="estudiante"&&CU.role!=="padres"?`<button class="btn bs bb" style="font-size:11px;" data-id="${s.id}" onclick="oEditSt(parseInt(this.dataset.id))">Editar datos</button>
-          <button class="btn bs" style="font-size:11px;border-color:#7C6CD4;color:#7C6CD4;background:#7C6CD420;" data-id="${s.id}" onclick="mEntregasDetalle(parseInt(this.dataset.id))">📦 Entregas</button>
-          <button class="btn bs br" style="font-size:11px;" data-id="${s.id}" onclick="delSt(parseInt(this.dataset.id))">🗑️</button>
-          <button class="btn bs" style="font-size:11px;border-color:#C9A84C;background:#C9A84C20;color:#C9A84C;" data-id="${s.id}" onclick="oParts(parseInt(this.dataset.id))">✎ Actividades</button>
-          <button class="btn bs bp" style="font-size:11px;" data-id="${s.id}" onclick="oPay(parseInt(this.dataset.id))">🧾 Pagos</button>`:""}
-          <button class="btn bs" style="font-size:11px;border-color:#4CA8C9;color:#4CA8C9;" data-id="${s.id}" data-qr="${s.qr||''}" onclick="oVerQR(parseInt(this.dataset.id),this.dataset.qr)">📱 QR</button>
-          <button class="btn bs" style="font-size:11px;border-color:#7C6CD4;color:#7C6CD4;" data-id="${s.id}" onclick="oConsignSt(parseInt(this.dataset.id))">🤝 Consign</button>
-          <button class="btn bs bg" style="font-size:11px;" data-id="${s.id}" onclick="cSt(parseInt(this.dataset.id))">📞 Contactar</button>
-        </div>
-      </div>`;
+      const _stat=sinCuotas?"none":sal<=0?"al-dia":pag>0?"parcial":"sin-pagar";
+      var h="";
+      h+='<div class="card" data-student="true" data-nombre="'+s.nombre+'" data-status="'+_stat+'" style="border-color:'+sc+'33;margin-bottom:16px;padding:16px;">';
+      h+='<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">';
+      if(s.foto){h+='<img src="'+s.foto+'" style="width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid '+sc+';flex-shrink:0;"/>';}
+      else{h+='<div style="width:44px;height:44px;border-radius:50%;background:'+sc+'25;border:2px solid '+sc+';display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:bold;color:'+sc+';flex-shrink:0;">'+(s.nombre?s.nombre.charAt(0):"?")+'</div>';}
+      h+='<div style="flex:1;min-width:0;">';
+      h+='<div style="font-size:17px;color:#ddd;font-weight:bold;margin-bottom:6px;">'+s.nombre+' '+aw+'</div>';
+      h+='<div style="display:flex;align-items:center;gap:10px;">';
+      h+='<span class="badge" style="color:'+sc+';border:1px solid '+sc+';">'+slbl+'</span>';
+      h+='<span style="font-size:14px;color:#ddd;">'+fD(pag)+'<span style="color:#555;font-size:12px;">/'+fD(tot)+'</span></span>';
+      h+='</div>';
+      h+='</div>';
+      h+='</div>';
+      h+=pb(pag,tot,sc);
+      h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;">';
+      if(CU&&CU.role!=="estudiante"&&CU.role!=="padres"){
+        h+='<button class="btn bs bb" style="padding:14px 6px;font-size:14px;" data-id="'+s.id+'" onclick="oEditSt(parseInt(this.dataset.id))">Editar datos</button>';
+        h+='<button class="btn bs" style="padding:14px 6px;font-size:14px;border-color:#7C6CD4;color:#7C6CD4;" data-id="'+s.id+'" onclick="mEntregasDetalle(parseInt(this.dataset.id))">📦 Entregas</button>';
+        h+='<button class="btn bs br" style="padding:14px 6px;font-size:14px;" data-id="'+s.id+'" onclick="delSt(parseInt(this.dataset.id))">🗑️ Borrar</button>';
+        h+='<button class="btn bs" style="padding:14px 6px;font-size:14px;border-color:#C9A84C;color:#C9A84C;" data-id="'+s.id+'" onclick="oParts(parseInt(this.dataset.id))">✎ Actividades</button>';
+        h+='<button class="btn bs bp" style="padding:14px 6px;font-size:14px;" data-id="'+s.id+'" onclick="oPay(parseInt(this.dataset.id))">🧾 Pagos</button>';
+        h+='<button class="btn bs" style="padding:14px 6px;font-size:14px;border-color:#4CA8C9;color:#4CA8C9;" data-id="'+s.id+'" data-qr="'+(s.qr||"")+'" onclick="oVerQR(parseInt(this.dataset.id),this.dataset.qr)">📱 QR</button>';
+        h+='<button class="btn bs" style="padding:14px 6px;font-size:14px;border-color:#7C6CD4;color:#7C6CD4;" data-id="'+s.id+'" onclick="oConsignSt(parseInt(this.dataset.id))">🤝 Consign</button>';
+        h+='<button class="btn bs bg" style="padding:14px 6px;font-size:14px;" data-id="'+s.id+'" onclick="cSt(parseInt(this.dataset.id))">📞 Contactar</button>';
+      } else {
+        h+='<button class="btn bs" style="padding:14px 6px;font-size:14px;border-color:#4CA8C9;color:#4CA8C9;" data-id="'+s.id+'" data-qr="'+(s.qr||"")+'" onclick="oVerQR(parseInt(this.dataset.id),this.dataset.qr)">📱 QR</button>';
+        h+='<button class="btn bs bg" style="padding:14px 6px;font-size:14px;" data-id="'+s.id+'" onclick="cSt(parseInt(this.dataset.id))">📞 Contactar</button>';
+      }
+      h+='</div>';
+      h+='</div>';
+      return h;
     }).join("")}`;
   // Search listener
   // Status filter buttons (Al dia / Parcial / Sin pagar)
