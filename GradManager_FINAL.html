@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v248</title>
+<title>GradManager 2025 — v251</title>
 <style>
 :root{--app-color:#C9A84C;}
 html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;font-size:16px;}
@@ -3459,7 +3459,7 @@ const gNT=()=>D.notifs||[];
 function fD(n){var sym=getCurrency().symbol||"$";return sym+Number(n||0).toLocaleString();};
 
 const tod=()=>new Date().toISOString().split("T")[0];
-const nowT=()=>new Date().toLocaleTimeString("es",{hour:"2-digit",minute:"2-digit"});
+const nowT=()=>new Date().toLocaleTimeString("es",{hour:"2-digit",minute:"2-digit",hour12:true});
 function cT(ps){return (ps||[]).reduce(function(s,pid){var _p=gP().find(function(p){return p.id===pid;});return s+((_p?_p.costo:0)||0);},0);};
 function cP(pg){return (pg||[]).reduce(function(s,p){return s+p.monto;},0);};
 function topO(it){if(!it.ofertas||!it.ofertas.length)return null;return it.ofertas.reduce(function(a,b){return a.monto>b.monto?a:b;});};
@@ -10403,6 +10403,7 @@ function ckey(u){ return (u.role==="estudiante"?"s":"u")+u.id; }
 function rChatScreen(){
   var el=document.getElementById("s-chat");
   if(!el)return;
+  window._chatWith=null;
   el.innerHTML='<div id="mc"></div>';
   mChat();
 }
@@ -10491,12 +10492,20 @@ function openChat(uid){
   window._chatWith=uid;mChat();
 }
 function sendChatMsg(){
-  var txt=document.getElementById("chat-msg")?document.getElementById("chat-msg").value.trim():"";
+  var inp=document.getElementById("chat-msg");
+  var txt=inp?inp.value.trim():"";
   if(!txt)return;
   if(!D.mensajes)D.mensajes=[];
   D.mensajes.push({id:Date.now(),from:ckey(CU),to:window._chatWith,txt:txt,fecha:tod(),hora:nowT(),read:false});
-  SD();addN("💬 Mensaje a "+getUsuarios().find(function(u){return u.id===window._chatWith;}).name);
+  SD();
+  if(inp){inp.value="";}
+  // Visual feedback on send button
+  var btn=document.querySelector("#mc .btn.bg");
+  if(btn){btn.textContent="✓";btn.style.background="#4CC97A";setTimeout(function(){btn.textContent="➤";btn.style.background="";},800);}
+  // Re-render to show the new message immediately
   mChat();
+  // Scroll to bottom of conversation
+  setTimeout(function(){var msgs=document.querySelector("#mc [style*='min-height:200px']");if(msgs)msgs.scrollTop=msgs.scrollHeight;},50);
 }
 
 function mAI(){
