@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v262</title>
+<title>GradManager 2025 — v269</title>
 <style>
 :root{--app-color:#C9A84C;}
 html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;font-size:18px;}
@@ -19,14 +19,14 @@ html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:1
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 
 body{font-family:Georgia,serif;background:#0a0a0f;color:#e8e0d0;min-height:100vh;}
-.sc{display:none;padding:14px;padding-bottom:90px;overflow-x:hidden;box-sizing:border-box;}.sc.on{display:block;}
+.sc{display:none;padding:14px;padding-bottom:90px;box-sizing:border-box;}.sc.on{display:block;}
 .hdr{background:#12121a;border-bottom:1px solid #2a2a3a;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;}
 .bnav{position:fixed;bottom:0;left:0;right:0;background:#12121a;border-top:1px solid #1e1e28;display:flex;z-index:100;overflow-x:auto;scrollbar-width:none;}
 .bnav::-webkit-scrollbar{display:none;}
 .nb{flex:0 0 auto;padding:10px 12px;border:none;background:transparent;color:#555;font-family:Georgia,serif;font-size:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:58px;border-top:2px solid transparent;}
 .nb.on{color:#C9A84C;border-top-color:#C9A84C;}
 .nb span:first-child{font-size:18px;}
-.card{background:#12121a;border:1px solid #C9A84C30;border-radius:12px;padding:14px;margin-bottom:12px;word-break:break-word;overflow-wrap:break-word;max-width:100%;box-sizing:border-box;}
+.card{background:#12121a;border:1px solid #C9A84C30;border-radius:12px;padding:14px;margin-bottom:12px;box-sizing:border-box;}
 .ct{font-size:10px;letter-spacing:3px;color:#C9A84C;text-transform:uppercase;margin-bottom:12px;}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
 .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;}
@@ -4062,18 +4062,17 @@ function rStudents(){
       const aw=gAW().filter(a=>a.sid===s.id&&a.ok).map(a=>{const t=ATY.find(x=>x.id===a.tid);return t?t.icon:"";}).join("");
       var _stat=sinCuotas?"none":sal<=0?"al-dia":pag>0?"parcial":"sin-pagar";
       return `<div class="card" data-student="true" data-nombre="${s.nombre}" data-status="${_stat}" style="border-color:${sc}33;margin-bottom:10px;">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
-          <div style="display:flex;align-items:center;gap:8px;flex:1;">
-            ${s.foto?`<img src="${s.foto}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid ${c};flex-shrink:0;"/>`:`<div style="width:40px;height:40px;border-radius:50%;background:${c}25;border:2px solid ${c};display:flex;align-items:center;justify-content:center;font-size:15px;color:${c};flex-shrink:0;">${s.nombre[0]}</div>`}
-            <div style="flex:1;">
-            <div style="font-size:15px;color:#ddd;margin-bottom:3px;">${s.nombre} ${aw}</div>
-            <div style="font-size:11px;color:#666;margin-bottom:2px;">🪪 ${s.carnet} · 📚 ${s.carrera}</div>
-            <div style="font-size:11px;color:#666;">📞 ${s.tel||"—"}${s.gpa?` · <span style="color:${c};font-weight:bold;">GPA:${s.gpa}</span>`:""}</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+          ${s.foto?`<img src="${s.foto}" style="width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid ${c};flex-shrink:0;"/>`:`<div style="width:42px;height:42px;border-radius:50%;background:${c}25;border:2px solid ${c};display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:bold;color:${c};flex-shrink:0;">${s.nombre[0]}</div>`}
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:16px;color:#ddd;font-weight:bold;">${s.nombre} ${aw}</div>
+            <div style="font-size:12px;color:#666;">🪪 ${s.carnet||""}${s.carrera||s.grado?` · 📚 ${s.carrera||s.grado}`:""}</div>
+            ${s.tel?`<div style="font-size:12px;color:#666;">📞 ${s.tel}</div>`:""}
           </div>
-          <div style="text-align:right;flex-shrink:0;margin-left:8px;">
-            <span class="badge" style="color:${sc};border:1px solid ${sc};">${slbl}</span>
-            <div style="font-size:13px;color:#ddd;margin-top:5px;">${fD(pag)}<span style="color:#555;">/${fD(tot)}</span></div>
-          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <span class="badge" style="color:${sc};border:1px solid ${sc};">${slbl}</span>
+          <div style="font-size:14px;color:#ddd;">${fD(pag)}<span style="color:#555;font-size:12px;">/${fD(tot)}</span></div>
         </div>
         ${pb(pag,tot,sc)}
         <div class="g2" style="margin-top:10px;gap:6px;">
