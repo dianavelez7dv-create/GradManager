@@ -1,4 +1,4 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8"/>
@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v238</title>
+<title>GradManager 2025 — v248</title>
 <style>
 :root{--app-color:#C9A84C;}
 html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;font-size:16px;}
@@ -154,6 +154,7 @@ body.light .is { color: var(--text2); }
   <div id="s-suba" class="sc"></div>
   <div id="s-scan" class="sc"></div>
   <div id="s-prov" class="sc"></div>
+  <div id="s-chat" class="sc"></div>
   <div id="s-more" class="sc"><div id="mc"></div></div>
   <nav class="bnav">
     <button class="nb on" id="nb-dash" onclick="go('dash')"><span>◈</span>Inicio</button>
@@ -163,6 +164,7 @@ body.light .is { color: var(--text2); }
     <button class="nb" id="nb-suba" onclick="go('suba')"><span>🔨</span>Subastas</button>
     <button class="nb" id="nb-scan" onclick="go('scan')"><span>📡</span>Escanear</button>
     <button class="nb" id="nb-prov" onclick="go('prov')"><span>🤝</span>Proveed.</button>
+    <button class="nb" id="nb-chat" onclick="go('chat')" style="position:relative;"><span id="nb-chat-icon">💬</span><span id="nb-chat-badge" style="display:none;position:absolute;top:4px;right:4px;background:#C94C7A;color:#fff;border-radius:50%;min-width:14px;height:14px;font-size:9px;padding:0 2px;line-height:14px;"></span>Mensajes</button>
     <button class="nb" id="nb-more" onclick="go('more')"><span>☰</span>Mas</button>
   </nav>
 </div>
@@ -2607,16 +2609,18 @@ function launchFireworks(container){
 
 function showGradMessage(){
   var name=CU?CU.name:"Graduado";
-  var gradName=(D.gradConfig&&D.gradConfig.nombre)||"Graduacion 2025";
+  var gc=(typeof gGC==="function")?gGC():(D.gradConfig||{});
+  var gradName=gc.nombre||"Graduacion 2025";
+  var gradColor=gc.color||"#C9A84C";
   var msg=document.createElement("div");
   msg.id="grad-msg";
-  msg.style.cssText="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:10000;background:rgba(10,10,20,0.95);border:2px solid #C9A84C;border-radius:20px;padding:30px;text-align:center;max-width:320px;width:90%;pointer-events:all;";
+  msg.style.cssText="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:10000;background:rgba(10,10,20,0.95);border:2px solid "+gradColor+";border-radius:20px;padding:30px;text-align:center;max-width:320px;width:90%;pointer-events:all;";
   msg.innerHTML='<div style="font-size:60px;margin-bottom:12px;">🎓</div>'+
-    '<div style="font-size:22px;color:#C9A84C;font-weight:bold;margin-bottom:8px;">¡Felicitaciones!</div>'+
+    '<div style="font-size:22px;color:'+gradColor+';font-weight:bold;margin-bottom:8px;">¡Felicitaciones!</div>'+
     '<div style="font-size:16px;color:#e8e0d0;margin-bottom:6px;">'+name+'</div>'+
-    '<div style="font-size:13px;color:#888;margin-bottom:20px;">'+gradName+'</div>'+
+    '<div style="font-size:17px;color:'+gradColor+';font-weight:bold;margin-bottom:20px;">'+gradName+'</div>'+
     '<div style="font-size:28px;margin-bottom:16px;">🎊 🥂 🎉</div>'+
-    '<button onclick="cerrarMsgGrad()" style="background:#C9A84C;border:none;color:#000;padding:10px 28px;border-radius:20px;font-size:14px;cursor:pointer;font-family:Georgia,serif;font-weight:bold;">¡Gracias! 🎓</button>';
+    '<button onclick="cerrarMsgGrad()" style="background:'+gradColor+';border:none;color:#000;padding:10px 28px;border-radius:20px;font-size:14px;cursor:pointer;font-family:Georgia,serif;font-weight:bold;">¡Gracias! 🎓</button>';
   document.body.appendChild(msg);
   // Animate entrance
   msg.style.opacity="0";
@@ -3674,7 +3678,7 @@ function applyTheme(){
 // NAVIGATION
 // ═══════════════════════════════════
 let curS="dash";
-const RENDERS={dash:rDash,stud:rStudents,awrd:rAwards,rifa:rRifas,suba:rSubastas,scan:rScanner,prov:rProviders,more:rMore};
+const RENDERS={dash:rDash,stud:rStudents,awrd:rAwards,rifa:rRifas,suba:rSubastas,scan:rScanner,prov:rProviders,chat:rChatScreen,more:rMore};
 
 function updateNavForRole(){
   if(!CU) return;
@@ -3702,6 +3706,12 @@ function go(id,_skipHistory){if(id!=="dash"&&!canAccess(id)){alert("No tienes pe
   if(movEl){movEl.style.display="";movEl.style.pointerEvents="";movEl.style.zIndex="";}
   document.querySelectorAll(".sc").forEach(s=>s.classList.remove("on"));
   document.querySelectorAll(".nb").forEach(b=>{b.classList.remove("on");b.style.color="";b.style.borderTopColor="";});
+  var _chatBadgeEl=document.getElementById("nb-chat-badge");
+  if(_chatBadgeEl&&CU&&D.mensajes){
+    var _unrd=(D.mensajes||[]).filter(function(m){return m.to===ckey(CU)&&!m.read;}).length;
+    _chatBadgeEl.textContent=_unrd>0?(_unrd>9?"9+":String(_unrd)):"";
+    _chatBadgeEl.style.display=_unrd>0?"block":"none";
+  }
   if(id==="stud") window._studFilter=null;
   if(id==="awrd") window._awrdFilter=null;
   if(id==="rifa") window._rifaFilter=null;
@@ -4050,7 +4060,7 @@ function rStudents(){
   // Status filter buttons (Al dia / Parcial / Sin pagar)
   // sbf buttons use inline onclick - no addEventListener needed
   var si=document.getElementById("stud-srch");
-  if(si) si.addEventListener("input",function(){
+  if(si) si.oninput=function(){
     window._studFilter=null;
     ["al-dia","parcial","sin-pagar"].forEach(function(s2){var b2=document.getElementById("sbf-"+s2);if(b2)b2.style.boxShadow="";});
     var q=this.value.toLowerCase().trim();
@@ -4074,7 +4084,7 @@ function rStudents(){
       return '<div class="card" data-student="true" data-nombre="'+s.nombre+'" style="border-color:'+sc2+'33;margin-bottom:10px;padding:12px;"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><div><div style="font-size:14px;color:#ddd;margin-bottom:2px;">'+s.nombre+'</div><div style="font-size:11px;color:#666;">'+s.carnet+' · '+s.carrera+'</div></div><span style="font-size:11px;color:'+sc2+';">'+( sal<=0?"✅ Al dia":pag>0?"⚠ $"+sal.toFixed(2)+" pend.":"❌ Sin pagar")+'</span></div>'+btns+'</div>';
     }).join("");
     while(tmp.firstChild) container.appendChild(tmp.firstChild);
-  });
+  };
 }
 function delSt(sid){
   var s=gST().find(function(x){return x.id===sid;});
@@ -5520,7 +5530,9 @@ function expScannerPDF(){
 
 function oGestScanEvts(){
   if(!D.scanEvts) D.scanEvts=[{id:"jarana",l:"Jarana/Fiesta",i:"🎉"},{id:"bformal",l:"Baile Formal",i:"💃"},{id:"cere",l:"Ceremonia",i:"🎓"}];
+  if(!D.scanHidden) D.scanHidden=[];
   var html='<div class="moh"><span class="mot">✎ Eventos del Escáner</span><button class="moc" onclick="CM();rScanner()">✕</button></div>';
+  html+='<div style="font-size:11px;color:#555;letter-spacing:2px;margin-bottom:8px;">EVENTOS BASE</div>';
   html+='<div style="margin-bottom:12px;">';
   D.scanEvts.forEach(function(e,i){
     html+='<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #1e1e28;">';
@@ -5530,13 +5542,32 @@ function oGestScanEvts(){
     html+='</div>';
   });
   html+='</div>';
+  if(gP().length>0){
+    html+='<div style="font-size:11px;color:#555;letter-spacing:2px;margin-bottom:8px;">ACTIVIDADES DEL CATALOGO</div>';
+    html+='<div style="margin-bottom:12px;">';
+    gP().forEach(function(p){
+      var oculto=D.scanHidden.indexOf(p.id)>=0;
+      html+='<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #1e1e28;'+(oculto?"opacity:.4;":"")+'">';
+      html+='<span style="font-size:20px;margin-right:8px;">'+(p.icon||"📦")+'</span>';
+      html+='<span style="font-size:13px;color:#ddd;flex:1;">'+p.label+(oculto?" (oculto)":"")+'</span>';
+      html+='<button type="button" data-pid="'+p.id+'" onclick="togScanHidden(this.dataset.pid)" style="background:none;border:1px solid '+(oculto?"#4CC97A40;color:#4CC97A":"#C94C7A40;color:#C94C7A")+';border-radius:6px;padding:2px 8px;cursor:pointer;font-size:11px;">'+(oculto?"↺ Mostrar":"✕ Ocultar")+'</button>';
+      html+='</div>';
+    });
+    html+='</div>';
+  }
   html+='<div class="ct">NUEVO EVENTO</div>';
   html+='<div style="display:flex;gap:6px;margin-bottom:6px;">';
-  html+='<input class="inp" id="se-icon" placeholder="🎊" style="flex:0 0 50px;margin:0;" maxlength="2"/>';
+  html+='<input class="inp" id="se-icon" placeholder="🎊" style="flex:0 0 50px;margin:0;"/>';
   html+='<input class="inp" id="se-name" placeholder="Nombre del evento *" style="flex:1;margin:0;"/>';
   html+='</div>';
   html+='<button type="button" class="btn bs bw" onclick="addScanEvt()">+ Agregar Evento</button>';
   OM(html);
+}
+function togScanHidden(pid){
+  if(!D.scanHidden)D.scanHidden=[];
+  var i=D.scanHidden.indexOf(pid);
+  if(i>=0)D.scanHidden.splice(i,1);else D.scanHidden.push(pid);
+  SD();oGestScanEvts();
 }
 
 function addScanEvt(){
@@ -5565,9 +5596,11 @@ function rScanner(){
     window._scanKeys.push(e.id);
   });
   // Add PARTS activities as scannable events
+  if(!D.scanHidden)D.scanHidden=[];
   gP().forEach(function(p){
+    if(D.scanHidden.indexOf(p.id)>=0)return;
     if(!window._scanEvts[p.id]){
-      window._scanEvts[p.id]={l:p.label,i:p.icon||"📦",isPart:true};
+      window._scanEvts[p.id]={l:p.label,i:p.icon||"📦",isPart:true,partId:p.id};
       window._scanKeys.push(p.id);
     }
   });
@@ -6314,8 +6347,7 @@ function rMore(){
     {i:"📜",l:"Programa",f:"prog"},
     {i:"👘",l:"Togas",f:"toga"},
     {i:"💌",l:"Invitaciones",f:"invit"},
-    {i:"💬",l:"Mensajes",f:"chat"},
-    {i:"🤖",l:"Reporte IA",f:"ai"},
+{i:"🤖",l:"Reporte IA",f:"ai"},
     {i:"🛒",l:"Ventas",f:"ventas"},
     {i:"📊",l:"Reportes",f:"reportes"},
     {i:"🎓",l:"Tutorial",f:"tutorial"},
@@ -6337,7 +6369,11 @@ function rMore(){
 
     var bc=x.f==="usuarios"?"#C9A84C40":"#2a2a3a";
     var tc=x.f==="usuarios"?"#C9A84C":"#ddd";
-    html+='<button data-tab="'+x.f+'" onclick="mTab(this.dataset.tab)" style="background:#12121a;border:1px solid '+bc+';border-radius:12px;padding:10px 6px;cursor:pointer;text-align:center;font-family:Georgia,serif;">';
+    html+='<button data-tab="'+x.f+'" onclick="mTab(this.dataset.tab)" style="background:#12121a;border:1px solid '+bc+';border-radius:12px;padding:10px 6px;cursor:pointer;text-align:center;font-family:Georgia,serif;position:relative;">';
+    if(x.f==="chat"){
+      var _unreadCt=(D.mensajes||[]).filter(function(mm){return mm.to===ckey(CU)&&!mm.read;}).length;
+      if(_unreadCt>0) html+='<div style="position:absolute;top:4px;right:4px;background:#C94C7A;color:#fff;border-radius:50%;min-width:18px;height:18px;font-size:10px;display:flex;align-items:center;justify-content:center;padding:0 4px;">'+_unreadCt+'</div>';
+    }
     html+='<div style="font-size:24px;margin-bottom:5px;">'+x.i+'</div>';
     html+='<div style="font-size:12px;color:'+tc+';">'+x.l+'</div>';
     html+='</button>';
@@ -7768,8 +7804,7 @@ function mPermisos(){
     {key:"prog",icon:"📜",label:"Programa"},
     {key:"toga",icon:"👘",label:"Togas"},
     {key:"invit",icon:"💌",label:"Invitaciones"},
-    {key:"chat",icon:"💬",label:"Mensajes"},
-    {key:"ai",icon:"🤖",label:"Reporte IA"},
+{key:"ai",icon:"🤖",label:"Reporte IA"},
     {key:"ventas",icon:"🛒",label:"Ventas"},
     {key:"compras",icon:"📋",label:"Lista Compras"},
     {key:"usuarios",icon:"👥",label:"Usuarios"},
@@ -9625,18 +9660,56 @@ function oAporte(fid){OM(`<div class="moh"><span class="mot">💰 Registrar Apor
 function saveAporte(fid){const m=parseFloat(document.getElementById("ap-m").value);const q=document.getElementById("ap-q").value.trim();if(!m||!q)return;D.fundraising=gFU().map(i=>i.id===fid?{...i,rec:i.rec+m,aportes:[...i.aportes,{quien:q,monto:m,fecha:tod()}]}:i);SD();addN(`💰 Aporte ${fD(m)}`);CM();mFund();}
 
 
-function avisarPendientesEns(eid){
+function oAvisarEns(eid){
   var e=gEN().find(function(x){return x.id===eid;});
   if(!e)return;
-  var pendientes=gST().filter(function(s){return e.asist.indexOf(s.id)<0;});
-  if(pendientes.length===0){addN("Todos los estudiantes ya confirmaron asistencia");return;}
+  window._avisarEnsId=eid;
+  var html="";
+  html+='<div class="moh"><span class="mot">📨 Avisar — '+e.titulo+'</span><button class="moc" onclick="CM()">✕</button></div>';
+  html+='<div style="font-size:12px;color:#888;margin-bottom:10px;">Selecciona a quien enviar el recordatorio:</div>';
+  html+='<div style="display:flex;gap:8px;margin-bottom:10px;">';
+  html+='<button class="btn bs" style="flex:1;font-size:11px;" onclick="avEnsToggleAll(true)">✓ Todos</button>';
+  html+='<button class="btn bs" style="flex:1;font-size:11px;" onclick="avEnsToggleAll(false)">Ninguno</button>';
+  html+='<button class="btn bs" style="flex:1;font-size:11px;" onclick="avEnsTogglePend()">Solo pendientes</button>';
+  html+='</div>';
+  html+='<div id="av-ens-list" style="max-height:300px;overflow-y:auto;margin-bottom:12px;">';
+  sortByName(gST()).forEach(function(s){
+    var asistio=e.asist.indexOf(s.id)>=0;
+    html+='<label style="display:flex;align-items:center;gap:10px;padding:8px;background:#0d0d16;border-radius:8px;margin-bottom:6px;cursor:pointer;">';
+    html+='<input type="checkbox" class="av-ens-chk" data-sid="'+s.id+'" '+(asistio?"":"checked")+' style="width:18px;height:18px;"/>';
+    html+='<span style="flex:1;font-size:13px;color:#ddd;">'+s.nombre+'</span>';
+    if(asistio) html+='<span style="font-size:10px;color:#4CC97A;">✓ Asistio</span>';
+    html+='</label>';
+  });
+  html+='</div>';
+  html+='<button class="btn" style="width:100%;" onclick="enviarAvisoEns()">📨 Enviar a seleccionados</button>';
+  OM(html);
+}
+function avEnsToggleAll(val){document.querySelectorAll(".av-ens-chk").forEach(function(c){c.checked=val;});}
+function avEnsTogglePend(){
+  var e=gEN().find(function(x){return x.id===window._avisarEnsId;});
+  if(!e)return;
+  document.querySelectorAll(".av-ens-chk").forEach(function(c){
+    var sid=parseInt(c.dataset.sid);
+    c.checked=e.asist.indexOf(sid)<0;
+  });
+}
+function enviarAvisoEns(){
+  var e=gEN().find(function(x){return x.id===window._avisarEnsId;});
+  if(!e)return;
+  var seleccionados=[];
+  document.querySelectorAll(".av-ens-chk").forEach(function(c){
+    if(c.checked) seleccionados.push(parseInt(c.dataset.sid));
+  });
+  if(seleccionados.length===0){alert("Selecciona al menos un estudiante.");return;}
   if(!D.mensajes)D.mensajes=[];
   var txt="🎭 Recordatorio: "+e.titulo+" — 📅 "+e.fecha+" · 🕐 "+e.hora+" · 📍 "+e.lugar+(e.oblig?" (Obligatorio)":"");
-  pendientes.forEach(function(s){
-    D.mensajes.push({id:Date.now()+s.id,from:ckey(CU),to:ckey({id:s.id,role:"estudiante"}),txt:txt,fecha:tod(),hora:nowT(),read:false});
+  seleccionados.forEach(function(sid){
+    D.mensajes.push({id:Date.now()+sid,from:ckey(CU),to:ckey({id:sid,role:"estudiante"}),txt:txt,fecha:tod(),hora:nowT(),read:false});
   });
   SD();
-  addN("📨 Recordatorio enviado a "+pendientes.length+" estudiante(s) pendiente(s)");
+  CM();
+  addN("📨 Recordatorio enviado a "+seleccionados.length+" estudiante(s)");
 }
 
 function mEns(){
@@ -9667,7 +9740,7 @@ function mEns(){
     html+='</div>';
     if(!CU||CU.role!=="estudiante"){
       html+=pbHTML(e.asist.length,gST().length,c);
-      html+='<button class="btn bs" style="width:100%;margin-bottom:8px;border-color:#4CA8C9;color:#4CA8C9;" data-eid="'+e.id+'" onclick="avisarPendientesEns(parseInt(this.dataset.eid))">📨 Avisar a pendientes</button>';
+      html+='<button class="btn bs" style="width:100%;margin-bottom:8px;border-color:#4CA8C9;color:#4CA8C9;" data-eid="'+e.id+'" onclick="oAvisarEns(parseInt(this.dataset.eid))">📨 Avisar a estudiantes</button>';
     html+='<input class="inp" placeholder="🔍 Buscar estudiante..." oninput="filtrarEnsInline(this)" style="margin-bottom:6px;"/>';
       html+='<div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:5px;">';
       sortByName(gST()).forEach(function(s){
@@ -10325,6 +10398,14 @@ function filtrarChats(q){
 
 
 function ckey(u){ return (u.role==="estudiante"?"s":"u")+u.id; }
+
+
+function rChatScreen(){
+  var el=document.getElementById("s-chat");
+  if(!el)return;
+  el.innerHTML='<div id="mc"></div>';
+  mChat();
+}
 
 function mChat(){
   var c=CU?CU.color:"#C9A84C";
