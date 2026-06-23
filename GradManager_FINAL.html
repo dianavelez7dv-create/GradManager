@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v277</title>
+<title>GradManager 2025 — v278</title>
 <style>
 :root{--app-color:#C9A84C;}
 html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;font-size:18px;}
@@ -8514,7 +8514,8 @@ function mAlertas(){
     html+='<div style="font-size:36px;margin-bottom:8px;">✅</div><div style="font-size:15px;color:#4CC97A;font-weight:bold;">Todos al dia!</div></div>';
   } else {
     html+='<button class="btn bs" style="margin-bottom:12px;border-color:#C94C7A;color:#C94C7A;background:#C94C7A20;width:100%;" onclick="waRecordatorioTodos()">📱 Recordatorio a todos con deuda</button>';
-    conDeuda.forEach(function(s){
+    var _listaAl=(window._alFiltro==="aldia")?sinDeuda:conDeuda;
+    _listaAl.forEach(function(s){
       var deuda=cT(s.parts)-cP(s.pagos);
       var pagado=cP(s.pagos);var total=cT(s.parts);
       var pct=total?Math.round((pagado/total)*100):0;
