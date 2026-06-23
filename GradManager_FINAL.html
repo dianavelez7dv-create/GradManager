@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v276</title>
+<title>GradManager 2025 — v277</title>
 <style>
 :root{--app-color:#C9A84C;}
 html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;font-size:18px;}
@@ -3106,7 +3106,8 @@ function expReporteGraduacion(){
   if(!conDeuda.length){
     rows.push(["Sin deudas pendientes"," "," "]);
   } else {
-    conDeuda.forEach(function(s){
+    var _listaAl=window._alFiltro==="aldia"?sinDeuda:conDeuda;
+    _listaAl.forEach(function(s){
       var sal=cT(s.parts)-cP(s.pagos||[]);
       rows.push([s.nombre,s.carnet||"—",fD(sal)]);
     });
@@ -6466,12 +6467,9 @@ function sMC(h){
   }
   if(el){
     el.innerHTML=h;
-    // Enable pointer events on all clickable divs (same fix as OM)
     var clk=el.querySelectorAll("[onclick]");
     for(var j=0;j<clk.length;j++){
       clk[j].style.pointerEvents="auto";
-      clk[j].style.position="relative";
-      clk[j].style.zIndex="1";
     }
   }
 }
@@ -8178,12 +8176,14 @@ function applyClientColor(color){
 
 function saveClientColor(){
   var inp=document.getElementById('cfg-color');
-  if(!inp)return;
+  if(!inp){addN("No se encontro el selector de color");return;}
   if(!D.gradConfig)D.gradConfig={};
   D.gradConfig.colorPrimario=inp.value;
+  var c=inp.value;
   SD();
-  applyClientColor(inp.value);
-  addN("Color actualizado");
+  applyClientColor(c);
+  addN("✅ Color actualizado: "+c);
+  rMore();
 }
 
 function saveInstConfig(){
@@ -8503,8 +8503,10 @@ function mAlertas(){
   var sinDeuda=gST().filter(function(s){return cP(s.pagos)>=cT(s.parts);});
   var totalDeuda=conDeuda.reduce(function(s,st){return s+(cT(st.parts)-cP(st.pagos));},0);
   html+='<div class="g3" style="margin-bottom:14px;">';
-  html+='<div class="sb" id="sbfal-deuda" style="border-color:#C94C7A;cursor:pointer;" onclick="fAL_deuda()"><div class="sv" style="color:#C94C7A;">'+conDeuda.length+'</div><div class="sl">Con deuda</div></div>';
-  html+='<div class="sb" id="sbfal-aldia" style="border-color:#4CC97A;cursor:pointer;" onclick="fAL_aldia()"><div class="sv" style="color:#4CC97A;">'+sinDeuda.length+'</div><div class="sl">Al dia</div></div>';
+  var _deudaActive=(!window._alFiltro||window._alFiltro==="deuda");
+  var _aldiaActive=(window._alFiltro==="aldia");
+  html+='<div class="sb" id="sbfal-deuda" style="border-color:#C94C7A;cursor:pointer;'+(_deudaActive?'box-shadow:0 0 0 2px #C94C7A;':'')+'" onclick="fAL_deuda()"><div class="sv" style="color:#C94C7A;">'+conDeuda.length+'</div><div class="sl">Con deuda</div></div>';
+  html+='<div class="sb" id="sbfal-aldia" style="border-color:#4CC97A;cursor:pointer;'+(_aldiaActive?'box-shadow:0 0 0 2px #4CC97A;':'')+'" onclick="fAL_aldia()"><div class="sv" style="color:#4CC97A;">'+sinDeuda.length+'</div><div class="sl">Al dia</div></div>';
   html+='<div class="sb" style="border-color:#C9A84C;"><div class="sv" style="color:#C9A84C;font-size:13px;">'+fD(totalDeuda)+'</div><div class="sl">Pendiente</div></div>';
   html+='</div>';
   if(!conDeuda.length){
