@@ -10,12 +10,15 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v271</title>
+<title>GradManager 2025 — v274</title>
 <style>
 :root{--app-color:#C9A84C;}
 html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;font-size:18px;}
-@media (max-width:360px){html{font-size:15px;}}
-@media (min-width:600px){html{font-size:18px;}}
+@media (max-width:360px){html{font-size:16px;}}
+@media (min-width:600px){html{font-size:19px;}}
+body{font-size:15px;}
+.inp{font-size:15px !important;}
+.btn{font-size:14px !important;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 
 body{font-family:Georgia,serif;background:#0a0a0f;color:#e8e0d0;min-height:100vh;}
@@ -165,8 +168,7 @@ body.light .is { color: var(--text2); }
     <button class="nb" id="nb-suba" onclick="go('suba')"><span>🔨</span>Subastas</button>
     <button class="nb" id="nb-scan" onclick="go('scan')"><span>📡</span>Escanear</button>
     <button class="nb" id="nb-prov" onclick="go('prov')"><span>🤝</span>Proveed.</button>
-    <button class="nb" id="nb-chat" onclick="go('chat')" style="position:relative;"><span id="nb-chat-icon">💬</span><span id="nb-chat-badge" style="display:none;position:absolute;top:4px;right:4px;background:#C94C7A;color:#fff;border-radius:50%;min-width:14px;height:14px;font-size:9px;padding:0 2px;line-height:14px;"></span>Mensajes</button>
-    <button class="nb" id="nb-more" onclick="go('more')"><span>☰</span>Mas</button>
+    <button class="nb" id="nb-more" onclick="go('more')" style="position:relative;"><span>☰</span><span id="nb-msg-badge" style="display:none;position:absolute;top:4px;right:6px;background:#C94C7A;color:#fff;border-radius:50%;min-width:14px;height:14px;font-size:9px;padding:0 2px;line-height:14px;"></span>Mas</button>
   </nav>
 </div>
 
@@ -3712,7 +3714,7 @@ function applyTheme(){
 // NAVIGATION
 // ═══════════════════════════════════
 let curS="dash";
-const RENDERS={dash:rDash,stud:rStudents,awrd:rAwards,rifa:rRifas,suba:rSubastas,scan:rScanner,prov:rProviders,chat:rChatScreen,more:rMore};
+const RENDERS={dash:rDash,stud:rStudents,awrd:rAwards,rifa:rRifas,suba:rSubastas,scan:rScanner,prov:rProviders,more:rMore};
 
 function updateNavForRole(){
   if(!CU) return;
@@ -3737,7 +3739,7 @@ function go(id,_skipHistory){if(id!=="dash"&&!canAccess(id)){alert("No tienes pe
   var spt=document.getElementById("s-parts");if(spt) spt.style.zIndex="";
   // Restore modal overlay in case oPay messed with it
   var movEl=document.getElementById("mov");
-  if(movEl){movEl.style.display="";movEl.style.pointerEvents="";movEl.style.zIndex="";}
+  if(movEl){movEl.classList.remove("on");movEl.style.display="";movEl.style.pointerEvents="";movEl.style.zIndex="";}
   document.querySelectorAll(".sc").forEach(s=>s.classList.remove("on"));
   document.querySelectorAll(".nb").forEach(b=>{b.classList.remove("on");b.style.color="";b.style.borderTopColor="";});
   var _chatBadgeEl=document.getElementById("nb-chat-badge");
@@ -6383,6 +6385,7 @@ function rMore(){
     {i:"📜",l:"Programa",f:"prog"},
     {i:"👘",l:"Togas",f:"toga"},
     {i:"💌",l:"Invitaciones",f:"invit"},
+    {i:"💬",l:"Mensajes",f:"chat"},
 {i:"🤖",l:"Reporte IA",f:"ai"},
     {i:"🛒",l:"Ventas",f:"ventas"},
     {i:"📊",l:"Reportes",f:"reportes"},
@@ -6443,7 +6446,7 @@ function rMore(){
     html+='<div class="dv"></div>';
     html+='<div style="font-size:10px;color:#555;letter-spacing:2px;margin-bottom:8px;">MONEDA / CURRENCY</div>';
     html+=currencySelector();
-      html+='<button class="btn bs bw" style="margin-bottom:8px;border-color:#4CC97A;color:#4CC97A;background:#4CC97A20;" onclick="irPermisos()">🔐 Control de Acceso</button>';
+      
     html+='<button class="btn bs bw" style="margin-bottom:8px;border-color:#7C6CD4;color:#7C6CD4;background:#7C6CD420;" onclick="oResetSelectivo()">🔄 Preparar para nuevo ano</button>';
     html+=adminResetBtn();
   }
