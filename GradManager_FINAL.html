@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v278</title>
+<title>GradManager 2025 — v279</title>
 <style>
 :root{--app-color:#C9A84C;}
 html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;font-size:18px;}
@@ -7176,6 +7176,31 @@ function expVentasPDF(){
 }
 
 
+
+function crearUsuarioPrueba(){
+  var email="prueba@gradmanager.app";
+  var pass="Prueba2025";
+  var nombre="Usuario Prueba";
+  if(!D.usuarios)D.usuarios=getUsuarios().slice();
+  // Remove existing test user if exists
+  D.usuarios=D.usuarios.filter(function(u){return u.email!==email;});
+  var newU={id:Date.now(),name:nombre,email:email,pass:pass,role:"maestro",color:"#4CA8C9",av:"P"};
+  D.usuarios.push(newU);
+  SD();
+  // Show credentials
+  var html='<div class="moh"><span class="mot">👤 Usuario de Prueba Creado</span><button class="moc" onclick="CM();mUsuarios()">✕</button></div>';
+  html+='<div style="background:#0d0d16;border-radius:10px;padding:16px;margin-bottom:14px;">';
+  html+='<div style="font-size:13px;color:#888;margin-bottom:8px;">Credenciales para el dispositivo de prueba:</div>';
+  html+='<div style="font-size:15px;color:#ddd;margin-bottom:6px;">📧 '+email+'</div>';
+  html+='<div style="font-size:15px;color:#ddd;margin-bottom:6px;">🔑 '+pass+'</div>';
+  html+='<div style="font-size:12px;color:#555;margin-top:8px;">Rol: Maestro</div>';
+  html+='</div>';
+  html+='<div style="font-size:12px;color:#888;margin-bottom:14px;">Exporta el respaldo y mándalo al otro dispositivo para que tenga los mismos datos.</div>';
+  html+='<button class="btn bs bg" style="width:100%;margin-bottom:8px;" onclick="exportarSync();CM()">📤 Exportar datos ahora</button>';
+  html+='<button class="btn bs" style="width:100%;" onclick="CM();mUsuarios()">OK</button>';
+  OM(html);
+}
+
 function mUsuarios(){
   var us=getUsuarios();
   var c=CU?CU.color:"#C9A84C";
@@ -7185,6 +7210,7 @@ function mUsuarios(){
   html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">';
   html+='<div class="ct" style="margin:0;">👥 Usuarios ('+us.length+')</div>';
   html+='<button class="btn bs" style="border-color:'+c+';color:'+c+';background:'+c+'20;" onclick="oAddUsuario()">+ Nuevo Usuario</button>';
+  html+='<button class="btn bs" style="border-color:#4CA8C9;color:#4CA8C9;" onclick="crearUsuarioPrueba()">🧪 Usuario de Prueba</button>';
   html+='</div>';
   us.forEach(function(u){
     html+='<div class="srch-item" style="background:#12121a;border:1px solid '+u.color+'40;border-radius:12px;padding:14px;margin-bottom:10px;">';
