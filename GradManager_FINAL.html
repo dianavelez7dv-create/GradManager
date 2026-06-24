@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v279</title>
+<title>GradManager 2025 — v281</title>
 <style>
 :root{--app-color:#C9A84C;}
 html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;font-size:18px;}
@@ -3663,8 +3663,8 @@ function refreshLoginList(){
   if(!el)return;
   var html="";
   sortByName(getUsuarios(),'name').forEach(function(u){
-    html+='<div style="font-size:12px;color:'+u.color+';margin-bottom:5px;cursor:pointer;display:flex;justify-content:space-between;" data-email="'+u.email+'" onclick="ql(this.dataset.email)">';
-    html+='<span>'+u.icon+' '+u.name+'</span><span style="font-size:10px;color:#444;">'+u.role+'</span></div>';
+    html+='<div style="font-size:16px;color:'+u.color+';margin-bottom:2px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:12px 10px;background:#0d0d16;border-radius:8px;border:1px solid '+u.color+'30;" data-email="'+u.email+'" onclick="ql(this.dataset.email)">';
+    html+='<span style="font-weight:bold;">'+u.icon+' '+u.name+'</span><span style="font-size:12px;color:#666;background:#ffffff10;padding:3px 8px;border-radius:10px;">'+u.role+'</span></div>';
   });
   el.innerHTML=html;
 }
@@ -8320,9 +8320,11 @@ function exportarSync(){
     var ts=fecha.getDate()+"_"+(fecha.getMonth()+1)+"_"+fecha.getFullYear()+"_"+fecha.getHours()+"h"+fecha.getMinutes();
     a.href=url;
     a.download="GradManager_SYNC_"+ts+".json";
+    a.style.display="none";
+    document.body.appendChild(a);
     a.click();
-    URL.revokeObjectURL(url);
-    addN("📤 Archivo de sincronizacion exportado");
+    setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},1000);
+    addN("📤 Archivo exportado — revisa tus Descargas");
   }catch(e){alert("Error al exportar: "+e.message);}
 }
 
