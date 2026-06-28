@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v284</title>
+<title>GradManager 2025 — v285</title>
 <style>
 :root{--app-color:#C9A84C;}
 html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;font-size:18px;}
@@ -5823,6 +5823,7 @@ function rRifas(){
       ${(function(){if(!r.ganador)return"";return '<div style="background:#7C6CD420;border:1px solid #7C6CD440;border-radius:8px;padding:10px;margin-bottom:8px;display:flex;gap:10px;align-items:center;"><span style="font-size:18px;">🎉</span><div style="flex:1;"><div style="font-size:13px;color:#ddd;">Ganador: <strong style="color:#7C6CD4;">'+r.ganador.comp+'</strong></div><div style="font-size:11px;color:#555;">Boleto #'+r.ganador.num+'</div></div><button class="btn bs bg" style="font-size:11px;" data-id="'+r.id+'" onclick="waGanRifa(parseInt(this.dataset.id))">📱 WA</button></div>';})()}
       <button class="btn bs bw" style="border-color:${sc};color:${sc};background:${sc}15;" data-id="${r.id}" onclick="oRifaDet(parseInt(this.dataset.id))">Ver Detalle →</button>
       ${r.estado==="activa"&&!r.ganador?`<button class="btn bs" style="font-size:11px;border-color:#7C6CD4;color:#7C6CD4;background:#7C6CD420;margin-top:6px;width:100%;" data-id="${r.id}" onclick="doSorteo(parseInt(this.dataset.id))">🎰 Realizar Sorteo</button>`:""}
+    <button class="btn bs br" style="width:100%;margin-top:6px;" onclick="delRifa(${r.id})">🗑 Eliminar rifa</button>
     </div>`;}).join("")}`;
 }
 function waGanRifa(rid){const r=gRI().find(x=>x.id===rid);if((r&&r.ganador))oWA(r.ganador.wa||"",`FELICIDADES ${r.ganador.comp}! Ganaste la ${r.nombre} con boleto #${r.ganador.num}. Premio: ${r.premio}. Comunicate con la directiva.`);}
@@ -5983,7 +5984,7 @@ function rSubastas(){
         </div>
         <div id="sub-badges-${sub.id}" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px;">${(function(){var bh="";sub.items.forEach(function(it){var c=it.ganador?"#4CC97A":"#aaa";var bc=it.ganador?"#4CC97A":"#333";var lbl=it.emoji+" "+it.nombre.slice(0,14)+(it.ganador?" ✓":" ("+it.ofertas.length+")");bh+='<span class="badge" style="color:'+c+';border:1px solid '+bc+';">'+lbl+'</span>';});return bh;})()}</div>
         <button class="btn bs bw" style="border-color:${tc};color:${tc};background:${tc}15;" data-id="${sub.id}" onclick="oSubDet(parseInt(this.dataset.id))">Ver y Gestionar Ofertas →</button>
-      <button class="btn bs br" onclick="delSubasta(sub.id)">🗑 Eliminar subasta</button>
+      <button class="btn bs br" onclick="delSubasta(${sub.id})">🗑 Eliminar subasta</button>
       </div>`;
     }).join("")}`;
 }
@@ -6524,6 +6525,19 @@ function filtVentasSearch(q){
   });
 }
 
+
+function delProd(id){
+  if(!confirm("¿Eliminar este producto?"))return;
+  if(!D.ventas)return;
+  D.ventas.productos=(D.ventas.productos||[]).filter(function(p){return p.id!==id;});
+  SD();mVentas();
+}
+function limpiarProductos(){
+  if(!confirm("¿Eliminar TODOS los productos?"))return;
+  if(D.ventas)D.ventas.productos=[];
+  SD();mVentas();
+}
+
 function mVentas(){
   var c=CU?CU.color:"#C9A84C";
   var prods=gPR2();
@@ -6570,6 +6584,7 @@ function mVentas(){
       html+='<div style="display:flex;gap:6px;margin-top:10px;align-items:center;">';
       html+='<input type="number" id="vc-'+p.id+'" value="1" min="1" max="'+(p.stock-p.vendido)+'" style="width:60px;background:#0d0d16;border:1px solid #2a2a3a;border-radius:6px;padding:6px 8px;color:#ddd;font-size:13px;outline:none;"/>';
       html+='<button class="btn bs bg" style="flex:1;" data-pid="'+p.id+'" onclick="oVentaModal(parseInt(this.dataset.pid))">🛒 Vender</button>';
+      html+='<button class="btn bs br" data-pid="\'+p.id+\'" onclick="delProd(this.dataset.pid)">🗑</button>';
       html+='<button class="btn bs" style="border-color:#C94C7A;color:#C94C7A;background:#C94C7A20;" data-pid="'+p.id+'" onclick="editProd(parseInt(this.dataset.pid))">✎</button>';
       html+='</div>';
     } else {
