@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v283</title>
+<title>GradManager 2025 — v284</title>
 <style>
 :root{--app-color:#C9A84C;}
 html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;font-size:18px;}
@@ -3538,19 +3538,38 @@ function exportPDF(title,headers,rows){
 
 
 function confirmarNuevoAnio(){
-  confirmarAccion("Nuevo Ano: conserva alumnos, catalogo de actividades, preguntas de encuestas/votaciones y productos de ventas. Borra pagos, respuestas, resultados y transacciones.",function(){
+  confirmarAccion("Nuevo Ano: conserva alumnos, catalogo de actividades, preguntas de encuestas/votaciones, rifas (sin boletos), subastas (sin ofertas) y productos de ventas (sin historial). Borra pagos, respuestas, resultados y transacciones.",function(){
     var staffUsers=(D.usuarios||[]).filter(function(u){return u.role!=="estudiante";});
     var gradConfig=D.gradConfig||{};
     var licencia=D.licencia||null;
+    // Alumnos sin pagos ni cuotas
     var students=(D.students||[]).map(function(s){
       return Object.assign({},s,{pagos:[],parts:[],asis:{},entregas:[],toga:null,qr:null});
     });
+    // Catalogo de actividades
     var parts=D.PARTS||[];
-    var encuestas=(D.encuestas||[]).map(function(e){return Object.assign({},e,{resp:{},activa:true});});
-    var votaciones=(D.votaciones||[]).map(function(v){return Object.assign({},v,{votos:{},estado:"activa"});});
-    var rifas=(D.rifas||[]).map(function(r){return Object.assign({},r,{ganador:null,resultado:null,sorteoFecha:null});});
-    var subastas=(D.subastas||[]).map(function(s){return Object.assign({},s,{ofertas:[],ganador:null});});
-    var ventas={productos:(D.ventas&&D.ventas.productos)||[],ventas:[],consignaciones:[]};
+    // Encuestas: conservar preguntas, borrar respuestas
+    var encuestas=(D.encuestas||[]).map(function(e){
+      return Object.assign({},e,{resp:{},activa:true});
+    });
+    // Votaciones: conservar opciones, borrar votos
+    var votaciones=(D.votaciones||[]).map(function(v){
+      return Object.assign({},v,{votos:{},estado:"activa"});
+    });
+    // Rifas: conservar info, borrar boletos y ganador
+    var rifas=(D.rifas||[]).map(function(r){
+      return Object.assign({},r,{boletos:[],ganador:null,estado:"activa",rec:0});
+    });
+    // Subastas: conservar info, borrar ofertas y ganador
+    var subastas=(D.subastas||[]).map(function(s){
+      return Object.assign({},s,{ofertas:[],ganador:null,estado:"activa"});
+    });
+    // Ventas: conservar productos, resetear vendido, borrar historial
+    var vProductos=((D.ventas&&D.ventas.productos)||[]).map(function(p){
+      return Object.assign({},p,{vendido:0});
+    });
+    var ventas={productos:vProductos,ventas:[],consignaciones:[]};
+    // Reset
     D={};
     if(staffUsers.length) D.usuarios=staffUsers;
     if(gradConfig.nombre||gradConfig.color) D.gradConfig=gradConfig;
@@ -3561,11 +3580,12 @@ function confirmarNuevoAnio(){
     if(votaciones.length) D.votaciones=votaciones;
     if(rifas.length) D.rifas=rifas;
     if(subastas.length) D.subastas=subastas;
-    if(ventas.productos.length) D.ventas=ventas;
-    SD();CU=null;CM();go("dash");
+    if(vProductos.length) D.ventas=ventas;
+    SD();CM();go("dash");
     addN("🎓 Nuevo Ano iniciado correctamente");
   });
 }
+
 
 
 function adminResetBtn(){
@@ -8914,6 +8934,45 @@ function saveAviso(){
   SD();addN("📢 "+t);CM();mAviso();
 }
 
+
+// ═══ DELETE/CLEAR functions for modules ═══
+function delVotacion(id){
+  if(!confirm("¿Eliminar esta votacion?"))return;
+  D.votaciones=(D.votaciones||[]).filter(function(v){return v.id!==id;});
+  SD();mVoto();
+}
+function limpiarVotaciones(){
+  if(!confirm("¿Eliminar TODAS las votaciones?"))return;
+  D.votaciones=[];SD();mVoto();
+}
+function delEncuesta(id){
+  if(!confirm("¿Eliminar esta encuesta?"))return;
+  D.encuestas=(D.encuestas||[]).filter(function(e){return e.id!==id;});
+  SD();mEnc();
+}
+function limpiarEncuestas(){
+  if(!confirm("¿Eliminar TODAS las encuestas?"))return;
+  D.encuestas=[];SD();mEnc();
+}
+function delRifa(id){
+  if(!confirm("¿Eliminar esta rifa?"))return;
+  D.rifas=(D.rifas||[]).filter(function(r){return r.id!==id;});
+  SD();rRifas();
+}
+function limpiarRifas(){
+  if(!confirm("¿Eliminar TODAS las rifas?"))return;
+  D.rifas=[];SD();rRifas();
+}
+function delSubasta(id){
+  if(!confirm("¿Eliminar esta subasta?"))return;
+  D.subastas=(D.subastas||[]).filter(function(s){return s.id!==id;});
+  SD();rSubastas();
+}
+function limpiarSubastas(){
+  if(!confirm("¿Eliminar TODAS las subastas?"))return;
+  D.subastas=[];SD();rSubastas();
+}
+
 function mVoto(){
   var c=CU?CU.color:"#C9A84C";
   var html='<div class="dv"></div>';
@@ -9118,6 +9177,7 @@ function mEnc(){
   html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">';
   html+='<div class="ct" style="margin:0;">📊 Encuestas</div>';
   if(CU&&(CU.role==="admin"||CU.role==="directiva")) html+='<button class="btn bs" onclick="oAddEnc()">+ Nuevo</button>';
+  html+='<button class="btn bs br" onclick="limpiarEncuestas()" style="margin-left:6px;">🗑 Limpiar todo</button>';
   html+='</div>';
   [].concat(gEC()).sort(function(a,b){return a.pregunta.localeCompare(b.pregunta);}).forEach(function(enc){
     var resp=enc.resp||{};
