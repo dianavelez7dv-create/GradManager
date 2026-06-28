@@ -5983,6 +5983,7 @@ function rSubastas(){
         </div>
         <div id="sub-badges-${sub.id}" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px;">${(function(){var bh="";sub.items.forEach(function(it){var c=it.ganador?"#4CC97A":"#aaa";var bc=it.ganador?"#4CC97A":"#333";var lbl=it.emoji+" "+it.nombre.slice(0,14)+(it.ganador?" ✓":" ("+it.ofertas.length+")");bh+='<span class="badge" style="color:'+c+';border:1px solid '+bc+';">'+lbl+'</span>';});return bh;})()}</div>
         <button class="btn bs bw" style="border-color:${tc};color:${tc};background:${tc}15;" data-id="${sub.id}" onclick="oSubDet(parseInt(this.dataset.id))">Ver y Gestionar Ofertas →</button>
+      <button class="btn bs br" onclick="delSubasta(sub.id)">🗑 Eliminar subasta</button>
       </div>`;
     }).join("")}`;
 }
@@ -9211,6 +9212,7 @@ function mEnc(){
       html+='<div style="display:flex;gap:6px;">';
       html+='<button class="btn bs bb" style="flex:1;" data-eid="'+enc.id+'" onclick="expEncPDF(parseInt(this.dataset.eid))">📄 PDF</button>';
       html+='<button class="btn bs bg" data-eid="'+enc.id+'" onclick="oWaEnc(parseInt(this.dataset.eid))">📱 WhatsApp</button>';
+      html+='<button class="btn bs br" data-eid="\'+enc.id+\'" onclick="delEncuesta(parseInt(this.dataset.eid))">🗑</button>';
       html+='</div>';
     }
     html+='</div>';
