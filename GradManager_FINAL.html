@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v286</title>
+<title>GradManager 2025 — v287</title>
 <style>
 :root{--app-color:#C9A84C;}
 html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;font-size:18px;}
@@ -5849,6 +5849,37 @@ function saveNewRifa(){
   D.rifas.push({id:Date.now(),nombre:n,desc:document.getElementById("nr-d").value,premio:p,emoji:"🎫",foto:foto_r,precioB:parseFloat(document.getElementById("nr-pb").value)||10,totalB:parseInt(document.getElementById("nr-tb").value)||50,estado:"activa",fechaS:document.getElementById("nr-f").value,boletos:[],ganador:null,rec:0});
   SD();addN(`🎫 Nueva rifa: ${n}`);CM();rRifas();
 }
+
+function delBoleto(rid, num){
+  if(!confirm("¿Eliminar el boleto #"+num+"?"))return;
+  var nrid=Number(rid)||rid;
+  var nnum=Number(num)||num;
+  D.rifas=(D.rifas||[]).map(function(r){
+    if(r.id!=nrid) return r;
+    return Object.assign({},r,{
+      boletos:r.boletos.filter(function(b){return b.num!=nnum;}),
+      rec:Math.max(0,(r.rec||0)-r.precioB)
+    });
+  });
+  SD();oRifaDet(nrid);
+}
+
+function delOferta(sid,iid,idx){
+  if(!confirm("¿Eliminar esta oferta?"))return;
+  var nsid=Number(sid)||sid;
+  var niid=Number(iid)||iid;
+  D.subastas=(D.subastas||[]).map(function(sub){
+    if(sub.id!=nsid) return sub;
+    var newItems=(sub.items||[]).map(function(it){
+      if(it.id!=niid) return it;
+      var newOfs=it.ofertas.filter(function(o,i){return i!=idx;});
+      return Object.assign({},it,{ofertas:newOfs});
+    });
+    return Object.assign({},sub,{items:newItems});
+  });
+  SD();oSubDet(nsid);
+}
+
 function oRifaDet(rid){
   var r=gRI().find(function(x){return x.id===rid;});if(!r)return;
   var v=r.boletos.filter(function(b){return b.pagado;}).length;
@@ -5912,6 +5943,7 @@ function oRifaDet(rid){
     html+='<div style="width:24px;height:24px;border-radius:5px;background:'+(isG?"#FFD700":"#C9A84C20")+';border:1px solid #C9A84C40;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:bold;color:'+(isG?"#000":"#C9A84C")+';">'+b.num+'</div>';
     html+='<div><div class="it">'+b.comp+'</div><div class="is">📅 '+b.fecha+(b.wa?" · 📱 "+b.wa:"")+'</div></div></div>';
     html+='<span class="badge" style="color:'+(b.pagado?"#4CC97A":"#C9A84C")+';border:1px solid '+(b.pagado?"#4CC97A":"#C9A84C")+';">'+(b.pagado?"✓":"⏳")+'</span>';
+    html+='<button class="btn bs br" style="padding:4px 8px;font-size:11px;" data-rid="'+r.id+'" data-num="'+b.num+'" onclick="delBoleto(this.dataset.rid,this.dataset.num)">🗑</button>';
     html+='</div>';
   });
   OM(html);
@@ -6102,6 +6134,7 @@ function oSubDet(sid){
         html+='<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid #1e1e28;">';
         html+='<span>'+(i===0?"🥇 ":"")+o.ofertante+'</span>';
         html+='<span style="color:'+(i===0?"#4CC97A":"#888")+';font-weight:'+(i===0?"bold":"normal")+';">'+fD(o.monto)+'</span>';
+        html+='<button class="btn bs br" style="padding:2px 6px;font-size:10px;" data-sid="'+sid+'" data-iid="'+it.id+'" data-idx="'+sorted.indexOf(o)+'" onclick="delOferta(this.dataset.sid,this.dataset.iid,this.dataset.idx)">🗑</button>';
         html+='</div>';
       });
       html+='</div>';
@@ -6390,6 +6423,40 @@ function expSubPDF(sid){const sub=gSU().find(x=>x.id===sid);exportPDF(`Subasta �
 // ═══════════════════════════════════
 // MORE — sub-modules
 // ═══════════════════════════════════
+
+function togHiddenModule(f){
+  if(!D.hiddenModules) D.hiddenModules=[];
+  var idx=D.hiddenModules.indexOf(f);
+  if(idx>=0) D.hiddenModules.splice(idx,1);
+  else D.hiddenModules.push(f);
+  SD();rMore();
+}
+function oGestModulos(){
+  if(!D.hiddenModules) D.hiddenModules=[];
+  var html='<div class="moh"><span class="mot">👁 Gestionar Modulos</span><button class="moc" onclick="CM();rMore()">✕</button></div>';
+  html+='<div style="font-size:12px;color:#888;margin-bottom:12px;">Activa o desactiva los modulos que aparecen en el menu Mas.</div>';
+  var allMods=[
+    {i:"📢",l:"Avisos",f:"aviso"},{i:"🗳",l:"Votaciones",f:"voto"},{i:"📊",l:"Encuestas",f:"enc"},
+    {i:"📋",l:"Actas",f:"acta"},{i:"💵",l:"Recaudacion",f:"fund"},{i:"🎭",l:"Ensayos",f:"ens"},
+    {i:"💰",l:"Presupuesto",f:"pres"},{i:"📜",l:"Programa",f:"prog"},{i:"👘",l:"Togas",f:"toga"},
+    {i:"💌",l:"Invitaciones",f:"invit"},{i:"💬",l:"Mensajes",f:"chat"},{i:"🤖",l:"Reporte IA",f:"ai"},
+    {i:"🛒",l:"Ventas",f:"ventas"},{i:"📊",l:"Reportes",f:"reportes"},{i:"🎓",l:"Tutorial",f:"tutorial"},
+    {i:"📋",l:"Compras",f:"compras"},{i:"⏳",l:"Contador",f:"contador"},{i:"📍",l:"Venue",f:"venue"},
+    {i:"💾",l:"Respaldos",f:"backups"},{i:"🔔",l:"Alertas",f:"alertas"}
+  ];
+  html+='<div style="max-height:400px;overflow-y:auto;">';
+  allMods.forEach(function(m){
+    var hidden=(D.hiddenModules||[]).indexOf(m.f)>=0;
+    html+='<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #1e1e28;">';
+    html+='<span style="font-size:18px;margin-right:8px;">'+m.i+'</span>';
+    html+='<span style="flex:1;font-size:14px;color:'+(hidden?"#444":"#ddd")+';text-decoration:'+(hidden?"line-through":"none")+';font-weight:bold;">'+m.l+'</span>';
+    html+='<button class="btn '+(hidden?"bs":"bs bg")+'" style="padding:6px 14px;font-size:12px;" data-f="'+m.f+'" onclick="togHiddenModule(this.dataset.f)">'+(hidden?"✓ Activar":"Ocultar")+'</button>';
+    html+='</div>';
+  });
+  html+='</div>';
+  OM(html);
+}
+
 function rMore(){
   var c=CU?CU.color:"#C9A84C";
   var html="";
@@ -6426,7 +6493,9 @@ function rMore(){
     modulos.push({i:"📦",l:"Entregas",f:"entregas"});
   }
   if(CU&&CU.role!=="admin") modulos=modulos.filter(function(x){return canAccess(x.f);});
+  if(!D.hiddenModules) D.hiddenModules=[];
   modulos.forEach(function(x){
+    if(D.hiddenModules.indexOf(x.f)>=0) return; // skip hidden
 
     var bc=x.f==="usuarios"?"#C9A84C40":"#2a2a3a";
     var tc=x.f==="usuarios"?"#C9A84C":"#ddd";
