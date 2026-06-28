@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v285</title>
+<title>GradManager 2025 — v286</title>
 <style>
 :root{--app-color:#C9A84C;}
 html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;font-size:18px;}
@@ -6529,7 +6529,8 @@ function filtVentasSearch(q){
 function delProd(id){
   if(!confirm("¿Eliminar este producto?"))return;
   if(!D.ventas)return;
-  D.ventas.productos=(D.ventas.productos||[]).filter(function(p){return p.id!==id;});
+  var nid=Number(id)||id;
+  D.ventas.productos=(D.ventas.productos||[]).filter(function(p){return p.id!=nid;});
   SD();mVentas();
 }
 function limpiarProductos(){
@@ -8972,7 +8973,8 @@ function limpiarEncuestas(){
 }
 function delRifa(id){
   if(!confirm("¿Eliminar esta rifa?"))return;
-  D.rifas=(D.rifas||[]).filter(function(r){return r.id!==id;});
+  var nid=Number(id)||id;
+  D.rifas=(D.rifas||[]).filter(function(r){return r.id!=nid;});
   SD();rRifas();
 }
 function limpiarRifas(){
@@ -8981,7 +8983,8 @@ function limpiarRifas(){
 }
 function delSubasta(id){
   if(!confirm("¿Eliminar esta subasta?"))return;
-  D.subastas=(D.subastas||[]).filter(function(s){return s.id!==id;});
+  var nid=Number(id)||id;
+  D.subastas=(D.subastas||[]).filter(function(s){return s.id!=nid;});
   SD();rSubastas();
 }
 function limpiarSubastas(){
