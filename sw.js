@@ -1,10 +1,14 @@
-const CACHE_NAME = 'gradmanager-v284';
-self.addEventListener('install', function(event){ self.skipWaiting(); });
+const CACHE_NAME = 'gm-2025-build-284';
+self.addEventListener('install', function(event){ 
+  self.skipWaiting(); 
+});
 self.addEventListener('activate', function(event){
-  event.waitUntil(caches.keys().then(function(keys){
-    return Promise.all(keys.map(function(key){ return caches.delete(key); }));
-  }).then(function(){ return self.clients.claim(); }));
+  event.waitUntil(
+    caches.keys().then(function(keys){
+      return Promise.all(keys.map(function(key){ return caches.delete(key); }));
+    }).then(function(){ return self.clients.claim(); })
+  );
 });
 self.addEventListener('fetch', function(event){
-  event.respondWith(fetch(event.request).catch(function(){ return caches.match(event.request); }));
+  event.respondWith(fetch(event.request, {cache:'no-store'}).catch(function(){ return caches.match(event.request); }));
 });
