@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v282</title>
+<title>GradManager 2025 — v283</title>
 <style>
 :root{--app-color:#C9A84C;}
 html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;font-size:18px;}
@@ -1499,7 +1499,7 @@ function getFotoFromPreview(previewId){
 
 
 function fotoPrevHTML(inputId, previewId, label){
-  return '<div style="font-size:11px;color:#555;letter-spacing:2px;margin-bottom:6px;">'+label.toUpperCase()+' (opcional)</div>'
+  return '<div style="font-size:11px;color:#555;letter-spacing:2px;margin-bottom:6px;">'+label.toUpperCase()+'</div>'
     +'<label id="'+previewId+'" data-input="'+inputId+'" style="width:100%;height:110px;background:#0d0d16;border:1px dashed #333;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;font-size:12px;color:#555;cursor:pointer;">📷 Toca para tomar/subir foto'
     +'<input type="file" id="'+inputId+'" accept="*/*" style="display:none;" onchange="loadFotoPreview(this)"/></label>';
 }
@@ -3538,36 +3538,35 @@ function exportPDF(title,headers,rows){
 
 
 function confirmarNuevoAnio(){
-  confirmarAccion("Nuevo Ano: se conserva la lista de alumnos (limpiando pagos y cuotas) y los usuarios staff. Se borra todo lo demas.",function(){
-    // Keep only staff users (not student portal accounts)
+  confirmarAccion("Nuevo Ano: conserva alumnos, catalogo de actividades, preguntas de encuestas/votaciones y productos de ventas. Borra pagos, respuestas, resultados y transacciones.",function(){
     var staffUsers=(D.usuarios||[]).filter(function(u){return u.role!=="estudiante";});
-    // Keep grad config and license
     var gradConfig=D.gradConfig||{};
     var licencia=D.licencia||null;
-    // Keep students but wipe their financial data
     var students=(D.students||[]).map(function(s){
-      return Object.assign({},s,{
-        pagos:[],
-        parts:[],
-        asis:{},
-        entregas:[],
-        toga:null,
-        qr:null
-      });
+      return Object.assign({},s,{pagos:[],parts:[],asis:{},entregas:[],toga:null,qr:null});
     });
-    // Reset everything
+    var parts=D.PARTS||[];
+    var encuestas=(D.encuestas||[]).map(function(e){return Object.assign({},e,{resp:{},activa:true});});
+    var votaciones=(D.votaciones||[]).map(function(v){return Object.assign({},v,{votos:{},estado:"activa"});});
+    var rifas=(D.rifas||[]).map(function(r){return Object.assign({},r,{ganador:null,resultado:null,sorteoFecha:null});});
+    var subastas=(D.subastas||[]).map(function(s){return Object.assign({},s,{ofertas:[],ganador:null});});
+    var ventas={productos:(D.ventas&&D.ventas.productos)||[],ventas:[],consignaciones:[]};
     D={};
     if(staffUsers.length) D.usuarios=staffUsers;
     if(gradConfig.nombre||gradConfig.color) D.gradConfig=gradConfig;
     if(licencia) D.licencia=licencia;
     if(students.length) D.students=students;
-    SD();
-    CU=null;
-    CM();
-    go("dash");
+    if(parts.length) D.PARTS=parts;
+    if(encuestas.length) D.encuestas=encuestas;
+    if(votaciones.length) D.votaciones=votaciones;
+    if(rifas.length) D.rifas=rifas;
+    if(subastas.length) D.subastas=subastas;
+    if(ventas.productos.length) D.ventas=ventas;
+    SD();CU=null;CM();go("dash");
     addN("🎓 Nuevo Ano iniciado correctamente");
   });
 }
+
 
 function adminResetBtn(){
   return '<div style="height:1px;background:#1e1e28;margin:8px 0;"></div><button class="btn bs bw" style="margin-bottom:6px;width:100%;border-color:#4CA8C9;color:#4CA8C9;" onclick="confirmarNuevoAnio()">🎓 Nuevo Ano (conservar usuarios)</button>' + '<button class="btn bs br bw" onclick="confirmarResetAdmin()">🗑️ Resetear todos los datos (solo admin)</button>';
