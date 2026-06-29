@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v287</title>
+<title>GradManager 2025 — v289</title>
 <style>
 :root{--app-color:#C9A84C;}
 html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;font-size:18px;}
@@ -7938,23 +7938,25 @@ function oResetSelectivo(){
   var modulos=[
     {key:"students",   icon:"🎓", label:"Estudiantes",        desc:"Todos los alumnos registrados"},
     {key:"awards",     icon:"🏆", label:"Reconocimientos",     desc:"Premios y distinciones"},
-    {key:"rifas",      icon:"🎰", label:"Rifas",               desc:"Todas las rifas y boletos"},
-    {key:"subastas",   icon:"🔨", label:"Subastas",            desc:"Subastas e items"},
+    {key:"rifas",      icon:"🎰", label:"Rifas",               desc:"Borra boletos y ganador, conserva las rifas"},
+    {key:"subastas",   icon:"🔨", label:"Subastas",            desc:"Borra ofertas y ganador, conserva los items"},
     {key:"ensayos",    icon:"🎭", label:"Ensayos",             desc:"Registro de ensayos"},
     {key:"budget",     icon:"💰", label:"Presupuesto",         desc:"Categorias y montos"},
     {key:"fundraising",icon:"🤲", label:"Recaudacion",         desc:"Fondos y aportes"},
-    {key:"votaciones", icon:"🗳", label:"Votaciones",          desc:"Todas las votaciones"},
-    {key:"encuestas",  icon:"📊", label:"Encuestas",           desc:"Todas las encuestas"},
+    {key:"votaciones", icon:"🗳", label:"Votaciones",          desc:"Borra votos, conserva las preguntas y opciones"},
+    {key:"encuestas",  icon:"📊", label:"Encuestas",           desc:"Borra respuestas, conserva las preguntas"},
     {key:"actas",      icon:"📋", label:"Actas",               desc:"Actas y acuerdos"},
     {key:"programa",   icon:"📜", label:"Programa",            desc:"Programa de graduacion"},
     {key:"anuncios",   icon:"📢", label:"Avisos",              desc:"Avisos publicados"},
-    {key:"ventas",     icon:"🛒", label:"Ventas y Consignacion",desc:"Historial de ventas"},
+    {key:"ventas",     icon:"🛒", label:"Ventas y Consignacion",desc:"Borra historial de ventas, conserva los productos"},
     {key:"compras",    icon:"📋", label:"Lista de Compras",    desc:"Items de compra"},
     {key:"auditoria",  icon:"📊", label:"Auditoria",           desc:"Historial de acciones"},
     {key:"providers",  icon:"🤝", label:"Proveedores",         desc:"Empresas contratadas"},
     {key:"usuarios",   icon:"👥", label:"Usuarios",            desc:"Cuentas de acceso"},
     {key:"invConfig",  icon:"💌", label:"Config. Invitaciones",desc:"Datos de la invitacion"},
     {key:"gradConfig", icon:"🎓", label:"Nombre Graduacion",   desc:"Nombre y color"},
+    {key:"pagosAlumnos",icon:"💰", label:"Pagos de alumnos",       desc:"Borra cuotas y pagos pero conserva la lista de alumnos"},
+    {key:"togasAlumnos",icon:"👘", label:"Togas entregadas",       desc:"Borra info de toga de cada alumno"},
   ];
 
   modulos.forEach(function(m){
@@ -7996,23 +7998,25 @@ function ejecutarResetSelectivo(){
     seleccionados.forEach(function(k){
       if(k==="students")     D.students=[];
       if(k==="awards")       D.awards=[];
-      if(k==="rifas")        D.rifas=[];
-      if(k==="subastas")     D.subastas=[];
+      if(k==="rifas")        D.rifas=(D.rifas||[]).map(function(r){return Object.assign({},r,{boletos:[],ganador:null,estado:"activa",rec:0});});
+      if(k==="subastas")     D.subastas=(D.subastas||[]).map(function(s){return Object.assign({},s,{ofertas:[],ganador:null,estado:"activa"});});
       if(k==="ensayos")      D.ensayos=[];
       if(k==="budget")       D.budget=[];
       if(k==="fundraising")  D.fundraising=[];
-      if(k==="votaciones")   D.votaciones=[];
-      if(k==="encuestas")    D.encuestas=[];
+      if(k==="votaciones")   D.votaciones=(D.votaciones||[]).map(function(v){return Object.assign({},v,{votos:{},estado:"activa"});});
+      if(k==="encuestas")    D.encuestas=(D.encuestas||[]).map(function(e){return Object.assign({},e,{resp:{},activa:true});});
       if(k==="actas")        D.actas=[];
       if(k==="programa")     D.programa=[];
       if(k==="anuncios")     D.anuncios=[];
-      if(k==="ventas")       D.ventas={productos:[],ventas:[],consignaciones:[]};
+      if(k==="ventas")       D.ventas={productos:((D.ventas&&D.ventas.productos)||[]).map(function(p){return Object.assign({},p,{vendido:0});}),ventas:[],consignaciones:[]};
       if(k==="compras")      D.compras=[];
       if(k==="auditoria")    D.auditoria=[];
       if(k==="providers")    D.providers=[];
       if(k==="usuarios")     D.usuarios=JSON.parse(JSON.stringify(USERS));
       if(k==="invConfig")    D.invConfig={titulo:"GRADUACION 2025",subtitulo:"Ceremonia de Graduacion",fecha:"",hora:"",lugar:"",direccion:"",mensaje:"Presentar en la entrada",color:"#C9A84C"};
       if(k==="gradConfig")   D.gradConfig={nombre:"Graduacion 2025",institucion:"",anio:"2025",color:"#C9A84C"};
+      if(k==="pagosAlumnos")  D.students=(D.students||[]).map(function(s){return Object.assign({},s,{pagos:[],parts:[],asis:{},entregas:[]});});
+      if(k==="togasAlumnos")  D.students=(D.students||[]).map(function(s){return Object.assign({},s,{toga:null});});
     });
     logAud("🔄 Reset selectivo: "+seleccionados.join(", "));
     SD();

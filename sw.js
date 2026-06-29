@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gm-2025-build-287';
+const CACHE_NAME = 'gm-2025-build-289';
 self.addEventListener('install', function(event){ 
   self.skipWaiting(); 
 });
