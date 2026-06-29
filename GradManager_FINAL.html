@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v288</title>
+<title>GradManager 2025 — v287</title>
 <style>
 :root{--app-color:#C9A84C;}
 html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;font-size:18px;}
@@ -6457,6 +6457,51 @@ function oGestModulos(){
   OM(html);
 }
 
+
+function oAdminModulos(){
+  var TODOS=[
+    {f:"aviso",l:"Avisos",i:"📢"},
+    {f:"voto",l:"Votaciones",i:"🗳"},
+    {f:"enc",l:"Encuestas",i:"📊"},
+    {f:"acta",l:"Actas",i:"📋"},
+    {f:"fund",l:"Recaudacion",i:"💵"},
+    {f:"ens",l:"Ensayos",i:"🎭"},
+    {f:"pres",l:"Presupuesto",i:"💰"},
+    {f:"prog",l:"Programa",i:"📜"},
+    {f:"toga",l:"Togas",i:"👘"},
+    {f:"invit",l:"Invitaciones",i:"💌"},
+    {f:"chat",l:"Mensajes",i:"💬"},
+    {f:"ai",l:"Reporte IA",i:"🤖"},
+    {f:"ventas",l:"Ventas",i:"🛒"},
+    {f:"reportes",l:"Reportes",i:"📊"},
+    {f:"compras",l:"Compras",i:"📋"},
+    {f:"contador",l:"Contador",i:"⏳"},
+    {f:"venue",l:"Venue",i:"📍"},
+    {f:"backups",l:"Respaldos",i:"💾"},
+    {f:"alertas",l:"Alertas",i:"🔔"}
+  ];
+  if(!D.modulosOcultos)D.modulosOcultos=[];
+  var html='<div class="moh"><span class="mot">⚙️ Administrar Modulos</span><button class="moc" onclick="CM();rMore()">✕</button></div>';
+  html+='<div style="font-size:12px;color:#888;margin-bottom:12px;">Activa o desactiva modulos del menu Mas. Los desactivados no aparecen hasta que los actives de nuevo.</div>';
+  TODOS.forEach(function(m){
+    var oculto=D.modulosOcultos.indexOf(m.f)>=0;
+    html+='<div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:'+(oculto?'#0d0d16':'#12121a')+';border-radius:8px;margin-bottom:6px;border:1px solid '+(oculto?'#333':'#2a2a3a')+';opacity:'+(oculto?'0.5':'1')+'">';
+    html+='<span style="font-size:15px;">'+m.i+' '+m.l+'</span>';
+    html+='<button class="btn bs" style="font-size:12px;padding:6px 12px;border-color:'+(oculto?'#4CC97A':'#C94C7A')+';color:'+(oculto?'#4CC97A':'#C94C7A')+';" data-f="'+m.f+'" onclick="togModulo(this.dataset.f)">'+(oculto?'✓ Activar':'✕ Ocultar')+'</button>';
+    html+='</div>';
+  });
+  OM(html);
+}
+
+function togModulo(f){
+  if(!D.modulosOcultos)D.modulosOcultos=[];
+  var idx=D.modulosOcultos.indexOf(f);
+  if(idx>=0){D.modulosOcultos.splice(idx,1);}
+  else{D.modulosOcultos.push(f);}
+  SD();
+  oAdminModulos();
+}
+
 function rMore(){
   var c=CU?CU.color:"#C9A84C";
   var html="";
@@ -6494,6 +6539,7 @@ function rMore(){
   }
   if(CU&&CU.role!=="admin") modulos=modulos.filter(function(x){return canAccess(x.f);});
   if(!D.hiddenModules) D.hiddenModules=[];
+  modulos=modulos.filter(function(x){return !(D.modulosOcultos&&D.modulosOcultos.indexOf(x.f)>=0);});
   modulos.forEach(function(x){
     if(D.hiddenModules.indexOf(x.f)>=0) return; // skip hidden
 
@@ -6540,7 +6586,8 @@ function rMore(){
       
     html+='<button class="btn bs bw" style="margin-bottom:8px;border-color:#7C6CD4;color:#7C6CD4;background:#7C6CD420;" onclick="oResetSelectivo()">🔄 Preparar para nuevo ano</button>';
     html+='<button class="btn bs bw" style="border-color:#4CA8C9;color:#4CA8C9;margin-bottom:8px;" onclick="oGestModulos()">👁 Gestionar Modulos</button>';
-    html+=adminResetBtn();
+    html+='<button class="btn bs bw" style="width:100%;margin-bottom:8px;border-color:#7C6CD4;color:#7C6CD4;" onclick="oAdminModulos()">⚙️ Administrar Modulos</button>';
+  html+=adminResetBtn();
   }
   html+='</div>';
   html+='<div id="mc" style="margin-top:14px;"></div>';
@@ -6609,6 +6656,38 @@ function limpiarProductos(){
   SD();mVentas();
 }
 
+
+function filtrarVentas(q){
+  q=q.toLowerCase().trim();
+  var ventas=gVT();
+  var filtered=q?ventas.filter(function(v){
+    return (v.comprador&&v.comprador.toLowerCase().includes(q))||
+           (v.producto&&v.producto.toLowerCase().includes(q));
+  }):ventas;
+  // Rebuild historial section
+  var el=document.getElementById("venta-hist");
+  if(!el)return;
+  if(filtered.length===0){el.innerHTML='<div style="color:#555;font-size:13px;text-align:center;padding:12px;">Sin resultados</div>';return;}
+  // Group by student
+  var byStudent={};
+  filtered.forEach(function(v){
+    var k=v.comprador||"Sin nombre";
+    if(!byStudent[k])byStudent[k]={nombre:k,items:[],total:0};
+    byStudent[k].items.push(v);
+    byStudent[k].total+=v.total;
+  });
+  var html2="";
+  Object.values(byStudent).forEach(function(st){
+    html2+='<div style="background:#0d0d16;border-radius:8px;padding:10px;margin-bottom:8px;">';
+    html2+='<div style="display:flex;justify-content:space-between;"><span style="font-size:14px;color:#ddd;font-weight:bold;">'+st.nombre+'</span><span style="color:#4CC97A;font-size:13px;">'+fD(st.total)+'</span></div>';
+    st.items.forEach(function(v){
+      html2+='<div style="font-size:12px;color:#666;margin-top:4px;">'+v.emoji+' '+v.producto+' x'+v.cant+' = '+fD(v.total)+'</div>';
+    });
+    html2+='</div>';
+  });
+  el.innerHTML=html2;
+}
+
 function mVentas(){
   var c=CU?CU.color:"#C9A84C";
   var prods=gPR2();
@@ -6669,6 +6748,8 @@ function mVentas(){
   // Historial
   if(ventas.length>0){
     html+='<div class="ct" style="margin-top:6px;">Cuentas por Estudiante</div>';
+  html+='<input class="inp" id="venta-srch" placeholder="🔍 Buscar por nombre o producto..." oninput="filtrarVentas(this.value)" style="margin-bottom:8px;"/>';
+  html+='<div id="venta-hist">';
     html+='<button class="btn bs bb bw" style="margin-bottom:10px;" onclick="expVentasPDF()">📄 Exportar PDF</button>';
     var byStudent={};
     ventas.forEach(function(v){
@@ -6694,6 +6775,7 @@ function mVentas(){
         html+='</div>';
       });
       html+='</div>';
+  html+='</div>';
     });
   }
   sMC(html);
