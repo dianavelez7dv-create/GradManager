@@ -1,7 +1,5 @@
-const CACHE_NAME = 'gm-2025-build-289';
-self.addEventListener('install', function(event){ 
-  self.skipWaiting(); 
-});
+const CACHE_NAME = 'gradmanager-JUNIO-289';
+self.addEventListener('install', function(event){ self.skipWaiting(); });
 self.addEventListener('activate', function(event){
   event.waitUntil(
     caches.keys().then(function(keys){
