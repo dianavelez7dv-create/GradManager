@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v291</title>
+<title>GradManager 2025 — v292</title>
 <style>
 :root{--app-color:#C9A84C;}
 html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;font-size:18px;}
@@ -97,7 +97,7 @@ body.light .is { color: var(--text2); }
     <div style="text-align:center;margin-bottom:28px;">
       <div style="font-size:52px;margin-bottom:8px;">🎓</div>
       <h1 style="font-size:24px;font-weight:normal;color:#e8e0d0;">GradManager</h1>
-      <div style="font-size:10px;color:#C9A84C;margin-top:2px;">v291 ✓</div>
+      <div style="font-size:10px;color:#C9A84C;margin-top:2px;">v292 ✓</div>
       <p id="login-grad" style="font-size:13px;color:#C9A84C;margin-top:5px;font-weight:bold;"></p>
       
     </div>
@@ -7979,7 +7979,7 @@ function oResetSelectivo(){
 }
 
 function selTodoReset(val){
-  var keys=["students","awards","rifas","subastas","ensayos","budget","fundraising","votaciones","encuestas","actas","programa","anuncios","ventas","compras","auditoria","providers","usuarios","invConfig","gradConfig"];
+  var keys=["students","awards","rifas","subastas","ensayos","budget","fundraising","votaciones","encuestas","actas","programa","anuncios","ventas","compras","auditoria","providers","usuarios","invConfig","gradConfig","pagosAlumnos","togasAlumnos"];
   keys.forEach(function(k){
     var cb=document.getElementById("rst-"+k);
     if(cb) cb.checked=val;
@@ -8017,7 +8017,7 @@ function aplicarResetSelectivo(){
   seleccionados.forEach(function(k){
     if(k==="students")     D.students=[];
     if(k==="awards")       D.awards=[];
-    if(k==="rifas")        D.rifas=(D.rifas||[]).map(function(r){return Object.assign({},r,{boletos:[],ganador:null,estado:"activa",rec:0});});
+    if(k==="rifas")        D.rifas=(D.rifas||[]).map(function(r){return Object.assign({},r,{boletos:[],ganador:null,ganadores:[],estado:"activa",rec:0,recaudado:0});});
     if(k==="subastas")     D.subastas=(D.subastas||[]).map(function(s){return Object.assign({},s,{ofertas:[],ganador:null,estado:"activa"});});
     if(k==="ensayos")      D.ensayos=[];
     if(k==="budget")       D.budget=[];
@@ -8027,7 +8027,7 @@ function aplicarResetSelectivo(){
     if(k==="actas")        D.actas=[];
     if(k==="programa")     D.programa=[];
     if(k==="anuncios")     D.anuncios=[];
-    if(k==="ventas")       D.ventas={productos:((D.ventas&&D.ventas.productos)||[]).map(function(p){return Object.assign({},p,{vendido:0});}),ventas:[],consignaciones:[]};
+    if(k==="ventas"){var vp=((D.ventas&&D.ventas.productos)||[]).map(function(p){return Object.assign({},p,{vendido:0,compras:0});});D.ventas={productos:vp,ventas:[],consignaciones:[]};}
     if(k==="compras")      D.compras=[];
     if(k==="auditoria")    D.auditoria=[];
     if(k==="providers")    D.providers=[];
