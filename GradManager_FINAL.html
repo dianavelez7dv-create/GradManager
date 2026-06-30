@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v293</title>
+<title>GradManager 2025 — v294</title>
 <style>
 :root{--app-color:#C9A84C;}
 html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;font-size:18px;}
@@ -97,7 +97,7 @@ body.light .is { color: var(--text2); }
     <div style="text-align:center;margin-bottom:28px;">
       <div style="font-size:52px;margin-bottom:8px;">🎓</div>
       <h1 style="font-size:24px;font-weight:normal;color:#e8e0d0;">GradManager</h1>
-      <div style="font-size:10px;color:#C9A84C;margin-top:2px;">v293 ✓</div>
+      <div style="font-size:10px;color:#C9A84C;margin-top:2px;">v294 ✓</div>
       <p id="login-grad" style="font-size:13px;color:#C9A84C;margin-top:5px;font-weight:bold;"></p>
       
     </div>
@@ -8017,8 +8017,11 @@ function aplicarResetSelectivo(){
   seleccionados.forEach(function(k){
     if(k==="students")     D.students=[];
     if(k==="awards")       D.awards=[];
-    if(k==="rifas")        D.rifas=(D.rifas||[]).map(function(r){return Object.assign({},r,{boletos:[],ganador:null,ganadores:[],estado:"activa",rec:0,recaudado:0});});
-    if(k==="subastas")     D.subastas=(D.subastas||[]).map(function(s){return Object.assign({},s,{ofertas:[],ganador:null,estado:"activa"});});
+    if(k==="rifas")        D.rifas=(D.rifas||[]).map(function(r){return Object.assign({},r,{boletos:[],ganador:null,estado:"activa",rec:0});});
+    if(k==="subastas")     D.subastas=(D.subastas||[]).map(function(s){
+      var newItems=(s.items||[]).map(function(i){return Object.assign({},i,{ofertas:[],ganador:null});});
+      return Object.assign({},s,{items:newItems,estado:"activa",rec:0});
+    });
     if(k==="ensayos")      D.ensayos=[];
     if(k==="budget")       D.budget=[];
     if(k==="fundraising")  D.fundraising=[];
