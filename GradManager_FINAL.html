@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v294</title>
+<title>GradManager 2025 — v295</title>
 <style>
 :root{--app-color:#C9A84C;}
 html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;font-size:18px;}
@@ -97,7 +97,7 @@ body.light .is { color: var(--text2); }
     <div style="text-align:center;margin-bottom:28px;">
       <div style="font-size:52px;margin-bottom:8px;">🎓</div>
       <h1 style="font-size:24px;font-weight:normal;color:#e8e0d0;">GradManager</h1>
-      <div style="font-size:10px;color:#C9A84C;margin-top:2px;">v294 ✓</div>
+      <div style="font-size:10px;color:#C9A84C;margin-top:2px;">v295 ✓</div>
       <p id="login-grad" style="font-size:13px;color:#C9A84C;margin-top:5px;font-weight:bold;"></p>
       
     </div>
@@ -8042,6 +8042,11 @@ function aplicarResetSelectivo(){
   SD();
   if(document.getElementById("s-rifa")&&document.getElementById("s-rifa").classList.contains("on")) rRifas();
   if(document.getElementById("s-more")&&document.getElementById("s-more").classList.contains("on")) rMore();
+  // Force-clean any leftover overlay blocking clicks
+  var _mov=document.getElementById("mov");
+  if(_mov){_mov.classList.remove("on");_mov.style.display="";_mov.style.pointerEvents="";_mov.style.zIndex="";}
+  var _mob=document.getElementById("mob");
+  if(_mob){_mob.innerHTML="";_mob.style.pointerEvents="";_mob.style.zIndex="";}
   go("dash");
   var chkR=(D.rifas||[]).reduce(function(s,r){return s+(r.boletos?r.boletos.length:0);},0);
   var chkV=gVT().length;
