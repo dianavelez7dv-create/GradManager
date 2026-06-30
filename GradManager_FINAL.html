@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v301</title>
+<title>GradManager 2025 — v302</title>
 <style>
 :root{--app-color:#C9A84C;}
 html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;font-size:18px;}
@@ -97,7 +97,7 @@ body.light .is { color: var(--text2); }
     <div style="text-align:center;margin-bottom:28px;">
       <div style="font-size:52px;margin-bottom:8px;">🎓</div>
       <h1 style="font-size:24px;font-weight:normal;color:#e8e0d0;">GradManager</h1>
-      <div style="font-size:10px;color:#C9A84C;margin-top:2px;">v301 ✓</div>
+      <div style="font-size:10px;color:#C9A84C;margin-top:2px;">v302 ✓</div>
       <p id="login-grad" style="font-size:13px;color:#C9A84C;margin-top:5px;font-weight:bold;"></p>
       
     </div>
@@ -169,7 +169,7 @@ body.light .is { color: var(--text2); }
     <button class="nb" id="nb-scan" onclick="go('scan')"><span>📡</span>Escanear</button>
     <button class="nb" id="nb-prov" onclick="go('prov')"><span>🤝</span>Proveed.</button>
     <button class="nb" id="nb-chat" onclick="go('chat')"><span>💬</span>Mensajes</button>
-    <button class="nb" id="nb-more" onclick="go('more')" style="position:relative;"><span>☰</span><span id="nb-msg-badge" style="display:none;position:absolute;top:4px;right:6px;background:#C94C7A;color:#fff;border-radius:50%;min-width:14px;height:14px;font-size:9px;padding:0 2px;line-height:14px;"></span>Mas</button>
+    <button class="nb" id="nb-more" onclick="goMore()" style="position:relative;"><span>☰</span><span id="nb-msg-badge" style="display:none;position:absolute;top:4px;right:6px;background:#C94C7A;color:#fff;border-radius:50%;min-width:14px;height:14px;font-size:9px;padding:0 2px;line-height:14px;"></span>Mas</button>
   </nav>
 </div>
 
@@ -3761,26 +3761,33 @@ function updateNavForRole(){
 function canAccess(id){if(!CU)return false;if(CU.role==="admin")return true;return gPerms(CU.role).indexOf(id)!==-1;}
 
 function fixClicks(){
-  ["mov","mob"].forEach(function(id){
-    var el=document.getElementById(id);
-    if(el){
-      el.classList.remove("on");
-      el.style.display="";
-      el.style.pointerEvents="";
-      el.style.zIndex="";
-      el.style.position="";
-    }
-  });
-  var mob=document.getElementById("mob");
-  if(mob) mob.innerHTML="";
-  document.querySelectorAll(".sc").forEach(function(el){
-    el.style.pointerEvents="";
-    el.style.zIndex="";
-  });
-  document.querySelectorAll("[onclick]").forEach(function(el){
-    el.style.pointerEvents="auto";
-  });
+  try{
+    ["mov","mob"].forEach(function(id){
+      var el=document.getElementById(id);
+      if(el){el.classList.remove("on");el.style.display="";el.style.pointerEvents="";el.style.zIndex="";}
+    });
+    var mob=document.getElementById("mob");
+    if(mob) mob.innerHTML="";
+    document.querySelectorAll(".sc").forEach(function(el){el.style.pointerEvents="";el.style.zIndex="";});
+    document.querySelectorAll("[onclick],[data-tab],[data-id],[data-pid],[data-vid],[data-eid]").forEach(function(el){el.style.pointerEvents="auto";});
+    // Re-render Mas to guarantee fresh tile grid
+    var sm=document.getElementById("s-more");
+    if(sm&&sm.classList.contains("on")) rMore();
+  }catch(e){}
   addN("🔧 Pantalla desbloqueada");
+}
+
+
+function goMore(){
+  try{
+    var mov=document.getElementById("mov");
+    if(mov){mov.classList.remove("on");mov.style.display="";mov.style.pointerEvents="";mov.style.zIndex="";}
+    var mob=document.getElementById("mob");
+    if(mob){mob.innerHTML="";}
+    document.querySelectorAll(".sc").forEach(function(s){s.style.pointerEvents="";s.style.zIndex="";});
+    document.querySelectorAll("[onclick],[data-tab]").forEach(function(el){el.style.pointerEvents="auto";});
+  }catch(e){}
+  go("more");
 }
 
 function go(id,_skipHistory){if(id!=="dash"&&!canAccess(id)){alert("No tienes permiso para acceder a este modulo.");return;}
