@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v295</title>
+<title>GradManager 2025 — v296</title>
 <style>
 :root{--app-color:#C9A84C;}
 html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;font-size:18px;}
@@ -97,7 +97,7 @@ body.light .is { color: var(--text2); }
     <div style="text-align:center;margin-bottom:28px;">
       <div style="font-size:52px;margin-bottom:8px;">🎓</div>
       <h1 style="font-size:24px;font-weight:normal;color:#e8e0d0;">GradManager</h1>
-      <div style="font-size:10px;color:#C9A84C;margin-top:2px;">v295 ✓</div>
+      <div style="font-size:10px;color:#C9A84C;margin-top:2px;">v296 ✓</div>
       <p id="login-grad" style="font-size:13px;color:#C9A84C;margin-top:5px;font-weight:bold;"></p>
       
     </div>
@@ -7957,6 +7957,7 @@ function oResetSelectivo(){
     {key:"gradConfig", icon:"🎓", label:"Nombre Graduacion",   desc:"Nombre y color"},
     {key:"pagosAlumnos",icon:"💰", label:"Pagos de alumnos",       desc:"Borra cuotas y pagos pero conserva la lista de alumnos"},
     {key:"togasAlumnos",icon:"👘", label:"Togas entregadas",       desc:"Borra info de toga de cada alumno"},
+    {key:"mensajes",   icon:"💬", label:"Mensajes",               desc:"Borra todas las conversaciones de chat"},
   ];
 
   modulos.forEach(function(m){
@@ -7979,7 +7980,7 @@ function oResetSelectivo(){
 }
 
 function selTodoReset(val){
-  var keys=["students","awards","rifas","subastas","ensayos","budget","fundraising","votaciones","encuestas","actas","programa","anuncios","ventas","compras","auditoria","providers","usuarios","invConfig","gradConfig","pagosAlumnos","togasAlumnos"];
+  var keys=["students","awards","rifas","subastas","ensayos","budget","fundraising","votaciones","encuestas","actas","programa","anuncios","ventas","compras","auditoria","providers","usuarios","invConfig","gradConfig","pagosAlumnos","togasAlumnos","mensajes"];
   keys.forEach(function(k){
     var cb=document.getElementById("rst-"+k);
     if(cb) cb.checked=val;
@@ -7987,13 +7988,13 @@ function selTodoReset(val){
 }
 
 function ejecutarResetSelectivo(){
-  var keys=["students","awards","rifas","subastas","ensayos","budget","fundraising","votaciones","encuestas","actas","programa","anuncios","ventas","compras","auditoria","providers","usuarios","invConfig","gradConfig","pagosAlumnos","togasAlumnos"];
+  var keys=["students","awards","rifas","subastas","ensayos","budget","fundraising","votaciones","encuestas","actas","programa","anuncios","ventas","compras","auditoria","providers","usuarios","invConfig","gradConfig","pagosAlumnos","togasAlumnos","mensajes"];
   var seleccionados=keys.filter(function(k){
     var cb=document.getElementById("rst-"+k);
     return cb&&cb.checked;
   });
   if(!seleccionados.length){addN("Selecciona al menos un modulo.");return;}
-  var labelMap={"rifas":"Rifas","subastas":"Subastas","votaciones":"Votaciones","encuestas":"Encuestas","ventas":"Ventas","fundraising":"Recaudacion","pagosAlumnos":"Pagos alumnos","togasAlumnos":"Togas","students":"Estudiantes","awards":"Reconocimientos","ensayos":"Ensayos","budget":"Presupuesto","actas":"Actas","programa":"Programa","anuncios":"Avisos","compras":"Compras","auditoria":"Auditoria","providers":"Proveedores","usuarios":"Usuarios","invConfig":"Config Invitacion","gradConfig":"Config Graduacion"};
+  var labelMap={"rifas":"Rifas","subastas":"Subastas","votaciones":"Votaciones","encuestas":"Encuestas","ventas":"Ventas","fundraising":"Recaudacion","pagosAlumnos":"Pagos alumnos","togasAlumnos":"Togas","mensajes":"Mensajes","students":"Estudiantes","awards":"Reconocimientos","ensayos":"Ensayos","budget":"Presupuesto","actas":"Actas","programa":"Programa","anuncios":"Avisos","compras":"Compras","auditoria":"Auditoria","providers":"Proveedores","usuarios":"Usuarios","invConfig":"Config Invitacion","gradConfig":"Config Graduacion"};
   var lista=seleccionados.map(function(k){return labelMap[k]||k;}).join(", ");
   window._resetSel=seleccionados;
   window._resetLista=lista;
@@ -8036,6 +8037,7 @@ function aplicarResetSelectivo(){
     if(k==="providers")    D.providers=[];
     if(k==="pagosAlumnos") D.students=(D.students||[]).map(function(s){return Object.assign({},s,{pagos:[],parts:[],asis:{},entregas:[]});});
     if(k==="togasAlumnos") D.students=(D.students||[]).map(function(s){return Object.assign({},s,{toga:null});});
+    if(k==="mensajes")     D.mensajes=[];
   });
   D=JSON.parse(JSON.stringify(D)); // force fresh object, no stale references
   logAud("Reset selectivo: "+lista);
@@ -8918,6 +8920,8 @@ function storageBar(){
 function mTab(t){
   // Check access
   if(CU&&CU.role!=="admin"&&!canAccess(t)&&t!==""){alert("No tienes permiso.");return;}
+  var _movT=document.getElementById("mov");
+  if(_movT){_movT.classList.remove("on");_movT.style.display="";_movT.style.pointerEvents="";_movT.style.zIndex="";}
   var fs={aviso:mAviso,voto:mVoto,enc:mEnc,acta:mActa,fund:mFund,ens:mEns,pres:mPres,prog:mProg,toga:mToga,invit:mInvit,chat:mChat,ai:mAI,ventas:mVentas,usuarios:mUsuarios,compras:mCompras,audit:mAudit,permisos:mPermisos,contador:mContador,venue:mVenue,backups:mBackups,alertas:mAlertas,registros:mRegistrosEstudiantes,entregas:mEntregas,reportes:mReportes,tutorial:function(){mostrarTutorial();}};
   // Ensure #mc exists
   var mc=document.getElementById("mc");
