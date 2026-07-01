@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v302</title>
+<title>GradManager 2025 — v303</title>
 <style>
 :root{--app-color:#C9A84C;}
 html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;font-size:18px;}
@@ -84,6 +84,18 @@ body.light .it { color: var(--text); }
 body.light .is { color: var(--text2); }
 
 .sb:active,.card:active,.btn:active,.nb:active{filter:brightness(1.25);transform:scale(0.98);transition:transform 0.1s;}
+
+/* ===== LIGHT MODE ===== */
+body.light-mode{background:#f0f0f5 !important;}
+body.light-mode .bnav{background:#ffffff !important;border-top:1px solid #ddd !important;}
+body.light-mode .nb{color:#555 !important;}
+body.light-mode .nb.on{color:var(--app-color) !important;}
+body.light-mode .hdr{background:#ffffff !important;border-bottom:1px solid #ddd !important;}
+body.light-mode #hn{color:#111 !important;}
+body.light-mode #hr{color:var(--app-color) !important;}
+body.light-mode .sc{background:#f0f0f5 !important;}
+body.light-mode .mov{background:rgba(0,0,0,0.5) !important;}
+body.light-mode #sbar{background:#2a8a4a !important;}
 </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
@@ -97,7 +109,7 @@ body.light .is { color: var(--text2); }
     <div style="text-align:center;margin-bottom:28px;">
       <div style="font-size:52px;margin-bottom:8px;">🎓</div>
       <h1 style="font-size:24px;font-weight:normal;color:#e8e0d0;">GradManager</h1>
-      <div style="font-size:10px;color:#C9A84C;margin-top:2px;">v302 ✓</div>
+      <div style="font-size:10px;color:#C9A84C;margin-top:2px;">v303 ✓</div>
       <p id="login-grad" style="font-size:13px;color:#C9A84C;margin-top:5px;font-weight:bold;"></p>
       
     </div>
@@ -2847,27 +2859,26 @@ function togDarkLight(){
 }
 
 function applyThemeFilter(theme){
-  var app=document.getElementById("app");
-  var lgs=document.getElementById("lgs");
   if(theme==="light"){
-    if(app) app.style.filter="invert(1) hue-rotate(180deg)";
+    // CSS class handles structural elements (body, bnav, hdr, sc backgrounds)
+    document.body.classList.add("light-mode");
+    // Filter handles inline-colored content inside screens
+    document.querySelectorAll(".sc").forEach(function(el){
+      el.style.filter="invert(1) hue-rotate(180deg)";
+    });
+    // Login screen
+    var lgs=document.getElementById("lgs");
     if(lgs) lgs.style.filter="invert(1) hue-rotate(180deg)";
-    var imgs=document.querySelectorAll("img,canvas");
-    imgs.forEach(function(el){el.style.filter="invert(1) hue-rotate(180deg)";});
-    // Directly fix fixed-position elements that don't inherit ancestor filter reliably
-    var bnav=document.querySelector(".bnav");
-    if(bnav) bnav.style.filter="invert(1) hue-rotate(180deg)";
-    var mov=document.getElementById("mov");
-    if(mov) mov.style.filter="invert(1) hue-rotate(180deg)";
+    // Re-invert images so photos look normal
+    document.querySelectorAll("img,canvas,.pf").forEach(function(el){
+      el.style.filter="invert(1) hue-rotate(180deg)";
+    });
   } else {
-    if(app) app.style.filter="";
+    document.body.classList.remove("light-mode");
+    document.querySelectorAll(".sc").forEach(function(el){el.style.filter="";});
+    var lgs=document.getElementById("lgs");
     if(lgs) lgs.style.filter="";
-    var imgs=document.querySelectorAll("img,canvas");
-    imgs.forEach(function(el){el.style.filter="";});
-    var bnav=document.querySelector(".bnav");
-    if(bnav) bnav.style.filter="";
-    var mov=document.getElementById("mov");
-    if(mov) mov.style.filter="";
+    document.querySelectorAll("img,canvas,.pf").forEach(function(el){el.style.filter="";});
   }
 }
 
