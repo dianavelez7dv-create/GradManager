@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gradmanager-JULIO-304';
+const CACHE_NAME = 'gradmanager-JULIO-305';
 self.addEventListener('install', function(event){ self.skipWaiting(); });
 self.addEventListener('activate', function(event){
   event.waitUntil(
