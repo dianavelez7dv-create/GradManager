@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v306</title>
+<title>GradManager 2025 — v307</title>
 <style>
 :root{--app-color:#C9A84C;}
 html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;font-size:18px;}
@@ -100,7 +100,7 @@ body.light-mode{background:#e8e8ee !important;}
     <div style="text-align:center;margin-bottom:28px;">
       <div style="font-size:52px;margin-bottom:8px;">🎓</div>
       <h1 style="font-size:24px;font-weight:normal;color:#e8e0d0;">GradManager</h1>
-      <div style="font-size:10px;color:#C9A84C;margin-top:2px;">v306 ✓</div>
+      <div style="font-size:10px;color:#C9A84C;margin-top:2px;">v307 ✓</div>
       <p id="login-grad" style="font-size:13px;color:#C9A84C;margin-top:5px;font-weight:bold;"></p>
       
     </div>
@@ -2876,7 +2876,7 @@ function initTheme(){
   document.body.setAttribute("data-theme",saved);
   var btn=document.getElementById("theme-btn");
   if(btn) btn.textContent=saved==="light"?"☀️":"🌙";
-  applyThemeFilter(saved);
+  if(saved==="light") applyThemeFilter(saved);
 }
 
 
@@ -6631,6 +6631,13 @@ function rMore(){
   html+='</div>';
   html+='<div id="mc" style="margin-top:14px;"></div>';
   document.getElementById("s-more").innerHTML=html;
+  // Ensure all tiles are always clickable regardless of theme/filter state
+  setTimeout(function(){
+    var sm=document.getElementById("s-more");
+    if(sm) sm.querySelectorAll("[onclick],[data-tab]").forEach(function(el){
+      el.style.pointerEvents="auto";
+    });
+  },50);
   // Attach import button after render
   var impBtn=document.getElementById("imp-btn");
   var impFile=document.getElementById("import-file");
