@@ -3843,6 +3843,7 @@ function go(id,_skipHistory){if(id!=="dash"&&!canAccess(id)){alert("No tienes pe
   window.scrollTo(0,0);
   var sEl=document.getElementById("s-"+id);
   if(sEl) sEl.scrollTop=0;
+  positionNav();
 }
 
 // ═══════════════════════════════════
@@ -11068,15 +11069,15 @@ window.addEventListener('popstate',function(e){
 });
 try{history.replaceState({screen:'dash'},"","#dash");}catch(e){}
 if('serviceWorker' in navigator){
-  window.addEventListener('load',function(){positionNav();window.addEventListener('resize',positionNav);
+  window.addEventListener('load',function(){window.addEventListener('resize',positionNav);
     navigator.serviceWorker.register('sw.js').catch(function(){});
   });
 }
 </script>
 <script>
-if('serviceWorker' in navigator){window.addEventListener('load',function(){positionNav();window.addEventListener('resize',positionNav);navigator.serviceWorker.register('sw.js').catch(function(){});});}
+if('serviceWorker' in navigator){window.addEventListener('load',function(){window.addEventListener('resize',positionNav);navigator.serviceWorker.register('sw.js').catch(function(){});});}
 </script>
-<script>if('serviceWorker' in navigator){window.addEventListener('load',function(){positionNav();window.addEventListener('resize',positionNav);navigator.serviceWorker.register('sw.js').catch(function(){});});}</script>
+<script>if('serviceWorker' in navigator){window.addEventListener('load',function(){window.addEventListener('resize',positionNav);navigator.serviceWorker.register('sw.js').catch(function(){});});}</script>
 
 
 
