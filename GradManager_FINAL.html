@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v305</title>
+<title>GradManager 2025 — v306</title>
 <style>
 :root{--app-color:#C9A84C;}
 html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;font-size:18px;}
@@ -100,7 +100,7 @@ body.light-mode{background:#e8e8ee !important;}
     <div style="text-align:center;margin-bottom:28px;">
       <div style="font-size:52px;margin-bottom:8px;">🎓</div>
       <h1 style="font-size:24px;font-weight:normal;color:#e8e0d0;">GradManager</h1>
-      <div style="font-size:10px;color:#C9A84C;margin-top:2px;">v305 ✓</div>
+      <div style="font-size:10px;color:#C9A84C;margin-top:2px;">v306 ✓</div>
       <p id="login-grad" style="font-size:13px;color:#C9A84C;margin-top:5px;font-weight:bold;"></p>
       
     </div>
@@ -2852,10 +2852,12 @@ function togDarkLight(){
 function applyThemeFilter(theme){
   var app=document.getElementById("app");
   var lgs=document.getElementById("lgs");
+  var mov=document.getElementById("mov"); // Outside #app - needs own filter
   if(theme==="light"){
     document.body.classList.add("light-mode");
     if(app) app.style.filter="invert(1) hue-rotate(180deg)";
     if(lgs) lgs.style.filter="invert(1) hue-rotate(180deg)";
+    if(mov) mov.style.filter="invert(1) hue-rotate(180deg)";
     // Re-invert photos/images so faces look normal
     document.querySelectorAll("img,canvas").forEach(function(el){
       el.style.filter="invert(1) hue-rotate(180deg)";
@@ -2864,6 +2866,7 @@ function applyThemeFilter(theme){
     document.body.classList.remove("light-mode");
     if(app) app.style.filter="";
     if(lgs) lgs.style.filter="";
+    if(mov) mov.style.filter="";
     document.querySelectorAll("img,canvas").forEach(function(el){el.style.filter="";});
   }
 }
