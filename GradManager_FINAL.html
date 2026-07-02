@@ -2878,6 +2878,16 @@ function initTheme(){
   if(btn) btn.textContent=saved==="light"?"☀️":"🌙";
   if(saved==="light") applyThemeFilter(saved);
 }
+function positionNav(){
+  var hdr=document.querySelector(".hdr");
+  var bnav=document.querySelector(".bnav");
+  if(!hdr||!bnav) return;
+  var hh=hdr.getBoundingClientRect().height;
+  bnav.style.top=hh+"px";
+  var navH=bnav.getBoundingClientRect().height;
+  var total=hh+navH+8;
+  document.querySelectorAll(".sc").forEach(function(el){el.style.paddingTop=total+"px";});
+}
 
 
 function cerrarKpiYFiltrar(tipo){
@@ -11056,15 +11066,15 @@ window.addEventListener('popstate',function(e){
 });
 try{history.replaceState({screen:'dash'},"","#dash");}catch(e){}
 if('serviceWorker' in navigator){
-  window.addEventListener('load',function(){
+  window.addEventListener('load',function(){positionNav();window.addEventListener('resize',positionNav);
     navigator.serviceWorker.register('sw.js').catch(function(){});
   });
 }
 </script>
 <script>
-if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}
+if('serviceWorker' in navigator){window.addEventListener('load',function(){positionNav();window.addEventListener('resize',positionNav);navigator.serviceWorker.register('sw.js').catch(function(){});});}
 </script>
-<script>if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}</script>
+<script>if('serviceWorker' in navigator){window.addEventListener('load',function(){positionNav();window.addEventListener('resize',positionNav);navigator.serviceWorker.register('sw.js').catch(function(){});});}</script>
 
 
 
