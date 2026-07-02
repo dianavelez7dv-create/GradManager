@@ -4628,87 +4628,116 @@ function oPay(sid){
   renderPayScreen(sid);
 }
 
+
+function saldoCuenta(s){return (s.pagos||[]).filter(function(p){return !p.tipo||p.tipo==="cuenta";}).reduce(function(sum,p){return sum+p.monto;},0);}
+function calcSobrepago(s){var tp=cP(s.pagos||[]);var td=cT(s.parts||[]);return tp>td?tp-td:0;}
+function selTipoPago(tipo){
+  var ti=document.getElementById("s-pm-tipo");if(ti) ti.value=tipo;
+  var pi=document.getElementById("s-pm-partId");if(pi) pi.value="";
+  var ci=document.getElementById("s-pm-con");if(ci) ci.value=tipo==="cuenta"?"A cuenta":"";
+  var sl=document.getElementById("s-pay-sel");if(sl){sl.textContent=tipo==="cuenta"?"✓ A cuenta":"Selecciona actividad";sl.style.color=tipo==="cuenta"?"#4CC97A":"#888";}
+  var actSel=document.getElementById("s-pay-act-sel");if(actSel) actSel.style.display=tipo==="actividad"?"block":"none";
+  var conSel=document.getElementById("s-pay-con-sel");if(conSel) conSel.style.display=tipo==="cuenta"?"block":"none";
+  var bC=document.getElementById("btn-tipo-cuenta");var bA=document.getElementById("btn-tipo-actividad");var c=CU?CU.color:"#C9A84C";
+  if(bC){bC.style.borderColor=tipo==="cuenta"?"#4CC97A":"#333";bC.style.color=tipo==="cuenta"?"#4CC97A":"#555";bC.style.background=tipo==="cuenta"?"#4CC97A20":"transparent";}
+  if(bA){bA.style.borderColor=tipo==="actividad"?c:"#333";bA.style.color=tipo==="actividad"?c:"#555";bA.style.background=tipo==="actividad"?c+"20":"transparent";}
+  var mi=document.getElementById("s-pm-monto");if(mi) mi.value="";
+  var md=document.getElementById("s-pm-monto-display");if(md) md.textContent="Toca para ingresar monto 💰";
+}
+
 function renderPayScreen(sid){
   var s=gST().find(function(x){return x.id===sid;});if(!s)return;
-  var tot=cT(s.parts),pag=cP(s.pagos||[]),sal=tot-pag;
-  var sc=sal<=0?"#4CC97A":pag>0?"#C9A84C":"#C94C7A";
-  var c=CU?CU.color:"#C9A84C";
-  var html='<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">';
+  var tot=cT(s.parts||[]),pag=cP(s.pagos||[]),sal=tot-pag;
+  var sc_=saldoCuenta(s),sob=calcSobrepago(s);
+  var c=CU?CU.color:"#C9A84C";var balColor=sal<=0?"#4CC97A":pag>0?"#C9A84C":"#C94C7A";
+  var html="";
+  html+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">';
   html+='<button onclick="cerrarPay()" style="background:none;border:none;color:#888;font-size:22px;cursor:pointer;padding:4px 8px;">←</button>';
-  html+='<div style="font-size:15px;color:#ddd;">💳 '+s.nombre+'</div>';
-  html+='</div>';
-  html+='<div class="g3" style="margin-bottom:10px;">';
-  html+='<div class="sb"><div class="sv" style="font-size:14px;">'+fD(tot)+'</div><div class="sl">Total</div></div>';
-  html+='<div class="sb"><div class="sv" style="font-size:14px;color:#4CC97A;">'+fD(pag)+'</div><div class="sl">Pagado</div></div>';
-  html+='<div class="sb"><div class="sv" style="font-size:14px;color:'+sc+';">'+fD(sal)+'</div><div class="sl">Saldo</div></div>';
-  html+='</div>';
-  html+=pbHTML(pag,Math.max(tot,1),sc,8);
+  html+='<div style="font-size:15px;color:#ddd;">💳 '+s.nombre+'</div></div>';
+  html+='<div class="g3" style="margin-bottom:6px;">';
+  html+='<div class="sb"><div class="sv" style="font-size:13px;">'+fD(tot)+'</div><div class="sl">Total</div></div>';
+  html+='<div class="sb"><div class="sv" style="font-size:13px;color:#4CC97A;">'+fD(pag)+'</div><div class="sl">Pagado</div></div>';
+  html+='<div class="sb"><div class="sv" style="font-size:13px;color:'+balColor+';">'+fD(Math.abs(sal))+'</div><div class="sl">'+(sal<=0?"Al dia ✅":"Debe")+'</div></div>';
+  html+="</div>";
+  if(sob>0) html+='<div style="background:#C94C7A15;border:1px solid #C94C7A40;border-radius:8px;padding:10px;margin-bottom:8px;font-size:13px;color:#C94C7A;">⚠️ Sobrepago: '+fD(sob)+' de más — revisa el historial.</div>';
+  if((s.parts||[]).length>0){
+    html+='<div style="font-size:11px;color:#888;margin-bottom:6px;letter-spacing:2px;">ACTIVIDADES</div>';
+    var credito=sc_;
+    (s.parts||[]).forEach(function(pid){
+      var act=gP().find(function(p){return p.id===pid;});if(!act) return;
+      var actPago=(s.pagos||[]).filter(function(p){return p.tipo==="actividad"&&p.partId===pid;}).reduce(function(sum,p){return sum+p.monto;},0);
+      var falta=Math.max(0,act.costo-actPago);
+      var cubCC=0;if(falta>0&&credito>0){cubCC=Math.min(credito,falta);credito-=cubCC;falta-=cubCC;}
+      var icon=falta<=0?"✅":actPago>0||cubCC>0?"🟡":"🔴";
+      var sc2=falta<=0?"#4CC97A":actPago>0||cubCC>0?"#C9A84C":"#C94C7A";
+      html+='<div style="display:flex;justify-content:space-between;padding:7px;background:#0d0d16;border-radius:6px;margin-bottom:4px;border-left:3px solid '+sc2+';">';
+      html+='<span style="font-size:13px;color:#ddd;">'+(act.icon||"📦")+" "+act.label+"</span>";
+      html+='<span style="font-size:12px;color:'+sc2+';">'+icon+" "+fD(act.costo)+(falta>0?" (debe "+fD(falta)+")":(cubCC>0?" (cuenta)":""))+"</span></div>";
+    });
+    if(credito>0) html+='<div style="font-size:12px;color:#4CC97A;padding:4px 0 8px;">💰 Crédito disponible: '+fD(credito)+'</div>';
+  }
+  html+=pbHTML(pag,Math.max(tot,1),balColor,8);
   html+='<div class="ct" style="margin-top:12px;">NUEVO PAGO</div>';
-  html+='<div style="font-size:11px;color:#555;margin-bottom:8px;">Toca una actividad:</div>';
-  html+='<div id="s-pay-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">';
-  gP().forEach(function(p){
-    html+='<div id="chip-'+p.id+'" data-con="'+p.label+'" style="padding:8px 14px;border-radius:20px;border:1px solid #333;background:transparent;color:#888;font-size:13px;cursor:pointer;user-select:none;">'+(p.icon||"📦")+' '+p.label+' '+fD(p.costo)+'</div>';
-  });
-  html+='<div data-con="Abono general" style="padding:8px 14px;border-radius:20px;border:1px solid #333;background:transparent;color:#888;font-size:13px;cursor:pointer;user-select:none;">Abono general</div>';
-  html+='<div data-con="Otro" style="padding:8px 14px;border-radius:20px;border:1px solid #333;background:transparent;color:#888;font-size:13px;cursor:pointer;user-select:none;">Otro</div>';
+  html+='<div style="display:flex;gap:8px;margin-bottom:10px;">';
+  html+='<button id="btn-tipo-cuenta" data-tipo="cuenta" class="btn bs" style="flex:1;border-color:#4CC97A;color:#4CC97A;background:#4CC97A20;" onclick="selTipoPago(this.dataset.tipo)">💰 A cuenta</button>';
+  html+='<button id="btn-tipo-actividad" data-tipo="actividad" class="btn bs" style="flex:1;" onclick="selTipoPago(this.dataset.tipo)">🎯 Por actividad</button>';
   html+='</div>';
-  html+='<div id="s-pay-sel" style="font-size:12px;color:#555;margin-bottom:8px;">Ninguna seleccionada</div>';
-  html+='<input type="hidden" id="s-pm-con" value=""/>';
+  html+='<input type="hidden" id="s-pm-tipo" value="cuenta"/>';
+  html+='<input type="hidden" id="s-pm-partId" value=""/>';
+  html+='<div id="s-pay-act-sel" style="display:none;margin-bottom:8px;">';
+  html+='<div style="font-size:11px;color:#888;margin-bottom:6px;">Toca la actividad:</div>';
+  html+='<div id="s-pay-chips" style="display:flex;flex-wrap:wrap;gap:6px;">';
+  gP().forEach(function(p){
+    html+='<div id="chip-'+p.id+'" data-pid="'+p.id+'" data-costo="'+p.costo+'" data-con="'+p.label+'" style="padding:8px 14px;border-radius:20px;border:1px solid #333;background:transparent;color:#888;font-size:13px;cursor:pointer;">'+(p.icon||"📦")+" "+p.label+" "+fD(p.costo)+"</div>";
+  });
+  html+="</div></div>";
+  html+='<div id="s-pay-con-sel" style="margin-bottom:8px;display:flex;flex-wrap:wrap;gap:6px;">';
+  html+='<div data-con="A cuenta" style="padding:8px 14px;border-radius:20px;border:1px solid #4CC97A;background:#4CC97A20;color:#4CC97A;font-size:13px;cursor:pointer;">A cuenta</div>';
+  html+='<div data-con="Abono general" style="padding:8px 14px;border-radius:20px;border:1px solid #333;color:#888;font-size:13px;cursor:pointer;">Abono general</div>';
+  html+='<div data-con="Otro" style="padding:8px 14px;border-radius:20px;border:1px solid #333;color:#888;font-size:13px;cursor:pointer;">Otro</div>';
+  html+="</div>";
+  html+='<input type="hidden" id="s-pm-con" value="A cuenta"/>';
   html+='<div id="s-otro-div" style="display:none;"><input class="inp" id="s-pm-desc" placeholder="Describe el concepto *"/></div>';
+  html+='<div id="s-pay-sel" style="font-size:12px;color:#4CC97A;margin-bottom:8px;">✓ A cuenta</div>';
   html+='<button type="button" id="s-pm-monto-display" onclick="pedirMonto()" style="width:100%;background:#12121a;border:1px solid #2a2a3a;border-radius:10px;padding:14px;font-size:18px;color:#ddd;cursor:pointer;text-align:center;margin-bottom:8px;position:relative;z-index:999;">Toca para ingresar monto 💰</button>';
   html+='<input type="hidden" id="s-pm-monto" value=""/>';
   html+='<button class="btn bw" style="width:100%;padding:14px;font-size:15px;margin-bottom:16px;position:relative;z-index:999;" onclick="regPagoScreen('+sid+')">✓ Registrar Pago</button>';
-  html+='<div class="ct">HISTORIAL</div>';
-  html+='<div id="s-pay-hist">';
-  if(!(s.pagos||[]).length){
-    html+='<div style="font-size:13px;color:#555;padding:10px 0;">Sin pagos registrados.</div>';
-  } else {
-    (s.pagos||[]).forEach(function(p){
-      html+='<div class="li"><div><div class="it">'+p.con+'</div><div class="is">📅 '+p.f+'</div></div>';
-      html+='<div style="display:flex;gap:6px;align-items:center;">';
-      html+='<span style="font-size:14px;color:#4CC97A;font-weight:bold;">+'+fD(p.monto)+'</span>';
-      html+='<button data-sid="'+sid+'" data-pid="'+p.id+'" onclick="printRecibo(parseInt(this.dataset.sid),this.dataset.pid)" style="background:none;border:1px solid #C9A84C40;color:#C9A84C;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:12px;">🧾</button>';
-      html+='<button data-sid="'+sid+'" data-pid="'+p.id+'" onclick="delPagoScreen(parseInt(this.dataset.sid),this.dataset.pid)" style="background:none;border:1px solid #C94C7A40;color:#C94C7A;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:12px;">✕</button>';
-      html+='</div></div>';
-    });
-  }
+  html+='<div class="ct">HISTORIAL</div><div id="s-pay-hist">';
+  if(!(s.pagos||[]).length){html+='<div style="font-size:13px;color:#555;padding:10px 0;">Sin pagos.</div>';}
+  else{(s.pagos||[]).forEach(function(p){
+    html+='<div class="li"><div><div class="it">'+(p.tipo==="actividad"?"🎯":"💰")+" "+p.con+'</div><div class="is">📅 '+p.f+'</div></div>';
+    html+='<div style="display:flex;gap:6px;align-items:center;"><span style="font-size:14px;color:#4CC97A;font-weight:bold;">+'+fD(p.monto)+'</span>';
+    html+='<button data-sid="'+sid+'" data-pid="'+p.id+'" onclick="printRecibo(parseInt(this.dataset.sid),this.dataset.pid)" style="background:none;border:1px solid #C9A84C40;color:#C9A84C;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:12px;">🧾</button>';
+    html+='<button data-sid="'+sid+'" data-pid="'+p.id+'" onclick="delPagoScreen(parseInt(this.dataset.sid),this.dataset.pid)" style="background:none;border:1px solid #C94C7A40;color:#C94C7A;border-radius:6px;padding:3px 8px;cursor:pointer;font-size:12px;">✕</button></div></div>';
+  });}
   html+='<div class="dv"></div>';
-  html+='<button type="button" class="btn bs bg" style="width:100%;margin-bottom:6px;" onclick="expPagosPDF('+sid+')">📄 Reporte de Pagos PDF</button>';
-  html+='<button type="button" class="btn bs bb bw" style="width:100%;font-size:11px;" onclick="expEntregasPDF('+sid+')">📄 PDF Recibo Entregas</button>';
-  var screen=document.getElementById("s-pay");
-  var overlay2=document.getElementById("ct-overlay");
-  var screen2=overlay2||screen;
-  screen2.innerHTML=html;
-
-  // Force input interactivity after dynamic render
+  html+='<button type="button" class="btn bs bg" style="width:100%;margin-bottom:6px;" onclick="expPagosPDF('+sid+')">📄 Reporte PDF</button>';
+  html+='<button type="button" class="btn bs bb bw" style="width:100%;font-size:11px;" onclick="expEntregasPDF('+sid+')">📄 PDF Entregas</button>';
+  var screen=document.getElementById("s-pay");var ov=document.getElementById("ct-overlay");(ov||screen).innerHTML=html;
   setTimeout(function(){
-    var m=document.getElementById("s-pm-monto");
-    if(m){
-      m.removeAttribute("disabled");
-      m.style.pointerEvents="auto";
-      m.style.userSelect="auto";
-      m.addEventListener("touchstart",function(){this.focus();},{passive:true});
-    }
-  },100);
-  // Attach chip listeners
-  var chips=document.getElementById("s-pay-chips");
-  if(chips){
-    chips.addEventListener("click",function(e){
-      var chip=e.target;
-      while(chip&&chip!==chips&&!chip.getAttribute("data-con")) chip=chip.parentElement;
-      if(!chip||!chip.getAttribute("data-con")) return;
-      var con=chip.getAttribute("data-con");
-      var all=chips.querySelectorAll("[data-con]");
-      for(var i=0;i<all.length;i++){all[i].style.background="transparent";all[i].style.borderColor="#333";all[i].style.color="#888";}
+    var m=document.getElementById("s-pm-monto");if(m){m.removeAttribute("disabled");m.style.pointerEvents="auto";m.addEventListener("touchstart",function(){this.focus();},{passive:true});}
+    var chips=document.getElementById("s-pay-chips");
+    if(chips) chips.addEventListener("click",function(e){
+      var chip=e.target.closest("[data-pid]");if(!chip) return;
+      chips.querySelectorAll("[data-pid]").forEach(function(el){el.style.background="transparent";el.style.borderColor="#333";el.style.color="#888";});
       chip.style.background=c+"25";chip.style.borderColor=c;chip.style.color=c;
-      var inp=document.getElementById("s-pm-con");if(inp) inp.value=con;
-      var lbl=document.getElementById("s-pay-sel");if(lbl){lbl.textContent="✓ "+con;lbl.style.color=c;}
-      var otro=document.getElementById("s-otro-div");if(otro) otro.style.display=con==="Otro"?"block":"none";
+      var pi=document.getElementById("s-pm-partId");if(pi) pi.value=chip.dataset.pid;
+      var ci=document.getElementById("s-pm-con");if(ci) ci.value=chip.dataset.con;
+      var sl=document.getElementById("s-pay-sel");if(sl){sl.textContent="✓ "+chip.dataset.con+" "+fD(parseFloat(chip.dataset.costo)||0);sl.style.color=c;}
+      var mi=document.getElementById("s-pm-monto");var md=document.getElementById("s-pm-monto-display");
+      if(mi&&chip.dataset.costo){mi.value=chip.dataset.costo;if(md){md.textContent=fD(parseFloat(chip.dataset.costo));md.style.color="#4CC97A";}}
     });
-  }
+    var conSel=document.getElementById("s-pay-con-sel");
+    if(conSel) conSel.addEventListener("click",function(e){
+      var chip=e.target.closest("[data-con]");if(!chip) return;
+      conSel.querySelectorAll("[data-con]").forEach(function(el){el.style.background="transparent";el.style.borderColor="#333";el.style.color="#888";});
+      chip.style.background=c+"25";chip.style.borderColor=c;chip.style.color=c;
+      var ci=document.getElementById("s-pm-con");if(ci) ci.value=chip.dataset.con;
+      var sl=document.getElementById("s-pay-sel");if(sl){sl.textContent="✓ "+chip.dataset.con;sl.style.color=c;}
+      var od=document.getElementById("s-otro-div");if(od) od.style.display=chip.dataset.con==="Otro"?"block":"none";
+    });
+  },100);
 }
-
-
 function debugClick(){
   var info=[];
   // Get all fixed/absolute elements
@@ -4796,7 +4825,7 @@ function regPagoScreen(sid){
   var montoEl=document.getElementById("s-pm-monto");
   var monto=parseFloat(montoEl?montoEl.value:0);
   if(!monto||monto<=0){if(montoEl)montoEl.focus();alert("Ingresa el monto.");return;}
-  var p={id:"P"+Date.now(),f:tod(),monto:monto,con:con};
+  var tipo=(document.getElementById("s-pm-tipo")||{}).value||"cuenta";var partId=(document.getElementById("s-pm-partId")||{}).value||"";if(tipo==="actividad"&&!partId){alert("Selecciona una actividad especifica.");return;}var p={id:"P"+Date.now(),f:tod(),monto:monto,con:con,tipo:tipo};if(partId) p.partId=partId;
   D.students=gST().map(function(x){return x.id===sid?Object.assign({},x,{pagos:(x.pagos||[]).concat([p])}):x;});
   SD();addN("💳 Pago "+fD(monto)+" — "+con);
   printRecibo(sid,p.id);
