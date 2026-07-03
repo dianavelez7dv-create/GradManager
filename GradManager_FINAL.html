@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v311</title>
+<title>GradManager 2025 — v312</title>
 <style>
 :root{--app-color:#C9A84C;}
 html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;font-size:18px;}
@@ -100,7 +100,7 @@ body.light-mode{background:#e8e8ee !important;}
     <div style="text-align:center;margin-bottom:28px;">
       <div style="font-size:52px;margin-bottom:8px;">🎓</div>
       <h1 style="font-size:24px;font-weight:normal;color:#e8e0d0;">GradManager</h1>
-      <div style="font-size:10px;color:#C9A84C;margin-top:2px;">v311 ✓</div>
+      <div style="font-size:10px;color:#C9A84C;margin-top:2px;">v312 ✓</div>
       <p id="login-grad" style="font-size:13px;color:#C9A84C;margin-top:5px;font-weight:bold;"></p>
       
     </div>
@@ -2181,18 +2181,24 @@ function oVerQR(sid, qrCode){
   OM(html);
   setTimeout(function(){
     var container=document.getElementById("qr-container");
-    if(container&&typeof QRCode!=="undefined"){
-      new QRCode(container,{
-        text:qrCode,
-        width:180,
-        height:180,
-        colorDark:"#000000",
-        colorLight:"#ffffff"
-      });
-    } else if(container) {
-      container.innerHTML='<div style="font-size:24px;font-weight:bold;color:#000;padding:20px;">'+qrCode+'</div>';
+    if(!container) return;
+    try{
+      if(typeof QRCode!=="undefined"){
+        new QRCode(container,{text:qrCode,width:180,height:180,colorDark:"#000000",colorLight:"#ffffff"});
+        // Re-invert canvas if light mode is active (canvas is inside filtered #mov)
+        if(document.body.classList.contains("light-mode")){
+          setTimeout(function(){
+            var cv=container.querySelector("canvas");
+            if(cv) cv.style.filter="invert(1) hue-rotate(180deg)";
+          },100);
+        }
+      } else {
+        container.innerHTML='<div style="font-size:18px;font-weight:bold;color:#000;padding:20px;word-break:break-all;">'+qrCode+'</div>';
+      }
+    }catch(e){
+      container.innerHTML='<div style="font-size:14px;font-weight:bold;color:#000;padding:20px;word-break:break-all;">'+qrCode+'</div>';
     }
-  },200);
+  },300);
 }
 
 
@@ -2206,8 +2212,31 @@ function getPagoPorConcepto(pagos, concepto){
 function getSaldoPorConcepto(pagos, parts, conceptoLabel){
   var part=gP().find(function(p){return p.label===conceptoLabel;});
   if(!part) return 0;
-  var pagado=getPagoPorConcepto(pagos, conceptoLabel);
-  return Math.max(0, part.costo - pagado);
+  // Check activity-specific payment (new system)
+  var actPago=(pagos||[]).filter(function(p){return p.tipo==="actividad"&&p.partId===part.id;}).reduce(function(s,p){return s+p.monto;},0);
+  // Check old-style payment by label
+  var labelPago=getPagoPorConcepto(pagos, conceptoLabel);
+  var pagadoTotal=Math.max(actPago,labelPago);
+  // Also distribute "A cuenta" credit
+  if(pagadoTotal<part.costo){
+    var sc_=saldoCuenta({pagos:pagos||[]});
+    // Apply credit to previous activities first (same order as renderPayScreen)
+    var credit=sc_;
+    var allParts=parts||[];
+    for(var i=0;i<allParts.length;i++){
+      var p2=gP().find(function(p){return p.id===allParts[i];});if(!p2) continue;
+      var ap2=(pagos||[]).filter(function(p){return p.tipo==="actividad"&&p.partId===p2.id;}).reduce(function(s,p){return s+p.monto;},0);
+      var lp2=getPagoPorConcepto(pagos||[], p2.label);
+      var paid2=Math.max(ap2,lp2);
+      var falta2=Math.max(0,p2.costo-paid2);
+      if(p2.id===part.id){
+        pagadoTotal+=Math.min(credit,falta2);
+        break;
+      }
+      credit-=Math.min(credit,falta2);
+    }
+  }
+  return Math.max(0, part.costo - Math.min(pagadoTotal, part.costo));
 }
 
 // Check if student has paid for a specific entrega item
@@ -3150,7 +3179,7 @@ function expReporteGraduacion(){
 
 function oConsignSt(sid){
   var s=gST().find(function(x){return x.id===sid;});if(!s)return;
-  var cons=(D.consignaciones||[]).filter(function(c){return c.sid===sid;});
+  var cons=(D.consignaciones||[]).filter(function(c){return c.sid==sid;});
   var html='<div class="moh"><span class="mot">🤝 Consignaciones — '+s.nombre+'</span><button class="moc" onclick="CM()">✕</button></div>';
   if(!cons.length){
     html+='<div style="font-size:13px;color:#555;padding:16px 0;">Sin consignaciones registradas.</div>';
@@ -4142,7 +4171,7 @@ function rStudents(){
       const tot=cT(s.parts),pag=cP(s.pagos),sal=tot-pag;
       const sc=sal<=0?"#4CC97A":pag>0?"#C9A84C":"#C94C7A";
       const sinCuotas=(!s.parts||s.parts.length===0);
-      const slbl=sinCuotas?"⚠️ Sin cuotas":sal<=0?"Al dia":pag>0?"Parcial":"Pendiente";
+      const slbl=sinCuotas?"⚠️ Sin cuotas":sal<=0?(calcSobrepago(s)>0?"⚠️ Sobrepago":"Al dia"):pag>0?"Parcial":"Pendiente";
       const aw=gAW().filter(a=>a.sid===s.id&&a.ok).map(a=>{const t=ATY.find(x=>x.id===a.tid);return t?t.icon:"";}).join("");
       const _stat=sinCuotas?"none":sal<=0?"al-dia":pag>0?"parcial":"sin-pagar";
       var h="";
@@ -4711,8 +4740,11 @@ function renderPayScreen(sid){
   html+='<div id="s-pay-act-sel" style="display:none;margin-bottom:8px;">';
   html+='<div style="font-size:11px;color:#888;margin-bottom:6px;">Toca la actividad:</div>';
   html+='<div id="s-pay-chips" style="display:flex;flex-wrap:wrap;gap:6px;">';
-  gP().forEach(function(p){
-    html+='<div id="chip-'+p.id+'" data-pid="'+p.id+'" data-costo="'+p.costo+'" data-con="'+p.label+'" style="padding:8px 14px;border-radius:20px;border:1px solid #333;background:transparent;color:#888;font-size:13px;cursor:pointer;">'+(p.icon||"📦")+" "+p.label+" "+fD(p.costo)+"</div>";
+  (s.parts||[]).forEach(function(pid){
+    var p=gP().find(function(x){return x.id===pid;});if(!p) return;
+    var actPago=(s.pagos||[]).filter(function(pg){return pg.tipo==="actividad"&&pg.partId===pid;}).reduce(function(sum,pg){return sum+pg.monto;},0);
+    var isPaid=actPago>=p.costo;
+    html+='<div id="chip-'+p.id+'" data-pid="'+p.id+'" data-costo="'+p.costo+'" data-con="'+p.label+'" style="padding:8px 14px;border-radius:20px;border:1px solid '+(isPaid?"#4CC97A40":"#333")+';background:'+(isPaid?"#4CC97A10":"transparent")+';color:'+(isPaid?"#4CC97A40":"#888")+';font-size:13px;cursor:'+(isPaid?"default":"pointer")+';'+(isPaid?"opacity:0.5;":"")+';">'+(p.icon||"📦")+" "+p.label+" "+fD(p.costo)+(isPaid?" ✅":"")+"</div>";
   });
   html+="</div></div>";
   html+='<div id="s-pay-con-sel" style="margin-bottom:8px;display:flex;flex-wrap:wrap;gap:6px;">';
@@ -4862,8 +4894,8 @@ function regPagoScreen(sid){
   var chips=document.getElementById("s-pay-chips");
   if(chips){var all=chips.querySelectorAll("[data-con]");for(var i=0;i<all.length;i++){all[i].style.background="transparent";all[i].style.borderColor="#333";all[i].style.color="#888";}}
   var od=document.getElementById("s-otro-div");if(od)od.style.display="none";
-  // Update historial
-  updatePayHistorial(sid);
+  // Full refresh of payment screen
+  renderPayScreen(sid);
   // Re-focus monto field so it's ready for next payment
   setTimeout(function(){
     var mi2=document.getElementById("s-pm-monto");
