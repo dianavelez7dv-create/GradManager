@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v313</title>
+<title>GradManager 2025 — v314</title>
 <style>
 :root{--app-color:#C9A84C;}
 html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;font-size:18px;}
@@ -100,7 +100,7 @@ body.light-mode{background:#e8e8ee !important;}
     <div style="text-align:center;margin-bottom:28px;">
       <div style="font-size:52px;margin-bottom:8px;">🎓</div>
       <h1 style="font-size:24px;font-weight:normal;color:#e8e0d0;">GradManager</h1>
-      <div style="font-size:10px;color:#C9A84C;margin-top:2px;">v313 ✓</div>
+      <div style="font-size:10px;color:#C9A84C;margin-top:2px;">v314 ✓</div>
       <p id="login-grad" style="font-size:13px;color:#C9A84C;margin-top:5px;font-weight:bold;"></p>
       
     </div>
@@ -2187,7 +2187,7 @@ function oVerQR(sid, qrCode){
   html+='<div style="text-align:center;padding:10px;">';
   html+='<div style="font-size:15px;color:#ddd;margin-bottom:4px;">'+s.nombre+'</div>';
   html+='<div style="font-size:12px;color:#888;margin-bottom:16px;">Carnet: '+s.carnet+'</div>';
-  html+='<div id="qr-container" style="display:inline-block;background:#fff;padding:12px;border-radius:8px;margin-bottom:12px;"></div>';
+  html+='<div id="qr-container" style="display:inline-block;background:#fff;padding:12px;border-radius:8px;margin-bottom:12px;filter:none !important;isolation:isolate;"></div>';
   html+='<div style="font-size:12px;color:#555;letter-spacing:2px;margin-bottom:16px;">'+qrCode+'</div>';
   html+='<div style="font-size:11px;color:#888;">Presenta este codigo en la entrada</div>';
   html+='</div>';
@@ -2198,13 +2198,7 @@ function oVerQR(sid, qrCode){
     try{
       if(typeof QRCode!=="undefined"){
         new QRCode(container,{text:qrCode,width:180,height:180,colorDark:"#000000",colorLight:"#ffffff"});
-        // Re-invert canvas if light mode is active (canvas is inside filtered #mov)
-        if(document.body.classList.contains("light-mode")){
-          setTimeout(function(){
-            var cv=container.querySelector("canvas");
-            if(cv) cv.style.filter="invert(1) hue-rotate(180deg)";
-          },100);
-        }
+        // Container is isolated via CSS filter:none so no re-invert needed
       } else {
         container.innerHTML='<div style="font-size:18px;font-weight:bold;color:#000;padding:20px;word-break:break-all;">'+qrCode+'</div>';
       }
@@ -3192,7 +3186,12 @@ function expReporteGraduacion(){
 
 function oConsignSt(sid){
   var s=gST().find(function(x){return x.id===sid;});if(!s)return;
-  var cons=(D.consignaciones||[]).filter(function(c){return c.sid==sid;});
+  // Read from both storage locations (D.consignaciones and D.ventas.consignaciones)
+  var cons1=(D.consignaciones||[]).filter(function(c){return c.sid==sid;});
+  var cons2=(D.ventas&&D.ventas.consignaciones||[]).filter(function(c){return c.estudId==sid||c.estudId==String(sid);});
+  // Normalize cons2 to same format as cons1
+  var cons2norm=cons2.map(function(c){return {id:c.id,sid:sid,producto:c.productos||c.producto,cant:c.cant||0,precio:c.total||0,fecha:c.fecha,abonos:c.abonos||[],notas:c.notas||"",fromVentas:true};});
+  var cons=cons1.concat(cons2norm);
   var html='<div class="moh"><span class="mot">🤝 Consignaciones — '+s.nombre+'</span><button class="moc" onclick="CM()">✕</button></div>';
   if(!cons.length){
     html+='<div style="font-size:13px;color:#555;padding:16px 0;">Sin consignaciones registradas.</div>';
@@ -4180,7 +4179,7 @@ function rStudents(){
       <div class="sb" id="sbf-parcial" style="border-color:#C9A84C;cursor:pointer;" onclick="fST_parcial()" data-st="parcial"><div class="sv" style="color:#C9A84C;">${sts.filter(s=>cP(s.pagos)>0&&cP(s.pagos)<cT(s.parts)).length}</div><div class="sl">Parcial</div></div>
       <div class="sb" id="sbf-sin-pagar" style="border-color:#C94C7A;cursor:pointer;" onclick="fST_sinpagar()" data-st="sin-pagar"><div class="sv" style="color:#C94C7A;">${sts.filter(s=>(s.parts||[]).length>0&&cP(s.pagos)===0).length}</div><div class="sl">Sin pagar</div></div>
     </div>
-    ${(window._studFilter?sts.filter(function(s){var t=cT(s.parts),p=cP(s.pagos),sc=(!s.parts||s.parts.length===0)?"none":(t-p)<=0?"al-dia":p>0?"parcial":"sin-pagar";return window._studFilter==="deuda"?(sc==="parcial"||sc==="sin-pagar"):sc===window._studFilter;}):sts).map(s=>{
+    ${(window._studFilter?sts.filter(function(s){var t=cT(s.parts),p=cP(s.pagos),sc=(!s.parts||s.parts.length===0)?"none":(t-p)<=0?"al-dia":p>0?"parcial":"sin-pagar";return window._studFilter==="deuda"?(sc==="parcial"||sc==="sin-pagar"):window._studFilter==="sin-pagar"?(sc==="sin-pagar"||sc==="none"):sc===window._studFilter;}):sts).map(s=>{
       const tot=cT(s.parts),pag=cP(s.pagos),sal=tot-pag;
       const sc=sal<=0?"#4CC97A":pag>0?"#C9A84C":"#C94C7A";
       const sinCuotas=(!s.parts||s.parts.length===0);
@@ -6341,13 +6340,28 @@ function notifGanSub(tel,ganador,item,monto){
   if(!tel){alert("Este ganador no tiene numero de WhatsApp registrado. Edita su perfil y agrega el telefono.");return;}
   oWA(tel,"FELICIDADES "+ganador+"! Ganaste la subasta del item: "+item+". Precio final: "+fD(parseFloat(monto))+". Comunicate con la directiva para coordinar la entrega. Graduacion 2025!");
 }
+function selItemEmj(el,emj){
+  window._itemEmj=emj;
+  var par=el.parentElement;
+  if(par) par.querySelectorAll(".emj-btn").forEach(function(b){b.style.background="transparent";b.style.borderColor="#333";});
+  el.style.background="#C9A84C25";el.style.borderColor="#C9A84C";
+}
 function oAddItemModal(sid){
   window._curSubSid=sid;
-  var html='';
+  window._itemEmj="🎁";
+  var emojis=["🎁","📦","🎓","💍","📸","🎬","🍽","💐","🚌","🎟","✈","🎫","📜","💌","🏆","👘","🎪","🎭","💻","📱","🎮","🎵","🌟"];
+  var html="";
   html+='<div class="moh"><span class="mot">+ Agregar Item</span><button class="moc" onclick="CM()">✕</button></div>';
   html+='<input class="inp" id="aim-n" placeholder="Nombre del item *"/>';
   html+='<input class="inp" id="aim-b" type="number" placeholder="Precio base ($)"/>';
   html+='<input class="inp" id="aim-d" placeholder="Descripcion (opcional)"/>';
+  html+='<div style="font-size:11px;color:#888;margin-bottom:6px;letter-spacing:2px;">EMOJI DEL ITEM</div>';
+  html+='<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;">';
+  emojis.forEach(function(e){
+    var sel=(e==="🎁");
+    html+='<button class="emj-btn" data-emj="'+e+'" onclick="selItemEmj(this,this.dataset.emj)" style="background:'+(sel?"#C9A84C25":"transparent")+';border:1px solid '+(sel?"#C9A84C":"#333")+';border-radius:8px;padding:6px 10px;font-size:18px;cursor:pointer;">'+e+'</button>';
+  });
+  html+='</div>';
   html+='<button class="btn bw bg" style="padding:13px;font-size:15px;" onclick="saveAddItem()">✓ Agregar Item</button>';
   OM(html);
 }
