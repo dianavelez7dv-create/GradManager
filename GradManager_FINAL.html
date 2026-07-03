@@ -3214,7 +3214,7 @@ function oConsignSt(sid){
     html+='<div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid #2a2a3a;margin-top:4px;"><span style="color:#aaa;">Saldo pendiente:</span><span style="color:'+(saldoTotal<=0?"#4CC97A":"#C94C7A")+';font-weight:bold;font-size:15px;">'+fD(saldoTotal)+'</span></div>';
     html+='<button type="button" class="btn bs bw" style="width:100%;margin-top:12px;" data-sid="'+sid+'" onclick="expConsignStPDF(parseInt(this.dataset.sid))">📄 Exportar PDF</button>';
   }
-  OM(html);
+  setTimeout(function(){OM(html);},50);
 }
 
 function expConsignStPDF(sid){
@@ -4177,7 +4177,7 @@ function rStudents(){
     <div class="g3">
       <div class="sb" id="sbf-al-dia" style="border-color:#4CC97A;cursor:pointer;" onclick="fST_aldia()" data-st="al-dia"><div class="sv" style="color:#4CC97A;">${sts.filter(s=>(s.parts||[]).length>0&&cP(s.pagos)>=cT(s.parts)).length}</div><div class="sl">Al dia</div></div>
       <div class="sb" id="sbf-parcial" style="border-color:#C9A84C;cursor:pointer;" onclick="fST_parcial()" data-st="parcial"><div class="sv" style="color:#C9A84C;">${sts.filter(s=>cP(s.pagos)>0&&cP(s.pagos)<cT(s.parts)).length}</div><div class="sl">Parcial</div></div>
-      <div class="sb" id="sbf-sin-pagar" style="border-color:#C94C7A;cursor:pointer;" onclick="fST_sinpagar()" data-st="sin-pagar"><div class="sv" style="color:#C94C7A;">${sts.filter(s=>(s.parts||[]).length>0&&cP(s.pagos)===0).length}</div><div class="sl">Sin pagar</div></div>
+      <div class="sb" id="sbf-sin-pagar" style="border-color:#C94C7A;cursor:pointer;" onclick="fST_sinpagar()" data-st="sin-pagar"><div class="sv" style="color:#C94C7A;">${sts.filter(s=>cP(s.pagos)===0).length}</div><div class="sl">Sin pagar</div></div>
     </div>
     ${(window._studFilter?sts.filter(function(s){var t=cT(s.parts),p=cP(s.pagos),sc=(!s.parts||s.parts.length===0)?"none":(t-p)<=0?"al-dia":p>0?"parcial":"sin-pagar";return window._studFilter==="deuda"?(sc==="parcial"||sc==="sin-pagar"):window._studFilter==="sin-pagar"?(sc==="sin-pagar"||sc==="none"):sc===window._studFilter;}):sts).map(s=>{
       const tot=cT(s.parts),pag=cP(s.pagos),sal=tot-pag;
