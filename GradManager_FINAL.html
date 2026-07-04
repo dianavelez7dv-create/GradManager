@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v315</title>
+<title>GradManager 2025 — v316</title>
 <style>
 :root{--app-color:#C9A84C;}
 html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;font-size:18px;}
@@ -100,7 +100,7 @@ body.light-mode{background:#e8e8ee !important;}
     <div style="text-align:center;margin-bottom:28px;">
       <div style="font-size:52px;margin-bottom:8px;">🎓</div>
       <h1 style="font-size:24px;font-weight:normal;color:#e8e0d0;">GradManager</h1>
-      <div style="font-size:10px;color:#C9A84C;margin-top:2px;">v315 ✓</div>
+      <div style="font-size:10px;color:#C9A84C;margin-top:2px;">v316 ✓</div>
       <p id="login-grad" style="font-size:13px;color:#C9A84C;margin-top:5px;font-weight:bold;"></p>
       
     </div>
@@ -177,7 +177,7 @@ body.light-mode{background:#e8e8ee !important;}
 </div>
 
 <!-- MODAL -->
-<div class="mov" id="mov" onclick="if(event.target===this)CM()">
+<div class="mov" id="mov" onclick="if(event.target===this&&window._movReady)CM()">
   <div class="mob" id="mob"></div>
 </div>
 
@@ -3190,7 +3190,7 @@ function oConsignSt(sid){
   var cons1=(D.consignaciones||[]).filter(function(c){return c.sid==sid;});
   var cons2=(D.ventas&&D.ventas.consignaciones||[]).filter(function(c){return c.estudId==sid||c.estudId==String(sid);});
   // Normalize cons2 to same format as cons1
-  var cons2norm=cons2.map(function(c){return {id:c.id,sid:sid,producto:c.productos||c.producto,cant:c.cant||0,precio:c.total||0,fecha:c.fecha,abonos:c.abonos||[],notas:c.notas||"",fromVentas:true};});
+  var cons2norm=cons2.map(function(c){return {id:c.id,sid:sid,producto:c.productos||c.producto,cant:c.cantidad||c.cant||c.cantTotal||0,precio:c.total||0,fecha:c.fecha,abonos:c.abonos||[],notas:c.notas||"",fromVentas:true};});
   var cons=cons1.concat(cons2norm);
   var html='<div class="moh"><span class="mot">🤝 Consignaciones — '+s.nombre+'</span><button class="moc" onclick="CM()">✕</button></div>';
   if(!cons.length){
@@ -3899,6 +3899,9 @@ function OM(html){
   movEl.style.pointerEvents="";
   movEl.style.zIndex="";
   movEl.classList.add("on");
+  window._movReady=false;
+  clearTimeout(window._movReadyT);
+  window._movReadyT=setTimeout(function(){window._movReady=true;},600);
   // Block background click briefly to prevent ghost-click closing
   movEl.style.pointerEvents="none";
   setTimeout(function(){movEl.style.pointerEvents="";},500);
