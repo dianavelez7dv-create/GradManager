@@ -3214,7 +3214,7 @@ function oConsignSt(sid){
     html+='<div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid #2a2a3a;margin-top:4px;"><span style="color:#aaa;">Saldo pendiente:</span><span style="color:'+(saldoTotal<=0?"#4CC97A":"#C94C7A")+';font-weight:bold;font-size:15px;">'+fD(saldoTotal)+'</span></div>';
     html+='<button type="button" class="btn bs bw" style="width:100%;margin-top:12px;" data-sid="'+sid+'" onclick="expConsignStPDF(parseInt(this.dataset.sid))">📄 Exportar PDF</button>';
   }
-  setTimeout(function(){OM(html);},300);
+  OM(html);
 }
 
 function expConsignStPDF(sid){
@@ -3899,6 +3899,9 @@ function OM(html){
   movEl.style.pointerEvents="";
   movEl.style.zIndex="";
   movEl.classList.add("on");
+  // Block background click briefly to prevent ghost-click closing
+  movEl.style.pointerEvents="none";
+  setTimeout(function(){movEl.style.pointerEvents="";},500);
   setTimeout(function(){
     var inputs=mob.querySelectorAll("input,textarea,select,button,canvas");
     for(var i=0;i<inputs.length;i++){
