@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v319</title>
+<title>GradManager 2025 — v320</title>
 <style>
 :root{--app-color:#C9A84C;}
 html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;font-size:18px;}
@@ -100,7 +100,7 @@ body.light-mode{background:#e8e8ee !important;}
     <div style="text-align:center;margin-bottom:28px;">
       <div style="font-size:52px;margin-bottom:8px;">🎓</div>
       <h1 style="font-size:24px;font-weight:normal;color:#e8e0d0;">GradManager</h1>
-      <div style="font-size:10px;color:#C9A84C;margin-top:2px;">v319 ✓</div>
+      <div style="font-size:10px;color:#C9A84C;margin-top:2px;">v320 ✓</div>
       <p id="login-grad" style="font-size:13px;color:#C9A84C;margin-top:5px;font-weight:bold;"></p>
       
     </div>
@@ -2428,27 +2428,49 @@ function mConsign(){
   if(!cons.length){
     html+='<div style="text-align:center;padding:30px;color:#555;">'+(CU&&CU.role==="estudiante"?"No tienes consignaciones asignadas.":"No hay consignaciones activas.")+'</div>';
   } else {
+    // Group by student
+    var grupos={};
     cons.forEach(function(cn){
-      var st=gST().find(function(x){return x.id===cn.sid;});
-      var debe=cn.monto||(cn.fromVentas?(cn.cant||0)*(cn.precio||0):(cn.cant||0)*(cn.precio||0));
-      var abonado=cn.abonos?cn.abonos.reduce(function(s,a){return s+a.monto;},0):0;
-      var saldo=debe-abonado;
-      var col=saldo<=0?"#4CC97A":abonado>0?"#C9A84C":"#C94C7A";
-      html+='<div class="card" style="margin-bottom:10px;">';
-      html+='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">';
-      html+='<div><div style="font-size:14px;color:#ddd;font-weight:bold;">'+(st?st.nombre:"—")+'</div>';
-      html+='<div style="font-size:12px;color:#888;">'+cn.producto+' · '+cn.cant+' unid. × '+fD(cn.precio)+'</div></div>';
-      html+='<span style="font-size:13px;color:'+col+';font-weight:bold;">'+fD(saldo)+' pend.</span></div>';
-      html+=pbHTML(abonado,Math.max(debe,1),col,6);
-      html+='<div style="font-size:11px;color:#555;margin:6px 0;">Total: '+fD(debe)+' · Abonado: '+fD(abonado)+'</div>';
-      html+='<div style="font-size:12px;color:#888;font-style:italic;margin-bottom:4px;">📝 '+(cn.notas||'Sin notas')+'</div>';
-      html+='<div style="display:flex;gap:6px;">';
-      if(!CU||CU.role!=="estudiante"){
-        html+='<button class="btn bs bg" style="font-size:11px;flex:1;" data-cnid="'+cn.id+'" onclick="oAbonoConsign(parseInt(this.dataset.cnid))">💳 Abono</button>';
-        html+='<button class="btn bs br" style="font-size:11px;" data-cnid="'+cn.id+'" onclick="delConsign(parseInt(this.dataset.cnid))">✕</button>';
-      }
-      html+='<button class="btn bs bb" style="font-size:11px;" data-cnid="'+cn.id+'" onclick="expConsignPDF(parseInt(this.dataset.cnid))">📄</button>';
-      html+='</div></div>';
+      var key=cn.sid?String(cn.sid):"ext-"+(cn.estudiante||"ext");
+      if(!grupos[key]) grupos[key]={nombre:(function(){var s=gST().find(function(x){return x.id==cn.sid;});return s?s.nombre:(cn.estudiante||"Externo");}()),items:[],totalDebe:0,totalAbonado:0};
+      var debe=cn.monto||(cn.cant||0)*(cn.precio||0);
+      var abonado=(cn.abonos||[]).reduce(function(s,a){return s+a.monto;},0);
+      grupos[key].items.push(cn);
+      grupos[key].totalDebe+=debe;
+      grupos[key].totalAbonado+=abonado;
+    });
+    Object.values(grupos).forEach(function(gr){
+      var saldo=gr.totalDebe-gr.totalAbonado;
+      var col=saldo<=0?"#4CC97A":gr.totalAbonado>0?"#C9A84C":"#C94C7A";
+      html+='<div class="card" style="margin-bottom:14px;">';
+      // Student header
+      html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #2a2a3a;">';
+      html+='<span style="font-size:15px;color:#ddd;font-weight:bold;">👤 '+gr.nombre+'</span>';
+      html+='<span style="font-size:13px;color:'+col+';font-weight:bold;">'+(saldo<=0?"✅ Al día":"⚠️ "+fD(saldo)+" pend.")+'</span>';
+      html+='</div>';
+      // Each consignacion item
+      gr.items.forEach(function(cn){
+        var debe2=cn.monto||(cn.cant||0)*(cn.precio||0);
+        var abonado2=(cn.abonos||[]).reduce(function(s,a){return s+a.monto;},0);
+        html+='<div style="background:#0d0d16;border-radius:8px;padding:10px;margin-bottom:8px;">';
+        html+='<div style="display:flex;justify-content:space-between;align-items:center;">';
+        html+='<span style="font-size:13px;color:#ddd;">'+cn.producto+'</span>';
+        html+='<span style="font-size:12px;color:#C9A84C;">'+fD(debe2)+'</span>';
+        html+='</div>';
+        if(cn.cant&&cn.precio) html+='<div style="font-size:11px;color:#555;">'+cn.cant+' unid. × '+fD(cn.precio)+'</div>';
+        if(cn.notas&&cn.notas!=="Sin notas") html+='<div style="font-size:11px;color:#888;font-style:italic;margin-top:3px;">📝 '+cn.notas+'</div>';
+        html+='<div style="font-size:11px;color:#555;margin-top:3px;">📅 '+cn.fecha+'</div>';
+        if(!CU||CU.role!=="estudiante"){
+          html+='<div style="display:flex;gap:6px;margin-top:8px;">';
+          html+='<button class="btn bs bg" style="font-size:11px;flex:1;" data-cid="'+cn.id+'" onclick="oAbonoConsig(this.dataset.cid)">+ Abono</button>';
+          html+='<button class="btn bs br" style="font-size:11px;" data-cid="'+cn.id+'" onclick="delConsig(this.dataset.cid)">🗑</button>';
+          html+='</div>';
+        }
+        html+='</div>';
+      });
+      html+='<div style="font-size:12px;color:#555;text-align:right;margin-top:6px;">Total: '+fD(gr.totalDebe)+' · Abonado: '+fD(gr.totalAbonado)+'</div>';
+      html+=pbHTML(gr.totalAbonado,Math.max(gr.totalDebe,1),col,6);
+      html+='</div>';
     });
   }
   sMC(html);
@@ -2507,6 +2529,14 @@ function actualizarTotalConsign(){
   var precio=parseFloat(document.getElementById("cn-precio")?document.getElementById("cn-precio").value:0)||0;
   var tot=document.getElementById("cn-total");
   if(tot) tot.textContent=cant>0&&precio>0?"Total: "+fD(cant*precio):"";
+}
+
+
+function delConsig(cid){
+  if(!cid) return;
+  if(!confirm("¿Eliminar esta consignacion?")) return;
+  D.consignaciones=(D.consignaciones||[]).filter(function(c){return String(c.id)!==String(cid);});
+  SD(); mConsign();
 }
 
 function oNewConsign(){window._consigNotas='';
