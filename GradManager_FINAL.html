@@ -2441,7 +2441,7 @@ function mConsign(){
       html+='<span style="font-size:13px;color:'+col+';font-weight:bold;">'+fD(saldo)+' pend.</span></div>';
       html+=pbHTML(abonado,Math.max(debe,1),col,6);
       html+='<div style="font-size:11px;color:#555;margin:6px 0;">Total: '+fD(debe)+' · Abonado: '+fD(abonado)+'</div>';
-      if(cn.notas) html+='<div style="font-size:12px;color:#888;font-style:italic;margin-bottom:4px;">📝 '+cn.notas+'</div>';
+      html+='<div style="font-size:12px;color:#888;font-style:italic;margin-bottom:4px;">📝 '+(cn.notas||'Sin notas')+'</div>';
       html+='<div style="display:flex;gap:6px;">';
       if(!CU||CU.role!=="estudiante"){
         html+='<button class="btn bs bg" style="font-size:11px;flex:1;" data-cnid="'+cn.id+'" onclick="oAbonoConsign(parseInt(this.dataset.cnid))">💳 Abono</button>';
@@ -2491,7 +2491,7 @@ function saveConsignForm(){
     estado:"pendiente"
   });
   SD();
-  addN("🤝 Consignacion asignada: "+prod+" x"+cant);
+  addN("🤝 Consignacion asignada: "+prod+" x"+cant+(notas?" · "+notas:""));
   mConsign();
 }
 
