@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v316</title>
+<title>GradManager 2025 — v317</title>
 <style>
 :root{--app-color:#C9A84C;}
 html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;font-size:18px;}
@@ -100,7 +100,7 @@ body.light-mode{background:#e8e8ee !important;}
     <div style="text-align:center;margin-bottom:28px;">
       <div style="font-size:52px;margin-bottom:8px;">🎓</div>
       <h1 style="font-size:24px;font-weight:normal;color:#e8e0d0;">GradManager</h1>
-      <div style="font-size:10px;color:#C9A84C;margin-top:2px;">v316 ✓</div>
+      <div style="font-size:10px;color:#C9A84C;margin-top:2px;">v317 ✓</div>
       <p id="login-grad" style="font-size:13px;color:#C9A84C;margin-top:5px;font-weight:bold;"></p>
       
     </div>
@@ -4196,9 +4196,9 @@ function rStudents(){
       </div>
     </div>
     <div class="g3">
-      <div class="sb" id="sbf-al-dia" style="border-color:#4CC97A;cursor:pointer;" onclick="fST_aldia()" data-st="al-dia"><div class="sv" style="color:#4CC97A;">${sts.filter(s=>(s.parts||[]).length>0&&cP(s.pagos)>=cT(s.parts)).length}</div><div class="sl">Al dia</div></div>
+      <div class="sb" id="sbf-al-dia" style="border-color:#4CC97A;cursor:pointer;" onclick="fST_aldia()" data-st="al-dia"><div class="sv" style="color:#4CC97A;">${sts.filter(s=>cP(s.pagos)>=cT(s.parts||[])).length}</div><div class="sl">Al dia</div></div>
       <div class="sb" id="sbf-parcial" style="border-color:#C9A84C;cursor:pointer;" onclick="fST_parcial()" data-st="parcial"><div class="sv" style="color:#C9A84C;">${sts.filter(s=>cP(s.pagos)>0&&cP(s.pagos)<cT(s.parts)).length}</div><div class="sl">Parcial</div></div>
-      <div class="sb" id="sbf-sin-pagar" style="border-color:#C94C7A;cursor:pointer;" onclick="fST_sinpagar()" data-st="sin-pagar"><div class="sv" style="color:#C94C7A;">${sts.filter(s=>cP(s.pagos)===0).length}</div><div class="sl">Sin pagar</div></div>
+      <div class="sb" id="sbf-sin-pagar" style="border-color:#C94C7A;cursor:pointer;" onclick="fST_sinpagar()" data-st="sin-pagar"><div class="sv" style="color:#C94C7A;">${sts.filter(s=>cP(s.pagos)<cT(s.parts||[])||((s.parts||[]).length===0&&cP(s.pagos)===0)).length}</div><div class="sl">Sin pagar</div></div>
     </div>
     ${(window._studFilter?sts.filter(function(s){var t=cT(s.parts),p=cP(s.pagos),sc=(!s.parts||s.parts.length===0)?"none":(t-p)<=0?"al-dia":p>0?"parcial":"sin-pagar";return window._studFilter==="deuda"?(sc==="parcial"||sc==="sin-pagar"):window._studFilter==="sin-pagar"?(sc==="sin-pagar"||sc==="none"):sc===window._studFilter;}):sts).map(s=>{
       const tot=cT(s.parts),pag=cP(s.pagos),sal=tot-pag;
@@ -4206,7 +4206,7 @@ function rStudents(){
       const sinCuotas=(!s.parts||s.parts.length===0);
       const slbl=sinCuotas?"⚠️ Sin cuotas":sal<=0?(calcSobrepago(s)>0?"⚠️ Sobrepago":"Al dia"):pag>0?"Parcial":"Pendiente";
       const aw=gAW().filter(a=>a.sid===s.id&&a.ok).map(a=>{const t=ATY.find(x=>x.id===a.tid);return t?t.icon:"";}).join("");
-      const _stat=sinCuotas?"none":sal<=0?"al-dia":pag>0?"parcial":"sin-pagar";
+      const _stat=(sinCuotas&&pag>0)?"al-dia":sinCuotas?"none":sal<=0?"al-dia":pag>0?"parcial":"sin-pagar";
       var h="";
       h+='<div class="card" data-student="true" data-nombre="'+s.nombre+'" data-status="'+_stat+'" style="border-color:'+sc+'33;margin-bottom:16px;padding:16px;">';
       h+='<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">';
