@@ -9100,7 +9100,7 @@ function mTab(t){
   if(CU&&CU.role!=="admin"&&!canAccess(t)&&t!==""){addN("🔒 No tienes permiso para este modulo.");return;}
   var _movT=document.getElementById("mov");
   if(_movT){_movT.classList.remove("on");_movT.style.display="";_movT.style.pointerEvents="";_movT.style.zIndex="";}
-  var fs={aviso:mAviso,voto:mVoto,enc:mEnc,acta:mActa,fund:mFund,ens:mEns,pres:mPres,prog:mProg,toga:mToga,invit:mInvit,chat:mChat,ai:mAI,ventas:mVentas,usuarios:mUsuarios,compras:mCompras,audit:mAudit,permisos:mPermisos,contador:mContador,venue:mVenue,backups:mBackups,alertas:mAlertas,registros:mRegistrosEstudiantes,entregas:mEntregas,reportes:mReportes,tutorial:function(){mostrarTutorial();}};
+  var fs={aviso:mAviso,voto:mVoto,enc:mEnc,acta:mActa,fund:mFund,ens:mEns,pres:mPres,prog:mProg,toga:mToga,invit:mInvit,chat:mChat,ai:mAI,ventas:mVentas,usuarios:mUsuarios,compras:mCompras,audit:mAudit,permisos:mPermisos,contador:mContador,venue:mVenue,backups:mBackups,alertas:mAlertas,registros:mRegistrosEstudiantes,entregas:mEntregas,reportes:mReportes,consig:mConsign,consign:mConsign,tutorial:function(){mostrarTutorial();}};
   // Ensure #mc exists
   var mc=document.getElementById("mc");
   if(!mc){
