@@ -2441,6 +2441,7 @@ function mConsign(){
       html+='<span style="font-size:13px;color:'+col+';font-weight:bold;">'+fD(saldo)+' pend.</span></div>';
       html+=pbHTML(abonado,Math.max(debe,1),col,6);
       html+='<div style="font-size:11px;color:#555;margin:6px 0;">Total: '+fD(debe)+' · Abonado: '+fD(abonado)+'</div>';
+      if(cn.notas) html+='<div style="font-size:12px;color:#888;font-style:italic;margin-bottom:4px;">📝 '+cn.notas+'</div>';
       html+='<div style="display:flex;gap:6px;">';
       if(!CU||CU.role!=="estudiante"){
         html+='<button class="btn bs bg" style="font-size:11px;flex:1;" data-cnid="'+cn.id+'" onclick="oAbonoConsign(parseInt(this.dataset.cnid))">💳 Abono</button>';
@@ -2461,6 +2462,38 @@ function mConsign(){
       });
     });
   },200);
+}
+
+
+function saveConsignForm(){
+  var sid=parseInt(document.getElementById("cn-sid")?document.getElementById("cn-sid").value:0)||0;
+  var prod=document.getElementById("cn-prod")?document.getElementById("cn-prod").value.trim():"";
+  var cant=parseInt(document.getElementById("cn-cant")?document.getElementById("cn-cant").value:0)||0;
+  var precio=parseFloat(document.getElementById("cn-precio")?document.getElementById("cn-precio").value:0)||0;
+  var notas=document.getElementById("nc-notas")?document.getElementById("nc-notas").value.trim():"";
+  if(!sid){addN("Selecciona un estudiante.");return;}
+  if(!prod){addN("Selecciona un producto.");return;}
+  if(!cant||cant<=0){addN("Ingresa la cantidad.");return;}
+  var st=gST().find(function(s){return s.id===sid;})||null;
+  var subtotal=cant*precio;
+  if(!D.ventas)D.ventas={productos:[],ventas:[],consignaciones:[]};
+  if(!D.ventas.consignaciones)D.ventas.consignaciones=[];
+  D.ventas.consignaciones.push({
+    id:Date.now(),
+    estudId:sid,
+    estudiante:st?st.nombre:"Desconocido",
+    productos:prod,
+    items:[{pid:0,nombre:prod,cant:cant,precio:precio,subtotal:subtotal}],
+    totalEntregado:subtotal,
+    totalCobrado:0,
+    fecha:tod(),
+    notas:notas,
+    cobros:[],
+    estado:"pendiente"
+  });
+  SD();
+  addN("🤝 Consignacion asignada: "+prod+" x"+cant);
+  mConsign();
 }
 
 function selConsignProd(sel){
@@ -2491,7 +2524,7 @@ function oNewConsign(){
   html+='<div class="r2"><input class="inp" id="cn-cant" type="number" placeholder="Cantidad *" oninput="actualizarTotalConsign()"/><input class="inp" id="cn-precio" type="number" placeholder="Precio unit." readonly style="opacity:0.7;"/></div>';
   html+='<div id="cn-total" style="font-size:14px;color:#4CC97A;text-align:right;margin-bottom:8px;"></div>';
   html+='<input class="inp" id="cn-notas" placeholder="Notas"/>';
-  html+='<button class="btn bw bg" style="width:100%;padding:14px;" onclick="saveNewConsign()">✓ Asignar</button>';
+  html+='<button class="btn bw bg" style="width:100%;padding:14px;" onclick="saveConsignForm()">✓ Asignar</button>';
   sMC(html);
 }
 function saveNewConsign(){
