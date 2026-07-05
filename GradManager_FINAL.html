@@ -2470,7 +2470,7 @@ function saveConsignForm(){
   var prod=document.getElementById("cn-prod")?document.getElementById("cn-prod").value.trim():"";
   var cant=parseInt(document.getElementById("cn-cant")?document.getElementById("cn-cant").value:0)||0;
   var precio=parseFloat(document.getElementById("cn-precio")?document.getElementById("cn-precio").value:0)||0;
-  var notas=document.getElementById("nc-notas")?document.getElementById("nc-notas").value.trim():"";
+  var notas=document.getElementById("cn-notas")?document.getElementById("cn-notas").value.trim():"";
   if(!sid){addN("Selecciona un estudiante.");return;}
   if(!prod){addN("Selecciona un producto.");return;}
   if(!cant||cant<=0){addN("Ingresa la cantidad.");return;}
