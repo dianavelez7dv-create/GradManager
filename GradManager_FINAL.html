@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v318</title>
+<title>GradManager 2025 — v319</title>
 <style>
 :root{--app-color:#C9A84C;}
 html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;font-size:18px;}
@@ -100,7 +100,7 @@ body.light-mode{background:#e8e8ee !important;}
     <div style="text-align:center;margin-bottom:28px;">
       <div style="font-size:52px;margin-bottom:8px;">🎓</div>
       <h1 style="font-size:24px;font-weight:normal;color:#e8e0d0;">GradManager</h1>
-      <div style="font-size:10px;color:#C9A84C;margin-top:2px;">v318 ✓</div>
+      <div style="font-size:10px;color:#C9A84C;margin-top:2px;">v319 ✓</div>
       <p id="login-grad" style="font-size:13px;color:#C9A84C;margin-top:5px;font-weight:bold;"></p>
       
     </div>
@@ -2470,7 +2470,7 @@ function saveConsignForm(){
   var prod=document.getElementById("cn-prod")?document.getElementById("cn-prod").value.trim():"";
   var cant=parseInt(document.getElementById("cn-cant")?document.getElementById("cn-cant").value:0)||0;
   var precio=parseFloat(document.getElementById("cn-precio")?document.getElementById("cn-precio").value:0)||0;
-  var notas=document.getElementById("cn-notas")?document.getElementById("cn-notas").value.trim():"";
+  var notas=(window._consigNotas||"").trim();
   if(!sid){addN("Selecciona un estudiante.");return;}
   if(!prod){addN("Selecciona un producto.");return;}
   if(!cant||cant<=0){addN("Ingresa la cantidad.");return;}
@@ -2509,7 +2509,7 @@ function actualizarTotalConsign(){
   if(tot) tot.textContent=cant>0&&precio>0?"Total: "+fD(cant*precio):"";
 }
 
-function oNewConsign(){
+function oNewConsign(){window._consigNotas='';
   var html='<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">';
   html+='<button onclick="mConsign()" style="background:none;border:none;color:#888;font-size:22px;cursor:pointer;">←</button>';
   html+='<div class="ct" style="margin:0;">🤝 Nueva Consignacion</div></div>';
@@ -2522,7 +2522,7 @@ function oNewConsign(){
   html+='</select>';
   html+='<div class="r2"><input class="inp" id="cn-cant" type="number" placeholder="Cantidad *" oninput="actualizarTotalConsign()"/><input class="inp" id="cn-precio" type="number" placeholder="Precio unit." readonly style="opacity:0.7;"/></div>';
   html+='<div id="cn-total" style="font-size:14px;color:#4CC97A;text-align:right;margin-bottom:8px;"></div>';
-  html+='<input class="inp" id="cn-notas" placeholder="Notas"/>';
+  html+='<input class="inp" id="cn-notas" placeholder="Notas (opcional)" oninput="window._consigNotas=this.value"/>';
   html+='<button class="btn bw bg" style="width:100%;padding:14px;" onclick="saveConsignForm()">✓ Asignar</button>';
   sMC(html);
 }
