@@ -2476,19 +2476,18 @@ function saveConsignForm(){
   if(!cant||cant<=0){addN("Ingresa la cantidad.");return;}
   var st=gST().find(function(s){return s.id===sid;})||null;
   var subtotal=cant*precio;
-  if(!D.ventas)D.ventas={productos:[],ventas:[],consignaciones:[]};
-  if(!D.ventas.consignaciones)D.ventas.consignaciones=[];
-  D.ventas.consignaciones.push({
+  if(!D.consignaciones)D.consignaciones=[];
+  D.consignaciones.push({
     id:Date.now(),
-    estudId:sid,
+    sid:sid,
     estudiante:st?st.nombre:"Desconocido",
-    productos:prod,
-    items:[{pid:0,nombre:prod,cant:cant,precio:precio,subtotal:subtotal}],
-    totalEntregado:subtotal,
-    totalCobrado:0,
+    producto:prod,
+    cant:cant,
+    precio:precio,
+    monto:subtotal,
     fecha:tod(),
     notas:notas,
-    cobros:[],
+    abonos:[],
     estado:"pendiente"
   });
   SD();
