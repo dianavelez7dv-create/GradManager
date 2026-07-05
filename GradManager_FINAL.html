@@ -2463,15 +2463,17 @@ function mConsign(){
   },200);
 }
 function oNewConsign(){
-  var html='<div class="moh"><span class="mot">🤝 Nueva Consignacion</span><button class="moc" onclick="CM()">✕</button></div>';
+  var html='<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">';
+  html+='<button onclick="mConsign()" style="background:none;border:none;color:#888;font-size:22px;cursor:pointer;">←</button>';
+  html+='<div class="ct" style="margin:0;">🤝 Nueva Consignacion</div></div>';
   html+='<select class="inp" id="cn-sid"><option value="">-- Estudiante --</option>';
   sortByName(gST()).forEach(function(s){html+='<option value="'+s.id+'">'+s.nombre+'</option>';});
   html+='</select>';
   html+='<input class="inp" id="cn-prod" placeholder="Producto *"/>';
   html+='<div class="r2"><input class="inp" id="cn-cant" type="number" placeholder="Cantidad *"/><input class="inp" id="cn-precio" type="number" placeholder="Precio unit. *"/></div>';
   html+='<input class="inp" id="cn-notas" placeholder="Notas"/>';
-  html+='<button class="btn bw bg" onclick="saveNewConsign()">✓ Asignar</button>';
-  OM(html);
+  html+='<button class="btn bw bg" style="width:100%;padding:14px;" onclick="saveNewConsign()">✓ Asignar</button>';
+  sMC(html);
 }
 function saveNewConsign(){
   var sid=parseInt(document.getElementById("cn-sid")?document.getElementById("cn-sid").value:0);
