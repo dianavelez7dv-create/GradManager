@@ -2430,7 +2430,7 @@ function mConsign(){
   } else {
     cons.forEach(function(cn){
       var st=gST().find(function(x){return x.id===cn.sid;});
-      var debe=(cn.cant||0)*(cn.precio||0);
+      var debe=cn.monto||(cn.fromVentas?(cn.cant||0)*(cn.precio||0):(cn.cant||0)*(cn.precio||0));
       var abonado=cn.abonos?cn.abonos.reduce(function(s,a){return s+a.monto;},0):0;
       var saldo=debe-abonado;
       var col=saldo<=0?"#4CC97A":abonado>0?"#C9A84C":"#C94C7A";
@@ -3190,7 +3190,7 @@ function oConsignSt(sid){
   var cons1=(D.consignaciones||[]).filter(function(c){return c.sid==sid;});
   var cons2=(D.ventas&&D.ventas.consignaciones||[]).filter(function(c){return c.estudId==sid||c.estudId==String(sid);});
   // Normalize cons2 to same format as cons1
-  var cons2norm=cons2.map(function(c){return {id:c.id,sid:sid,producto:c.productos||c.producto,cant:c.cantidad||c.cant||c.cantTotal||(c.items?c.items.reduce(function(s,i){return s+(i.cant||i.cantidad||0);},0):0)||0,precio:c.totalEntregado||c.total||c.precio||0,fecha:c.fecha,abonos:c.abonos||[],notas:c.notas||"",fromVentas:true};});
+  var cons2norm=cons2.map(function(c){return {id:c.id,sid:sid,producto:c.productos||c.producto,cant:c.items?c.items.reduce(function(s,i){return s+(i.cant||0);},0):(c.cant||1),precio:c.items?c.items.reduce(function(s,i){return s+(i.subtotal||0);},0)/Math.max(1,c.items.reduce(function(s,i){return s+(i.cant||0);},0)):(c.totalEntregado||c.precio||0),fecha:c.fecha,abonos:c.abonos||[],notas:c.notas||"",monto:c.totalEntregado||c.total||0,fromVentas:true};});
   var cons=cons1.concat(cons2norm);
   var html='<div class="moh"><span class="mot">🤝 Consignaciones — '+s.nombre+'</span><button class="moc" onclick="CM()">✕</button></div>';
   if(!cons.length){
