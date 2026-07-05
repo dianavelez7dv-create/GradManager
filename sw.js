@@ -1,12 +1,12 @@
-const CACHE_NAME = 'gradmanager-JULIO-320';
-self.addEventListener('install', function(event){ self.skipWaiting(); });
-self.addEventListener('activate', function(event){
-  event.waitUntil(
-    caches.keys().then(function(keys){
-      return Promise.all(keys.map(function(key){ return caches.delete(key); }));
-    }).then(function(){ return self.clients.claim(); })
+const CACHE_NAME = 'gm-v320-FORCE';
+self.addEventListener('install', e => { self.skipWaiting(); });
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))))
+    .then(() => self.clients.claim())
+    .then(() => self.clients.matchAll().then(clients => clients.forEach(c => c.navigate(c.url))))
   );
 });
-self.addEventListener('fetch', function(event){
-  event.respondWith(fetch(event.request, {cache:'no-store'}).catch(function(){ return caches.match(event.request); }));
+self.addEventListener('fetch', e => {
+  e.respondWith(fetch(e.request, {cache: 'no-store'}).catch(() => caches.match(e.request)));
 });
