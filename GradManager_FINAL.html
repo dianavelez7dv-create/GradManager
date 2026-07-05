@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v317</title>
+<title>GradManager 2025 — v318</title>
 <style>
 :root{--app-color:#C9A84C;}
 html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;font-size:18px;}
@@ -100,7 +100,7 @@ body.light-mode{background:#e8e8ee !important;}
     <div style="text-align:center;margin-bottom:28px;">
       <div style="font-size:52px;margin-bottom:8px;">🎓</div>
       <h1 style="font-size:24px;font-weight:normal;color:#e8e0d0;">GradManager</h1>
-      <div style="font-size:10px;color:#C9A84C;margin-top:2px;">v317 ✓</div>
+      <div style="font-size:10px;color:#C9A84C;margin-top:2px;">v318 ✓</div>
       <p id="login-grad" style="font-size:13px;color:#C9A84C;margin-top:5px;font-weight:bold;"></p>
       
     </div>
@@ -2462,6 +2462,21 @@ function mConsign(){
     });
   },200);
 }
+
+function selConsignProd(sel){
+  var opt=sel.options[sel.selectedIndex];
+  var precio=parseFloat(opt.getAttribute('data-precio'))||0;
+  var pi=document.getElementById("cn-precio");
+  if(pi){pi.value=precio;}
+  actualizarTotalConsign();
+}
+function actualizarTotalConsign(){
+  var cant=parseInt(document.getElementById("cn-cant")?document.getElementById("cn-cant").value:0)||0;
+  var precio=parseFloat(document.getElementById("cn-precio")?document.getElementById("cn-precio").value:0)||0;
+  var tot=document.getElementById("cn-total");
+  if(tot) tot.textContent=cant>0&&precio>0?"Total: "+fD(cant*precio):"";
+}
+
 function oNewConsign(){
   var html='<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">';
   html+='<button onclick="mConsign()" style="background:none;border:none;color:#888;font-size:22px;cursor:pointer;">←</button>';
@@ -2469,8 +2484,12 @@ function oNewConsign(){
   html+='<select class="inp" id="cn-sid"><option value="">-- Estudiante --</option>';
   sortByName(gST()).forEach(function(s){html+='<option value="'+s.id+'">'+s.nombre+'</option>';});
   html+='</select>';
-  html+='<input class="inp" id="cn-prod" placeholder="Producto *"/>';
-  html+='<div class="r2"><input class="inp" id="cn-cant" type="number" placeholder="Cantidad *"/><input class="inp" id="cn-precio" type="number" placeholder="Precio unit. *"/></div>';
+  html+='<select class="inp" id="cn-prod" onchange="selConsignProd(this)">';
+  html+='<option value="">-- Selecciona producto --</option>';
+  gPR2().forEach(function(p){html+='<option value="'+p.nombre+'" data-precio="'+(p.precio||0)+'">'+( p.emoji||'📦')+' '+p.nombre+' — '+fD(p.precio||0)+'</option>';});
+  html+='</select>';
+  html+='<div class="r2"><input class="inp" id="cn-cant" type="number" placeholder="Cantidad *" oninput="actualizarTotalConsign()"/><input class="inp" id="cn-precio" type="number" placeholder="Precio unit." readonly style="opacity:0.7;"/></div>';
+  html+='<div id="cn-total" style="font-size:14px;color:#4CC97A;text-align:right;margin-bottom:8px;"></div>';
   html+='<input class="inp" id="cn-notas" placeholder="Notas"/>';
   html+='<button class="btn bw bg" style="width:100%;padding:14px;" onclick="saveNewConsign()">✓ Asignar</button>';
   sMC(html);
