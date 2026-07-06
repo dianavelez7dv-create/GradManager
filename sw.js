@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gm-v320b-FORCE';
+const CACHE_NAME = 'gradmanager-JULIO-321';
 self.addEventListener('install', e => { self.skipWaiting(); });
 self.addEventListener('activate', e => {
   e.waitUntil(

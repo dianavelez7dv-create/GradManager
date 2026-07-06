@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v320</title>
+<title>GradManager 2025 — v321</title>
 <style>
 :root{--app-color:#C9A84C;}
 html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;font-size:18px;}
@@ -100,7 +100,7 @@ body.light-mode{background:#e8e8ee !important;}
     <div style="text-align:center;margin-bottom:28px;">
       <div style="font-size:52px;margin-bottom:8px;">🎓</div>
       <h1 style="font-size:24px;font-weight:normal;color:#e8e0d0;">GradManager</h1>
-      <div style="font-size:10px;color:#C9A84C;margin-top:2px;">v320 ✓</div>
+      <div style="font-size:10px;color:#C9A84C;margin-top:2px;">v321 ✓</div>
       <p id="login-grad" style="font-size:13px;color:#C9A84C;margin-top:5px;font-weight:bold;"></p>
       
     </div>
@@ -3545,6 +3545,9 @@ function SD(){
     var plain=JSON.stringify(D);
     localStorage.setItem("gm3",plain);
     showSBar();
+    // Cloud sync (debounced - only if configured)
+    clearTimeout(window._syncT);
+    window._syncT=setTimeout(function(){var cfg=getCloudConfig();if(cfg.key&&cfg.bin)syncToCloud();},3000);
   }catch(e){
     try{
       sessionStorage.setItem("gm3",JSON.stringify(D));
@@ -6770,6 +6773,129 @@ function togModulo(f){
   oAdminModulos();
 }
 
+
+// ═══ CLOUD SYNC (JSONBin) ═══
+function getCloudConfig(){
+  return {
+    key: localStorage.getItem("gm_jb_key")||"",
+    bin: localStorage.getItem("gm_jb_bin")||""
+  };
+}
+function saveCloudConfig(key, bin){
+  localStorage.setItem("gm_jb_key", key);
+  localStorage.setItem("gm_jb_bin", bin);
+}
+
+async function syncToCloud(){
+  var cfg=getCloudConfig();
+  if(!cfg.key||!cfg.bin){return {ok:false,msg:"Configura la API Key y Bin ID primero"};}
+  try{
+    var res=await fetch("https://api.jsonbin.io/v3/b/"+cfg.bin,{
+      method:"PUT",
+      headers:{"Content-Type":"application/json","X-Master-Key":cfg.key,"X-Bin-Versioning":"false"},
+      body:JSON.stringify(D)
+    });
+    if(res.ok){
+      localStorage.setItem("gm_last_sync",new Date().toLocaleTimeString());
+      return {ok:true,msg:"✅ Sincronizado: "+localStorage.getItem("gm_last_sync")};
+    } else {
+      return {ok:false,msg:"Error "+res.status+": "+await res.text()};
+    }
+  }catch(e){return {ok:false,msg:"Error de red: "+e.message};}
+}
+
+async function syncFromCloud(){
+  var cfg=getCloudConfig();
+  if(!cfg.key||!cfg.bin){return {ok:false,msg:"Configura la API Key y Bin ID primero"};}
+  try{
+    var res=await fetch("https://api.jsonbin.io/v3/b/"+cfg.bin+"/latest",{
+      headers:{"X-Master-Key":cfg.key,"X-Access-Key":cfg.key}
+    });
+    if(res.ok){
+      var data=await res.json();
+      var remoteD=data.record||data;
+      if(remoteD&&typeof remoteD==="object"&&remoteD.students!==undefined){
+        D=remoteD;
+        SD();
+        return {ok:true,msg:"✅ Datos recibidos de la nube"};
+      } else {
+        return {ok:false,msg:"Datos inválidos en la nube"};
+      }
+    } else {
+      return {ok:false,msg:"Error "+res.status};
+    }
+  }catch(e){return {ok:false,msg:"Error de red: "+e.message};}
+}
+
+async function crearNuevoBin(){
+  var cfg=getCloudConfig();
+  if(!cfg.key){addN("Guarda la API Key primero.");return;}
+  try{
+    var res=await fetch("https://api.jsonbin.io/v3/b",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","X-Master-Key":cfg.key,"X-Bin-Name":"GradManager-"+Date.now()},
+      body:JSON.stringify(D)
+    });
+    if(res.ok){
+      var data=await res.json();
+      var binId=data.metadata&&data.metadata.id;
+      if(binId){
+        localStorage.setItem("gm_jb_bin", binId);
+        document.getElementById("jb-bin").value=binId;
+        addN("✅ Bin creado: "+binId);
+        actualizarEstadoSync();
+      }
+    } else {
+      addN("Error creando bin: "+res.status);
+    }
+  }catch(e){addN("Error: "+e.message);}
+}
+
+function actualizarEstadoSync(){
+  var cfg=getCloudConfig();
+  var el=document.getElementById("sync-status");
+  if(!el) return;
+  if(!cfg.key||!cfg.bin){
+    el.textContent="⚠️ Sin configurar";el.style.color="#C9A84C";
+  } else {
+    var last=localStorage.getItem("gm_last_sync");
+    el.textContent=(last?"✅ Último sync: "+last:"🔄 Listo para sincronizar");
+    el.style.color=last?"#4CC97A":"#888";
+  }
+}
+
+async function doSyncUp(){
+  var el=document.getElementById("sync-status");
+  if(el){el.textContent="⏳ Sincronizando...";el.style.color="#C9A84C";}
+  var r=await syncToCloud();
+  addN(r.msg);
+  actualizarEstadoSync();
+}
+
+async function doSyncDown(){
+  var el=document.getElementById("sync-status");
+  if(el){el.textContent="⏳ Descargando...";el.style.color="#C9A84C";}
+  var r=await syncFromCloud();
+  addN(r.msg);
+  if(r.ok){go("dash");}
+  actualizarEstadoSync();
+}
+
+function guardarApiKey(){
+  var key=document.getElementById("jb-key")?document.getElementById("jb-key").value.trim():"";
+  var bin=document.getElementById("jb-bin")?document.getElementById("jb-bin").value.trim():"";
+  if(!key){addN("Ingresa la API Key.");return;}
+  saveCloudConfig(key, bin);
+  addN("✅ Configuración guardada");
+  actualizarEstadoSync();
+}
+
+// Auto-sync every 60 seconds if configured
+setInterval(function(){
+  var cfg=getCloudConfig();
+  if(cfg.key&&cfg.bin&&CU){syncToCloud();}
+},60000);
+
 function rMore(){
   var c=CU?CU.color:"#C9A84C";
   var html="";
@@ -8848,8 +8974,23 @@ function importarSync(input){
 }
 
 function mBackups(){
+  var cfg=getCloudConfig();
   var html='<div class="dv"></div>';
-  // SYNC SECTION
+  // CLOUD SYNC SECTION
+  html+='<div style="background:#0d0d16;border:1px solid #4CC97A40;border-radius:12px;padding:14px;margin-bottom:16px;">';
+  html+='<div style="font-size:13px;color:#4CC97A;font-weight:bold;margin-bottom:4px;">☁️ Sincronización en la Nube</div>';
+  html+='<div id="sync-status" style="font-size:12px;color:#888;margin-bottom:10px;">⚠️ Sin configurar</div>';
+  html+='<input class="inp" id="jb-key" placeholder="API Key de JSONBin *" value="'+(cfg.key||'')+'" style="margin-bottom:6px;"/>';
+  html+='<input class="inp" id="jb-bin" placeholder="Bin ID (se crea automáticamente)" value="'+(cfg.bin||'')+'" style="margin-bottom:8px;"/>';
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;">';
+  html+='<button class="btn bs" style="border-color:#4CC97A;color:#4CC97A;font-size:12px;" onclick="guardarApiKey()">💾 Guardar config</button>';
+  html+='<button class="btn bs" style="font-size:12px;" onclick="crearNuevoBin()">➕ Crear Bin nuevo</button>';
+  html+='</div>';
+  html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">';
+  html+='<button class="btn bs bg" style="font-size:12px;" onclick="doSyncUp()">📤 Subir a nube</button>';
+  html+='<button class="btn bs bb" style="font-size:12px;" onclick="doSyncDown()">📥 Bajar de nube</button>';
+  html+='</div></div>';
+  // LOCAL SYNC SECTION
   html+='<div style="background:#0d0d16;border:1px solid #C9A84C40;border-radius:12px;padding:14px;margin-bottom:16px;">';
   html+='<div style="font-size:13px;color:#C9A84C;font-weight:bold;margin-bottom:6px;">📲 Sincronizar entre dispositivos</div>';
   html+='<div style="font-size:11px;color:#888;margin-bottom:12px;">Exporta los datos de este dispositivo e importalos en el otro para tenerlos iguales.</div>';
