@@ -112,7 +112,7 @@ body.light-mode{background:#e8e8ee !important;}
     <button class="btn bw" onclick="showLoginEstudiante()" style="padding:11px;font-size:13px;margin-bottom:8px;border-color:#C94C7A;color:#C94C7A;background:#C94C7A10;">🎓 Entrar como Estudiante</button>
     <button class="btn bw" onclick="showRegistroEstudiante()" style="padding:11px;font-size:13px;margin-bottom:8px;border-color:#4CC97A;color:#4CC97A;background:#4CC97A10;">✏️ Registrarme como Estudiante</button>
     <div style="text-align:center;margin-bottom:12px;">
-      <span onclick="if(confirm('Limpiar datos en cache?')){localStorage.clear();location.reload();}" id="login-cache-link" style="font-size:11px;color:#333;cursor:pointer;text-decoration:underline;">Limpiar cache</span>
+      <span onclick="if(confirm('Limpiar datos en cache?')){var _jbk=localStorage.getItem('gm_jb_key');var _jbb=localStorage.getItem('gm_jb_bin');localStorage.clear();if(_jbk)localStorage.setItem('gm_jb_key',_jbk);if(_jbb)localStorage.setItem('gm_jb_bin',_jbb);;location.reload();}" id="login-cache-link" style="font-size:11px;color:#333;cursor:pointer;text-decoration:underline;">Limpiar cache</span>
     </div>
 
     <div style="background:#12121a;border:1px solid #1e1e28;border-radius:10px;padding:12px;">
@@ -3749,7 +3749,7 @@ function adminResetBtn(){
 }
 function confirmarResetAdmin(){
   confirmarAccion("Se borraran TODOS los datos de la app. Esta accion NO se puede deshacer.",function(){
-    localStorage.clear();
+    var _jbk=localStorage.getItem('gm_jb_key');var _jbb=localStorage.getItem('gm_jb_bin');localStorage.clear();if(_jbk)localStorage.setItem('gm_jb_key',_jbk);if(_jbb)localStorage.setItem('gm_jb_bin',_jbb);;
     location.reload();
   });
 }
@@ -3829,7 +3829,7 @@ function importarRespaldo(input){
 }
 function resetTodo(){
   if(!confirm("Esto borrara TODOS los datos guardados y reiniciara la app. Continuar?"))return;
-  try{localStorage.clear();}catch(e){}
+  try{var _jbk=localStorage.getItem('gm_jb_key');var _jbb=localStorage.getItem('gm_jb_bin');localStorage.clear();if(_jbk)localStorage.setItem('gm_jb_key',_jbk);if(_jbb)localStorage.setItem('gm_jb_bin',_jbb);;}catch(e){}
   try{sessionStorage.clear();}catch(e){}
   location.reload();
 }
@@ -6777,16 +6777,35 @@ function togModulo(f){
 
 
 // ═══ CLOUD SYNC (JSONBin) ═══
-function saveCloudField(el){localStorage.setItem(el.getAttribute('data-lk'),el.value.trim());actualizarEstadoSync();}
+function saveCloudField(el){
+  var val=el.value.trim();
+  localStorage.setItem(el.getAttribute('data-lk'),val);
+  var lk=el.getAttribute('data-lk');
+  if(!D._cloudConfig) D._cloudConfig={};
+  if(lk==="gm_jb_key") D._cloudConfig.key=val;
+  if(lk==="gm_jb_bin") D._cloudConfig.bin=val;
+  clearTimeout(window._syncT);
+  localStorage.setItem("gm3",JSON.stringify(D));
+  actualizarEstadoSync();
+}
 function getCloudConfig(){
-  return {
-    key: localStorage.getItem("gm_jb_key")||"",
-    bin: localStorage.getItem("gm_jb_bin")||""
-  };
+  // Primary: localStorage; fallback: D._cloudConfig (survives sync)
+  var key=localStorage.getItem("gm_jb_key")||(D._cloudConfig&&D._cloudConfig.key)||"";
+  var bin=localStorage.getItem("gm_jb_bin")||(D._cloudConfig&&D._cloudConfig.bin)||"";
+  // Restore to localStorage if found in D
+  if(!localStorage.getItem("gm_jb_key")&&key) localStorage.setItem("gm_jb_key",key);
+  if(!localStorage.getItem("gm_jb_bin")&&bin) localStorage.setItem("gm_jb_bin",bin);
+  return {key:key,bin:bin};
 }
 function saveCloudConfig(key, bin){
   localStorage.setItem("gm_jb_key", key);
   localStorage.setItem("gm_jb_bin", bin);
+  // Also save in D so it survives cache clears and syncs to other devices
+  if(!D._cloudConfig) D._cloudConfig={};
+  D._cloudConfig={key:key,bin:bin};
+  // Save without triggering cloud upload (avoid loop)
+  clearTimeout(window._syncT);
+  localStorage.setItem("gm3",JSON.stringify(D));
 }
 
 async function syncToCloud(){
