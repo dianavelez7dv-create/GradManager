@@ -6775,6 +6775,7 @@ function togModulo(f){
 
 
 // ═══ CLOUD SYNC (JSONBin) ═══
+function saveCloudField(el){localStorage.setItem(el.getAttribute('data-lk'),el.value.trim());actualizarEstadoSync();}
 function getCloudConfig(){
   return {
     key: localStorage.getItem("gm_jb_key")||"",
@@ -8983,7 +8984,7 @@ function mBackups(){
   html+='<input class="inp" id="jb-key" placeholder="API Key de JSONBin *" value="'+(cfg.key||'')+'" style="margin-bottom:6px;"/>';
   html+='<input class="inp" id="jb-bin" placeholder="Bin ID (se crea automáticamente)" value="'+(cfg.bin||'')+'" style="margin-bottom:8px;"/>';
   html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;">';
-  html+='<button class="btn bs" style="border-color:#4CC97A;color:#4CC97A;font-size:12px;" onclick="guardarApiKey()">💾 Guardar config</button>';
+  html+='<button class="btn bs" style="border-color:#4CC97A;color:#4CC97A;font-size:12px;" onclick="guardarApiKey()">💾 Guardar y verificar</button>';
   html+='<button class="btn bs" style="font-size:12px;" onclick="crearNuevoBin()">➕ Crear Bin nuevo</button>';
   html+='</div>';
   html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">';
