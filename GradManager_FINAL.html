@@ -2493,9 +2493,18 @@ function saveConsignForm(){
   var cant=parseInt(document.getElementById("cn-cant")?document.getElementById("cn-cant").value:0)||0;
   var precio=parseFloat(document.getElementById("cn-precio")?document.getElementById("cn-precio").value:0)||0;
   var notas=(window._consigNotas||"").trim();
-  if(!sid){addN("Selecciona un estudiante.");return;}
-  if(!prod){addN("Selecciona un producto.");return;}
-  if(!cant||cant<=0){addN("Ingresa la cantidad.");return;}
+  var errDiv=document.getElementById("cn-err");
+  if(errDiv) errDiv.remove();
+  function showErr(msg){
+    var d=document.createElement("div");
+    d.id="cn-err";d.style.cssText="color:#C94C7A;font-size:13px;padding:8px;background:#C94C7A15;border-radius:8px;margin-bottom:8px;";
+    d.textContent="⚠️ "+msg;
+    var btn=document.getElementById("cn-save-btn");
+    if(btn) btn.parentNode.insertBefore(d,btn);
+  }
+  if(!sid){showErr("Selecciona un estudiante.");return;}
+  if(!prod){showErr("Selecciona un producto de la lista.");return;}
+  if(!cant||cant<=0){showErr("Ingresa la cantidad.");return;}
   var st=gST().find(function(s){return s.id===sid;})||null;
   var subtotal=cant*precio;
   if(!D.consignaciones)D.consignaciones=[];
@@ -2553,7 +2562,7 @@ function oNewConsign(){window._consigNotas='';
   html+='<div class="r2"><input class="inp" id="cn-cant" type="number" placeholder="Cantidad *" oninput="actualizarTotalConsign()"/><input class="inp" id="cn-precio" type="number" placeholder="Precio unit." readonly style="opacity:0.7;"/></div>';
   html+='<div id="cn-total" style="font-size:14px;color:#4CC97A;text-align:right;margin-bottom:8px;"></div>';
   html+='<input class="inp" id="cn-notas" placeholder="Notas (opcional)" oninput="window._consigNotas=this.value"/>';
-  html+='<button class="btn bw bg" style="width:100%;padding:14px;" onclick="saveConsignForm()">✓ Asignar</button>';
+  html+='<div id="cn-err-container"></div><button id="cn-save-btn" class="btn bw bg" style="width:100%;padding:14px;" onclick="saveConsignForm()">✓ Asignar</button>';
   sMC(html);
 }
 function saveNewConsign(){
