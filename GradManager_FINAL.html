@@ -4293,7 +4293,7 @@ function rStudents(){
     <div class="g3">
       <div class="sb" id="sbf-al-dia" style="border-color:#4CC97A;cursor:pointer;" onclick="fST_aldia()" data-st="al-dia"><div class="sv" style="color:#4CC97A;">${sts.filter(s=>cP(s.pagos)>=cT(s.parts||[])).length}</div><div class="sl">Al dia</div></div>
       <div class="sb" id="sbf-parcial" style="border-color:#C9A84C;cursor:pointer;" onclick="fST_parcial()" data-st="parcial"><div class="sv" style="color:#C9A84C;">${sts.filter(s=>cP(s.pagos)>0&&cP(s.pagos)<cT(s.parts)).length}</div><div class="sl">Parcial</div></div>
-      <div class="sb" id="sbf-sin-pagar" style="border-color:#C94C7A;cursor:pointer;" onclick="fST_sinpagar()" data-st="sin-pagar"><div class="sv" style="color:#C94C7A;">${sts.filter(s=>cP(s.pagos)<cT(s.parts||[])||((s.parts||[]).length===0&&cP(s.pagos)===0)).length}</div><div class="sl">Sin pagar</div></div>
+      <div class="sb" id="sbf-sin-pagar" style="border-color:#C94C7A;cursor:pointer;" onclick="fST_sinpagar()" data-st="sin-pagar"><div class="sv" style="color:#C94C7A;">${sts.filter(s=>cP(s.pagos)===0&&cT(s.parts||[])>0).length}</div><div class="sl">Sin pagar</div></div>
     </div>
     ${(window._studFilter?sts.filter(function(s){var t=cT(s.parts),p=cP(s.pagos),sc=(!s.parts||s.parts.length===0)?"none":(t-p)<=0?"al-dia":p>0?"parcial":"sin-pagar";return window._studFilter==="deuda"?(sc==="parcial"||sc==="sin-pagar"):window._studFilter==="sin-pagar"?(sc==="sin-pagar"||sc==="none"):sc===window._studFilter;}):sts).map(s=>{
       const tot=cT(s.parts),pag=cP(s.pagos),sal=tot-pag;
