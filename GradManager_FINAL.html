@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v321</title>
+<title>GradManager 2025 — v322</title>
 <style>
 :root{--app-color:#C9A84C;}
 html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;font-size:18px;}
@@ -100,7 +100,7 @@ body.light-mode{background:#e8e8ee !important;}
     <div style="text-align:center;margin-bottom:28px;">
       <div style="font-size:52px;margin-bottom:8px;">🎓</div>
       <h1 style="font-size:24px;font-weight:normal;color:#e8e0d0;">GradManager</h1>
-      <div style="font-size:10px;color:#C9A84C;margin-top:2px;">v321 ✓</div>
+      <div style="font-size:10px;color:#C9A84C;margin-top:2px;">v322 ✓</div>
       <p id="login-grad" style="font-size:13px;color:#C9A84C;margin-top:5px;font-weight:bold;"></p>
       
     </div>
@@ -1272,6 +1272,8 @@ function loginEstudiante(studentId, password){
           applyTheme();
           migrateAwards();
           go("dash");
+          // Auto-sync from cloud on login
+          setTimeout(function(){var cfg=getCloudConfig();if(cfg.key&&cfg.bin){syncFromCloud().then(function(r){if(r.ok){addN("☁️ Datos actualizados al entrar");rDash();}}).catch(function(){});}},2000);
         }catch(e){showEstErr("⚠ Error de conexion.");}
       } else {
         showEstErr("⚠ Error "+xhr.status+". Intenta de nuevo.");
@@ -6894,7 +6896,25 @@ function guardarApiKey(){
 // Auto-sync every 60 seconds if configured
 setInterval(function(){
   var cfg=getCloudConfig();
-  if(cfg.key&&cfg.bin&&CU){syncToCloud();}
+  if(!cfg.key||!cfg.bin||!CU) return;
+  // Check if cloud has newer data, if so download; otherwise upload
+  fetch("https://api.jsonbin.io/v3/b/"+cfg.bin+"/latest",{headers:{"X-Master-Key":cfg.key,"X-Access-Key":cfg.key}})
+  .then(function(r){return r.ok?r.json():null;})
+  .then(function(data){
+    if(!data) return;
+    var remoteD=data.record||data;
+    var remoteSavedAt=remoteD&&remoteD.savedAt||0;
+    var localSavedAt=D.savedAt||0;
+    if(remoteSavedAt>localSavedAt){
+      // Cloud is newer - download
+      D=remoteD;SD();
+      if(typeof rDash==="function"&&document.getElementById("s-dash")&&document.getElementById("s-dash").classList.contains("on")) rDash();
+      addN("☁️ Datos actualizados desde la nube");
+    } else {
+      // Local is newer - upload
+      syncToCloud();
+    }
+  }).catch(function(){});
 },60000);
 
 function rMore(){
