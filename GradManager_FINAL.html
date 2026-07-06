@@ -6819,8 +6819,18 @@ async function syncFromCloud(){
       var remoteD=data.record||data;
       if(remoteD&&typeof remoteD==="object"&&remoteD.students!==undefined){
         D=remoteD;
-        SD();
-        return {ok:true,msg:"✅ Datos recibidos de la nube"};
+        // Prevent upload loop - mark as synced from cloud
+        clearTimeout(window._syncT);
+        localStorage.setItem("gm3",JSON.stringify(D));
+        localStorage.setItem("gm_last_sync",new Date().toLocaleTimeString());
+        showSBar();
+        // Refresh current screen
+        setTimeout(function(){
+          if(typeof RENDERS!=="undefined"&&curS&&RENDERS[curS]) RENDERS[curS]();
+          else if(typeof rDash==="function") rDash();
+          actualizarEstadoSync();
+        },100);
+        return {ok:true,msg:"☁️ Sincronizado: "+new Date().toLocaleTimeString()};
       } else {
         return {ok:false,msg:"Datos inválidos en la nube"};
       }
@@ -6906,10 +6916,14 @@ setInterval(function(){
     var remoteSavedAt=remoteD&&remoteD.savedAt||0;
     var localSavedAt=D.savedAt||0;
     if(remoteSavedAt>localSavedAt){
-      // Cloud is newer - download
-      D=remoteD;SD();
-      if(typeof rDash==="function"&&document.getElementById("s-dash")&&document.getElementById("s-dash").classList.contains("on")) rDash();
-      addN("☁️ Datos actualizados desde la nube");
+      // Cloud is newer - download silently
+      D=remoteD;
+      clearTimeout(window._syncT);
+      localStorage.setItem("gm3",JSON.stringify(D));
+      localStorage.setItem("gm_last_sync",new Date().toLocaleTimeString());
+      showSBar();
+      if(typeof RENDERS!=="undefined"&&curS&&RENDERS[curS]) RENDERS[curS]();
+      actualizarEstadoSync();
     } else {
       // Local is newer - upload
       syncToCloud();
