@@ -107,14 +107,15 @@ body.light-mode{background:#e8e8ee !important;}
     <input class="inp" id="le" type="email" placeholder="Correo electronico"/>
     <input class="inp" id="lp" type="password" placeholder="Contrasena" onkeydown="if(event.key==='Enter')login()"/>
     <div id="lerr" style="color:#C94C7A;font-size:13px;margin-bottom:8px;display:none;">⚠ Correo o contrasena incorrectos.</div>
-    <div style="margin-top:14px;padding-top:12px;border-top:1px solid #2a2a3a;">
-      <div style="font-size:11px;color:#555;text-align:center;margin-bottom:8px;">¿Se borraron los datos? Recupéralos de la nube:</div>
+    <button class="btn bw" id="login-btn" onclick="login()" style="padding:13px;font-size:15px;margin-bottom:8px;">Ingresar</button>
+    <div style="background:#0d1a0d;border:1px solid #4CC97A40;border-radius:10px;padding:12px;margin-bottom:10px;">
+      <div style="font-size:12px;color:#4CC97A;font-weight:bold;margin-bottom:6px;">☁️ ¿Se borraron los datos?</div>
+      <div style="font-size:11px;color:#888;margin-bottom:8px;">Ingresa tu API Key y Bin ID para recuperarlos:</div>
       <input class="inp" id="rec-key" placeholder="API Key de JSONBin" style="margin-bottom:6px;font-size:12px;"/>
       <input class="inp" id="rec-bin" placeholder="Bin ID" style="margin-bottom:8px;font-size:12px;"/>
-      <button class="btn bs" style="width:100%;font-size:12px;" onclick="recuperarDeNube()">☁️ Recuperar datos de la nube</button>
+      <button class="btn bs" style="width:100%;font-size:12px;border-color:#4CC97A;color:#4CC97A;" onclick="recuperarDeNube()">☁️ Recuperar datos de la nube</button>
       <div id="rec-msg" style="font-size:11px;color:#888;text-align:center;margin-top:6px;"></div>
     </div>
-    <button class="btn bw" id="login-btn" onclick="login()" style="padding:13px;font-size:15px;margin-bottom:8px;">Ingresar</button>
     <div style="height:1px;background:#1e1e28;margin:12px 0;"></div>
     <button class="btn bw" onclick="showLoginEstudiante()" style="padding:11px;font-size:13px;margin-bottom:8px;border-color:#C94C7A;color:#C94C7A;background:#C94C7A10;">🎓 Entrar como Estudiante</button>
     <button class="btn bw" onclick="showRegistroEstudiante()" style="padding:11px;font-size:13px;margin-bottom:8px;border-color:#4CC97A;color:#4CC97A;background:#4CC97A10;">✏️ Registrarme como Estudiante</button>
@@ -6866,7 +6867,7 @@ async function syncToCloud(){
 
 async function syncFromCloud(){
   var cfg=getCloudConfig();
-  if(!cfg.key||!cfg.bin){return {ok:false,msg:"Configura la API Key y Bin ID primero"};}
+  if(!cfg.key||!cfg.bin||cfg.bin.length<10||cfg.key.length<20){return {ok:false,msg:"Configura la API Key y Bin ID primero"};}
   try{
     var res=await fetch("https://api.jsonbin.io/v3/b/"+cfg.bin+"/latest",{
       headers:{"X-Master-Key":cfg.key,"X-Access-Key":cfg.key}
