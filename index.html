@@ -455,7 +455,17 @@
   <!-- SYNC -->
   <div class="view" id="view-sync">
     <h2>🔄 Sincronización</h2>
-    <p class="muted">Comparte información con otras fundaciones usando un código secreto compartido. Solo las fundaciones con el mismo código pueden ver los datos.</p>
+
+    <div class="card" style="border-left:5px solid var(--app-color);">
+      <h3>☁️ Supabase — Sincronización automática</h3>
+      <p class="muted">Todos los datos se sincronizan automáticamente con Supabase entre todos los dispositivos.</p>
+      <div id="supabaseStatus" style="font-size:14px; margin:8px 0;">⏳ Verificando conexión...</div>
+      <div class="btn-row">
+        <button class="btn" onclick="probarSupabase()">🔌 Probar conexión</button>
+        <button class="btn secondary" onclick="subirTodoASupabase()">⬆️ Subir todo</button>
+      </div>
+      <button class="btn" style="background:#eef3f1; color:var(--app-color); margin-top:8px;" onclick="bajarDeSupabase()">⬇️ Descargar de Supabase</button>
+    </div>
 
     <div class="card">
       <h3>🔐 Tu clave JSONBin (privada)</h3>
@@ -1506,8 +1516,11 @@ function cargarDatos(){
 
 function guardarDatos(){
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  // Sincronizar con Supabase en segundo plano
-  sincronizarConSupabase().catch(e=>console.log('Sync Supabase:', e));
+  // Sincronizar con Supabase
+  sincronizarConSupabase().then(ok=>{
+    if(ok) console.log('✅ Supabase sync OK');
+    else console.warn('⚠️ Supabase sync falló');
+  });
 }
 
 function showToast(msg){
@@ -3712,6 +3725,69 @@ function guardarApiKey(){
   document.getElementById('syncApiKeyStatus').textContent = '✅ Clave guardada en este dispositivo';
   document.getElementById('syncApiKey').value = '';
   showToast('Clave guardada ✅');
+}
+
+async function probarSupabase(){
+  const el = document.getElementById('supabaseStatus');
+  el.textContent = '⏳ Probando conexión...';
+  try{
+    const rows = await sbFetch('usuarios', 'GET');
+    el.textContent = `✅ Conexión exitosa — ${rows.length} usuario(s) en Supabase`;
+    el.style.color = 'var(--app-color)';
+  } catch(e){
+    el.textContent = `❌ Error: ${e.message}`;
+    el.style.color = 'var(--danger)';
+  }
+}
+
+async function subirTodoASupabase(){
+  const el = document.getElementById('supabaseStatus');
+  el.textContent = '⏳ Subiendo datos...';
+  try{
+    const tablas = [
+      ['donantes', data.donantes],
+      ['voluntarios', data.voluntarios],
+      ['eventos', data.eventos],
+      ['entregas', data.entregas],
+      ['solicitudes', data.solicitudes],
+      ['proveedores', data.proveedores],
+      ['directorio', data.directorio],
+      ['censo_personas', data.censoPersonas],
+      ['censo_fundaciones', data.censoFundaciones],
+    ];
+    let total = 0;
+    for(const [tabla, lista] of tablas){
+      if(lista && lista.length > 0){
+        el.textContent = `⏳ Subiendo ${tabla}...`;
+        const rows = lista.map(obj => toSB(tabla, obj));
+        await sbFetch(tabla, 'POST', rows, '');
+        total += rows.length;
+      }
+    }
+    el.textContent = `✅ ${total} registros subidos a Supabase`;
+    el.style.color = 'var(--app-color)';
+    showToast('✅ Datos subidos a Supabase');
+  } catch(e){
+    el.textContent = `❌ Error: ${e.message}`;
+    el.style.color = 'var(--danger)';
+  }
+}
+
+async function bajarDeSupabase(){
+  const el = document.getElementById('supabaseStatus');
+  el.textContent = '⏳ Descargando datos...';
+  try{
+    const ok = await descargarDeSupabase();
+    if(ok){
+      el.textContent = '✅ Datos descargados de Supabase';
+      el.style.color = 'var(--app-color)';
+      renderInicio();
+      showToast('✅ Datos actualizados desde Supabase');
+    }
+  } catch(e){
+    el.textContent = `❌ Error: ${e.message}`;
+    el.style.color = 'var(--danger)';
+  }
 }
 
 function renderSync(){
