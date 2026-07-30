@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-title" content="GradManager"/>
 <link rel="apple-touch-icon" href="android-chrome-192x192.png"/>
-<title>GradManager 2025 — v323</title>
+<title>GradManager 2025 — v324</title>
 <style>
 :root{--app-color:#C9A84C;}
 html{-webkit-text-size-adjust:100%;-moz-text-size-adjust:100%;text-size-adjust:100%;font-size:18px;}
@@ -100,13 +100,20 @@ body.light-mode{background:#e8e8ee !important;}
     <div style="text-align:center;margin-bottom:28px;">
       <div style="font-size:52px;margin-bottom:8px;">🎓</div>
       <h1 style="font-size:24px;font-weight:normal;color:#e8e0d0;">GradManager</h1>
-      <div style="font-size:10px;color:#C9A84C;margin-top:2px;">v323 ✓</div>
+      <div style="font-size:10px;color:#C9A84C;margin-top:2px;">v324 ✓</div>
       <p id="login-grad" style="font-size:13px;color:#C9A84C;margin-top:5px;font-weight:bold;"></p>
       
     </div>
     <input class="inp" id="le" type="email" placeholder="Correo electronico"/>
     <input class="inp" id="lp" type="password" placeholder="Contrasena" onkeydown="if(event.key==='Enter')login()"/>
     <div id="lerr" style="color:#C94C7A;font-size:13px;margin-bottom:8px;display:none;">⚠ Correo o contrasena incorrectos.</div>
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid #2a2a3a;">
+      <div style="font-size:11px;color:#555;text-align:center;margin-bottom:8px;">¿Se borraron los datos? Recupéralos de la nube:</div>
+      <input class="inp" id="rec-key" placeholder="API Key de JSONBin" style="margin-bottom:6px;font-size:12px;"/>
+      <input class="inp" id="rec-bin" placeholder="Bin ID" style="margin-bottom:8px;font-size:12px;"/>
+      <button class="btn bs" style="width:100%;font-size:12px;" onclick="recuperarDeNube()">☁️ Recuperar datos de la nube</button>
+      <div id="rec-msg" style="font-size:11px;color:#888;text-align:center;margin-top:6px;"></div>
+    </div>
     <button class="btn bw" id="login-btn" onclick="login()" style="padding:13px;font-size:15px;margin-bottom:8px;">Ingresar</button>
     <div style="height:1px;background:#1e1e28;margin:12px 0;"></div>
     <button class="btn bw" onclick="showLoginEstudiante()" style="padding:11px;font-size:13px;margin-bottom:8px;border-color:#C94C7A;color:#C94C7A;background:#C94C7A10;">🎓 Entrar como Estudiante</button>
@@ -6808,6 +6815,37 @@ function saveCloudConfig(key, bin){
   localStorage.setItem("gm3",JSON.stringify(D));
 }
 
+
+async function recuperarDeNube(){
+  var key=document.getElementById("rec-key")?document.getElementById("rec-key").value.trim():"";
+  var bin=document.getElementById("rec-bin")?document.getElementById("rec-bin").value.trim():"";
+  var msg=document.getElementById("rec-msg");
+  if(!key||!bin){if(msg) msg.textContent="⚠️ Ingresa la API Key y el Bin ID";return;}
+  if(msg){msg.textContent="⏳ Recuperando...";msg.style.color="#C9A84C";}
+  try{
+    var res=await fetch("https://api.jsonbin.io/v3/b/"+bin+"/latest",{
+      headers:{"X-Master-Key":key,"X-Access-Key":key}
+    });
+    if(res.ok){
+      var data=await res.json();
+      var remoteD=data.record||data;
+      if(remoteD&&remoteD.students!==undefined){
+        D=remoteD;
+        localStorage.setItem("gm_jb_key",key);
+        localStorage.setItem("gm_jb_bin",bin);
+        localStorage.setItem("gm3",JSON.stringify(D));
+        if(msg){msg.textContent="✅ Datos recuperados. Ya puedes entrar.";msg.style.color="#4CC97A";}
+      } else {
+        if(msg){msg.textContent="⚠️ No se encontraron datos válidos";msg.style.color="#C94C7A";}
+      }
+    } else {
+      if(msg){msg.textContent="Error "+res.status+": verifica tu API Key y Bin ID";msg.style.color="#C94C7A";}
+    }
+  }catch(e){
+    if(msg){msg.textContent="Error de red: "+e.message;msg.style.color="#C94C7A";}
+  }
+}
+
 async function syncToCloud(){
   var cfg=getCloudConfig();
   if(!cfg.key||!cfg.bin){return {ok:false,msg:"Configura la API Key y Bin ID primero"};}
@@ -6921,6 +6959,32 @@ function guardarApiKey(){
   addN("✅ Configuración guardada");
   actualizarEstadoSync();
 }
+
+// Sync when user returns to app (mobile-friendly)
+document.addEventListener("visibilitychange",function(){
+  if(document.visibilityState==="visible"){
+    var cfg=getCloudConfig();
+    if(!cfg.key||!cfg.bin||!CU) return;
+    fetch("https://api.jsonbin.io/v3/b/"+cfg.bin+"/latest",{headers:{"X-Master-Key":cfg.key,"X-Access-Key":cfg.key}})
+    .then(function(r){return r.ok?r.json():null;})
+    .then(function(data){
+      if(!data) return;
+      var remoteD=data.record||data;
+      var remoteSavedAt=remoteD&&remoteD.savedAt||0;
+      var localSavedAt=D.savedAt||0;
+      if(remoteSavedAt>localSavedAt+5000){
+        D=remoteD;
+        clearTimeout(window._syncT);
+        localStorage.setItem("gm3",JSON.stringify(D));
+        localStorage.setItem("gm_last_sync",new Date().toLocaleTimeString());
+        showSBar();
+        if(typeof RENDERS!=="undefined"&&curS&&RENDERS[curS]) RENDERS[curS]();
+        actualizarEstadoSync();
+        addN("☁️ Datos actualizados al regresar");
+      }
+    }).catch(function(){});
+  }
+});
 
 // Auto-sync every 60 seconds if configured
 setInterval(function(){
@@ -9034,6 +9098,11 @@ function mBackups(){
   html+='<div style="background:#0d0d16;border:1px solid #4CC97A40;border-radius:12px;padding:14px;margin-bottom:16px;">';
   html+='<div style="font-size:13px;color:#4CC97A;font-weight:bold;margin-bottom:4px;">☁️ Sincronización en la Nube</div>';
   html+='<div id="sync-status" style="font-size:12px;color:#888;margin-bottom:10px;">⚠️ Sin configurar</div>';
+  if(cfg.key&&cfg.bin){
+    var configUrl=window.location.href.split("#")[0]+"#jbk="+encodeURIComponent(cfg.key)+"&jbb="+encodeURIComponent(cfg.bin);
+    html+='<div style="font-size:11px;color:#555;margin-bottom:8px;word-break:break-all;">🔗 Guarda este enlace para no perder la configuración:</div>';
+    html+='<div style="font-size:10px;background:#0d0d16;padding:6px;border-radius:6px;word-break:break-all;color:#C9A84C;margin-bottom:8px;">'+configUrl+'</div>';
+  }
   html+='<input class="inp" id="jb-key" placeholder="API Key de JSONBin *" value="'+(cfg.key||'')+'" style="margin-bottom:6px;"/>';
   html+='<input class="inp" id="jb-bin" placeholder="Bin ID (se crea automáticamente)" value="'+(cfg.bin||'')+'" style="margin-bottom:8px;"/>';
   html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;">';
@@ -11365,22 +11434,91 @@ function sendChatMsg(){
 }
 
 function mAI(){
-  const c=CU?CU.color:"#C9A84C";
-  const tR=gST().reduce((s,st)=>s+cP(st.pagos),0);const tE=gST().reduce((s,st)=>s+cT(st.parts),0);
-  sMC(`<div class="dv"></div><div class="ct">✧ Reporte IA</div>
-    <div class="card">
-      <div style="font-size:14px;color:#ddd;margin-bottom:6px;">Reporte Ejecutivo Inteligente</div>
-      <div style="font-size:12px;color:#555;margin-bottom:14px;">Analiza todos los modulos en tiempo real</div>
-      <div class="g2" style="margin-bottom:14px;">
-        <div class="sb"><div class="sv" style="color:${c};font-size:15px;">${Math.round((tR/Math.max(tE,1))*100)}%</div><div class="sl">Cuotas</div></div>
-        <div class="sb"><div class="sv" style="color:#C94C7A;font-size:15px;">${fD(gRI().reduce((s,r)=>s+r.rec,0))}</div><div class="sl">Rifas</div></div>
-        <div class="sb"><div class="sv" style="color:#7C6CD4;font-size:15px;">${gSU().length}</div><div class="sl">Subastas</div></div>
-        <div class="sb"><div class="sv" style="color:#FFD700;font-size:15px;">${gAW().filter(a=>a.ok).length}</div><div class="sl">Premios</div></div>
-      </div>
-      <button class="btn bw" id="ai-btn" onclick="genAI()" style="border-color:${c};background:${c}20;color:${c};">✦ Generar Reporte con IA</button>
-      <div id="ai-res" style="margin-top:14px;"></div>
-    </div>`);
+  var savedKey=localStorage.getItem("gm_ant_key")||(D._config&&D._config.antKey)||"";
+  if(!savedKey){
+    var html="";
+    html+='<div class="ct">\u2727 Reporte IA</div>';
+    html+='<div class="card" style="margin-bottom:12px;">';
+    html+='<div style="font-size:14px;color:#ddd;margin-bottom:8px;">\uD83D\uDD11 Configura tu API Key de Anthropic</div>';
+    html+='<div style="font-size:12px;color:#888;margin-bottom:12px;">Obt\u00e9n tu clave gratis en console.anthropic.com</div>';
+    html+='<input class="inp" id="ant-key-inp" placeholder="sk-ant-..." style="margin-bottom:8px;font-family:monospace;font-size:12px;"/>';
+    html+='<button class="btn bw bg" style="width:100%;padding:13px;" onclick="guardarAntKey()">\u2713 Guardar y activar IA</button>';
+    html+="</div>";
+    sMC(html);
+    return;
+  }
+  var sts=gST();
+  var tR=sts.reduce(function(s,st){return s+cP(st.pagos);},0);
+  var tE=sts.reduce(function(s,st){return s+cT(st.parts);},0);
+  var nAlDia=sts.filter(function(s){return (s.parts||[]).length>0&&cP(s.pagos)>=cT(s.parts);}).length;
+  var nParcial=sts.filter(function(s){return cP(s.pagos)>0&&cP(s.pagos)<cT(s.parts||[]);}).length;
+  var nSinPagar=sts.filter(function(s){return (s.parts||[]).length===0||(cP(s.pagos)===0&&cT(s.parts||[])>0);}).length;
+  var c=CU?CU.color:"#C9A84C";
+  var html="";
+  html+='<div class="ct">\u2727 Reporte IA</div>';
+  html+='<div class="card" style="margin-bottom:10px;">';
+  html+='<div class="g3" style="margin-bottom:10px;">';
+  html+='<div class="sb"><div class="sv" style="color:#4CC97A;">'+nAlDia+'</div><div class="sl">Al dia</div></div>';
+  html+='<div class="sb"><div class="sv" style="color:#C9A84C;">'+nParcial+'</div><div class="sl">Parcial</div></div>';
+  html+='<div class="sb"><div class="sv" style="color:#C94C7A;">'+nSinPagar+'</div><div class="sl">Sin pagar</div></div>';
+  html+="</div>";
+  html+=pbHTML(tR,Math.max(tE,1),c,8);
+  html+='<div style="font-size:12px;color:#555;margin-top:6px;">Recaudado: '+fD(tR)+" / "+fD(tE)+"</div>";
+  html+="</div>";
+  html+='<button class="btn bw bg" id="ai-btn" style="width:100%;padding:14px;font-size:15px;margin-bottom:10px;" onclick="generarReporteIA()">\u2727 Generar Analisis con IA</button>';
+  html+='<div id="ai-result" style="display:none;" class="card"></div>';
+  html+='<div style="text-align:right;margin-top:8px;"><button class="btn bs" style="font-size:10px;" onclick="limpiarAntKey()">\uD83D\uDD11 Cambiar API Key</button></div>';
+  sMC(html);
 }
+
+function limpiarAntKey(){localStorage.removeItem("gm_ant_key");mAI();}
+
+function guardarAntKey(){
+  var k=document.getElementById("ant-key-inp")?document.getElementById("ant-key-inp").value.trim():"";
+  if(!k||!k.startsWith("sk-")){addN("Ingresa una clave valida (empieza con sk-)");return;}
+  localStorage.setItem("gm_ant_key",k);
+  if(!D._config) D._config={};
+  D._config.antKey=k;
+  clearTimeout(window._syncT);
+  localStorage.setItem("gm3",JSON.stringify(D));
+  addN("API Key guardada");
+  mAI();
+}
+
+async function generarReporteIA(){
+  var key=localStorage.getItem("gm_ant_key")||(D._config&&D._config.antKey)||"";
+  if(!key){mAI();return;}
+  var btn=document.getElementById("ai-btn");
+  var res=document.getElementById("ai-result");
+  if(btn){btn.disabled=true;btn.textContent="Analizando...";}
+  if(res) res.style.display="none";
+  var sts=gST();
+  var tR=sts.reduce(function(s,st){return s+cP(st.pagos);},0);
+  var tE=sts.reduce(function(s,st){return s+cT(st.parts);},0);
+  var nAlDia=sts.filter(function(s){return (s.parts||[]).length>0&&cP(s.pagos)>=cT(s.parts);}).length;
+  var nParcial=sts.filter(function(s){return cP(s.pagos)>0&&cP(s.pagos)<cT(s.parts||[]);}).length;
+  var nSinPagar=sts.filter(function(s){return (s.parts||[]).length===0||(cP(s.pagos)===0&&cT(s.parts||[])>0);}).length;
+  var partsInfo=(D.PARTS||[]).map(function(p){return p.label+" ($"+p.costo+")";}).join(", ");
+  var prompt="Eres un asistente de gestion de graduaciones. Analiza estos datos y genera un reporte ejecutivo en espanol con recomendaciones practicas. GRADUACION: "+(D.gradConfig&&D.gradConfig.nombre||"Sin nombre")+". Total alumnos: "+sts.length+". Al dia: "+nAlDia+" | Parcial: "+nParcial+" | Sin pagar: "+nSinPagar+". Recaudado: $"+Math.round(tR)+" de $"+Math.round(tE)+" ("+Math.round(tR/Math.max(tE,1)*100)+"%). Actividades: "+partsInfo+". Genera: 1) Estado general, 2) Alumnos en riesgo, 3) Recomendaciones concretas, 4) Proyeccion. Se conciso y practico.";
+  try{
+    var resp=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+      body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1000,messages:[{role:"user",content:prompt}]})
+    });
+    var data=await resp.json();
+    if(resp.ok&&data.content&&data.content[0]){
+      var texto=data.content[0].text;
+      if(res){res.style.display="block";res.innerHTML='<div style="font-size:13px;color:#ddd;white-space:pre-wrap;line-height:1.6;">'+texto.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")+"</div>";}
+    } else {
+      var errMsg=(data.error&&data.error.message)||"Error desconocido";
+      if(errMsg.includes("invalid x-api-key")||errMsg.includes("Invalid API")){localStorage.removeItem("gm_ant_key");addN("API Key invalida. Ingresa una nueva.");mAI();}
+      else addN("Error IA: "+errMsg);
+    }
+  }catch(e){addN("Error de red: "+e.message);}
+  if(btn){btn.disabled=false;btn.textContent="Generar Analisis con IA";}
+}
+
 async function genAI(){
   const btn=document.getElementById("ai-btn");const res=document.getElementById("ai-res");if(!btn||!res)return;
   btn.textContent="⏳ Analizando...";btn.disabled=true;
@@ -11407,6 +11545,28 @@ Incluye: Resumen, Finanzas, Alertas, Recomendaciones. Max 250 palabras. Emojis.`
 // INRC — load data, restore session
 // ═══════════════════════════════════
 LD();
+// Read config from URL hash if present (e.g. #jbk=KEY&jbb=BIN)
+(function(){
+  var h=window.location.hash||"";
+  if(h.includes("jbk=")){
+    try{
+      var p=new URLSearchParams(h.replace("#",""));
+      var k=decodeURIComponent(p.get("jbk")||"");
+      var b=decodeURIComponent(p.get("jbb")||"");
+      if(k) localStorage.setItem("gm_jb_key",k);
+      if(b) localStorage.setItem("gm_jb_bin",b);
+      if(k&&b){if(!D._cloudConfig)D._cloudConfig={};D._cloudConfig.key=k;D._cloudConfig.bin=b;}
+    }catch(e){}
+  }
+})();
+// Restore cloud config from D if localStorage lost it
+(function(){
+  var cfg=getCloudConfig();
+  if((!cfg.key||!cfg.bin)&&D._cloudConfig){
+    if(D._cloudConfig.key) localStorage.setItem("gm_jb_key",D._cloudConfig.key);
+    if(D._cloudConfig.bin) localStorage.setItem("gm_jb_bin",D._cloudConfig.bin);
+  }
+})();
 // Check license on startup
 initLicenseCheck();
 var _gc=gGC();
