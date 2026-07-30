@@ -1,0 +1,4109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0e7c61">
+<title>FoundationManager</title>
+<style>
+  :root{
+    --app-color:#0e7c61;       /* verde principal */
+    --app-color-2:#1a9e7c;     /* verde claro */
+    --accent:#ffb347;          /* naranja tropical cálido */
+    --bg:#f4f8f7;
+    --card:#ffffff;
+    --text:#1f2d2a;
+    --muted:#6b7d79;
+    --danger:#e2574c;
+    --radius:14px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+  html, body{
+    margin:0; font-family:'Segoe UI', Roboto, Arial, sans-serif;
+    background:var(--bg); color:var(--text); padding-bottom:80px;
+    overscroll-behavior-y: none !important;
+    overflow-y: auto;
+  }
+  header{
+    background:linear-gradient(135deg, var(--app-color), var(--app-color-2));
+    color:#fff; padding:18px 16px 24px; text-align:center;
+    border-radius:0 0 24px 24px;
+    box-shadow:0 4px 12px rgba(0,0,0,.08);
+  }
+  header h1{margin:0; font-size:22px; letter-spacing:.5px;}
+  header p{margin:4px 0 0; font-size:13px; opacity:.9;}
+
+  .container{padding:14px;}
+
+  /* Tabs */
+  .tabs{
+    display:flex; gap:6px; overflow-x:auto; padding:10px 14px 4px;
+    position:sticky; top:0; background:var(--bg); z-index:10;
+  }
+  .tab{
+    flex:1; min-width:80px; text-align:center; padding:10px 6px;
+    border-radius:var(--radius); background:#fff; color:var(--app-color);
+    font-size:14px; font-weight:600; border:2px solid transparent;
+    cursor:pointer; transition:.15s; user-select:none;
+  }
+  .tab.active{background:var(--app-color); color:#fff; border-color:var(--app-color);}
+  .tab span{display:block; font-size:22px; margin-bottom:2px;}
+
+  .view{display:none;}
+  .view.active{display:block; animation:fade .25s ease;}
+  @keyframes fade{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+  .card{
+    background:var(--card); border-radius:var(--radius); padding:14px;
+    margin-bottom:12px; box-shadow:0 2px 8px rgba(0,0,0,.05);
+  }
+  .summary-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;}
+  .summary-card{
+    background:#fff; border-radius:var(--radius); padding:14px; text-align:center;
+    box-shadow:0 2px 8px rgba(0,0,0,.05); border-left:5px solid var(--app-color-2);
+  }
+  .summary-card.alt{border-left-color:var(--accent);}
+  .summary-card .num{font-size:22px; font-weight:700; color:var(--app-color);}
+  .summary-card.alt .num{color:var(--accent);}
+  .summary-card .lbl{font-size:11px; color:var(--muted); margin-top:2px;}
+
+  h2{font-size:20px; margin:6px 0 12px; color:var(--app-color);}
+  h3{font-size:17px; margin:0 0 4px;}
+
+  label{display:block; font-size:14px; color:var(--muted); margin:8px 0 4px; font-weight:600;}
+  input, select, textarea{
+    width:100%; padding:12px 14px; border:1.5px solid #dde6e3; border-radius:10px;
+    font-size:16px !important; background:#fbfdfc; color:var(--text);
+  }
+  input:focus, select:focus, textarea:focus{outline:none; border-color:var(--app-color-2);}
+
+  .btn{
+    display:inline-block; padding:14px 18px; border-radius:10px; border:none;
+    background:var(--app-color); color:#fff; font-weight:600; font-size:16px !important;
+    cursor:pointer; margin-top:12px; width:100%; text-align:center;
+  }
+  .btn:active{opacity:.85;}
+  .btn.secondary{background:var(--accent); color:#3a2a00;}
+  .btn.danger{background:var(--danger);}
+  .btn-row{display:flex; gap:8px;}
+  .btn-row .btn{margin-top:8px;}
+
+  .item{
+    background:#fff; border-radius:12px; padding:12px; margin-bottom:8px;
+    box-shadow:0 1px 5px rgba(0,0,0,.04); border-left:4px solid var(--app-color-2);
+  }
+  .item.evento{border-left-color:var(--accent);}
+  .item-top{display:flex; justify-content:space-between; align-items:flex-start; gap:8px;}
+  .item-actions{display:flex; gap:6px; margin-top:8px;}
+  .icon-btn{
+    border:none; background:#f0f5f3; border-radius:8px; padding:8px 12px;
+    font-size:15px !important; cursor:pointer; color:var(--app-color); font-weight:600;
+  }
+  .icon-btn.danger{color:var(--danger); background:#fdecea;}
+  .tag{
+    display:inline-block; font-size:13px; padding:4px 10px; border-radius:20px;
+    background:#e6f4f0; color:var(--app-color); font-weight:600; margin-top:4px;
+  }
+  .muted{color:var(--muted); font-size:14px;}
+  .empty{text-align:center; color:var(--muted); padding:30px 10px; font-size:13px;}
+  .empty span{font-size:32px; display:block; margin-bottom:8px;}
+
+  /* Search */
+  .search-box{position:relative; margin-bottom:10px;}
+  .search-box input{padding-left:34px;}
+  .search-box::before{
+    content:"🔍"; position:absolute; left:10px; top:50%; transform:translateY(-50%);
+    font-size:14px; opacity:.6;
+  }
+
+  /* Modal */
+  .overlay{
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,.45);
+    z-index:100; align-items:flex-end; justify-content:center;
+  }
+  .overlay.active{display:flex;}
+  .modal{
+    background:#fff; width:100%; max-width:480px; border-radius:18px 18px 0 0;
+    padding:18px; max-height:88vh; overflow-y:auto; animation:slideUp .25s ease;
+  }
+  @keyframes slideUp{from{transform:translateY(40px); opacity:0;} to{transform:translateY(0); opacity:1;}}
+  .modal h2{margin-top:0;}
+  .close-x{
+    position:absolute; right:18px; top:14px; background:#f0f5f3; border:none;
+    width:32px; height:32px; border-radius:50%; font-size:16px; cursor:pointer; color:var(--muted);
+  }
+
+  .fab{
+    position:fixed; bottom:18px; right:18px; width:56px; height:56px; border-radius:50%;
+    background:var(--accent); color:#3a2a00; font-size:28px; border:none;
+    box-shadow:0 4px 14px rgba(0,0,0,.2); cursor:pointer; z-index:50;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  .toast{
+    position:fixed; bottom:90px; left:50%; transform:translateX(-50%);
+    background:var(--text); color:#fff; padding:10px 18px; border-radius:30px;
+    font-size:13px; z-index:200; opacity:0; transition:opacity .3s; pointer-events:none;
+    white-space:nowrap;
+  }
+  .toast.show{opacity:1;}
+
+  .report-row{
+    display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #f0f0f0;
+    font-size:15px;
+  }
+  .report-row:last-child{border-bottom:none;}
+  .report-row.total{font-weight:700; color:var(--app-color); font-size:15px; padding-top:10px;}
+
+  select{appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7d79' stroke-width='2' fill='none'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center;}
+
+  @media print {
+    header, .tabs, .fab, #fab, button:not(.print-ok), .item-actions { display:none !important; }
+    body { padding:0; background:#fff; }
+    .view { display:block !important; }
+    .view:not(#view-reportes) { display:none !important; }
+    .card { box-shadow:none; border:1px solid #ddd; margin-bottom:10px; break-inside:avoid; }
+    .summary-grid { break-inside:avoid; }
+  }
+</style>
+</head>
+<body>
+
+<style>
+  #loginScreen{
+    position:fixed; inset:0; background:linear-gradient(135deg, #0e7c61, #1a9e7c);
+    z-index:1000; display:flex; flex-direction:column; align-items:center;
+    justify-content:center; padding:24px;
+  }
+  #loginScreen h1{color:#fff; font-size:28px; margin:0 0 6px; text-align:center;}
+  #loginScreen p{color:rgba(255,255,255,.85); font-size:16px; margin:0 0 32px; text-align:center;}
+  .login-card{background:#fff; border-radius:20px; padding:24px; width:100%; max-width:380px; box-shadow:0 8px 24px rgba(0,0,0,.15);}
+  .login-card h2{margin:0 0 20px; font-size:22px; color:#0e7c61; text-align:center;}
+  .login-field{margin-bottom:16px;}
+  .login-field label{display:block; font-size:15px; font-weight:600; color:#6b7d79; margin-bottom:6px;}
+  .login-field input, .login-field select{
+    width:100%; padding:14px 16px; border:2px solid #dde6e3; border-radius:12px;
+    font-size:17px; color:#1f2d2a; box-sizing:border-box;
+  }
+  .login-field input:focus, .login-field select:focus{outline:none; border-color:#1a9e7c;}
+  .login-btn{
+    width:100%; padding:16px; background:#0e7c61; color:#fff; border:none;
+    border-radius:12px; font-size:18px; font-weight:700; cursor:pointer; margin-top:8px;
+  }
+  .login-error{color:#e2574c; font-size:14px; text-align:center; margin-top:10px; display:none;}
+  #loginScreen .logo{font-size:56px; margin-bottom:12px;}
+</style>
+
+<div id="loginScreen">
+  <div class="logo">🌱</div>
+  <h1>FoundationManager</h1>
+  <p>Gestión de fundaciones sin fines de lucro</p>
+  <div class="login-card">
+    <h2>🔐 Iniciar sesión</h2>
+    <div class="login-field">
+      <label>Usuario</label>
+      <select id="loginUsuario" onchange="document.getElementById('loginError').style.display='none'">
+        <option value="">Selecciona un usuario...</option>
+      </select>
+    </div>
+    <div class="login-field" id="loginManualWrap" style="display:none;">
+      <label>O escribe tu usuario manualmente</label>
+      <input id="loginUsuarioManual" placeholder="Ej. admin" autocomplete="off">
+    </div>
+    <div class="login-field">
+      <label>Contraseña</label>
+      <input type="password" id="loginClave" placeholder="••••••••" onkeydown="if(event.key==='Enter') iniciarSesion()">
+    </div>
+    <button class="login-btn" onclick="iniciarSesion()">Entrar →</button>
+    <p class="login-error" id="loginError">⚠️ Usuario o contraseña incorrectos</p>
+    <div style="margin-top:16px; border-top:1px solid #eee; padding-top:16px;">
+      <p style="font-size:13px; color:#6b7d79; margin:0 0 8px;">¿No aparece tu usuario? Usa acceso de emergencia:</p>
+      <button onclick="entrarComoAdmin()" style="width:100%; padding:12px; background:#f4f8f7; color:#0e7c61; border:2px solid #0e7c61; border-radius:10px; font-size:15px; font-weight:700; cursor:pointer;">🔑 Entrar como Admin</button>
+    </div>
+  </div>
+</div>
+
+
+  <h1>🌱 FoundationManager</h1>
+  <p id="orgName">Mi Fundación</p>
+  <div id="headerUsuario" style="margin-top:8px; display:flex; align-items:center; justify-content:space-between; background:rgba(0,0,0,.25); border-radius:10px; padding:8px 12px;">
+    <span id="headerUsuarioNombre" style="color:#ffffff; font-size:15px; font-weight:700; text-shadow:0 1px 3px rgba(0,0,0,.4);"></span>
+    <button onclick="cerrarSesion()" style="background:#fff; border:none; color:#0e7c61; padding:7px 16px; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer;">🚪 Salir</button>
+  </div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" data-view="inicio" onclick="showView('inicio')"><span>🏠</span>Inicio</div>
+  <div class="tab" data-view="donantes" onclick="showView('donantes')"><span>💚</span>Donantes</div>
+  <div class="tab" data-view="voluntarios" onclick="showView('voluntarios')"><span>🙋</span>Voluntarios</div>
+  <div class="tab" data-view="eventos" onclick="showView('eventos')"><span>🎉</span>Eventos</div>
+  <div class="tab" data-view="solicitudes" onclick="showView('solicitudes')"><span>🆘</span>Solicitudes</div>
+  <div class="tab" data-view="proveedores" onclick="showView('proveedores')"><span>🏪</span>Proveedores</div>
+  <div class="tab" data-view="directorio" onclick="showView('directorio')"><span>📞</span>Directorio</div>
+  <div class="tab" data-view="censo" onclick="showView('censo')"><span>🏘️</span>Censo</div>
+  <div class="tab" data-view="inventario" onclick="showView('inventario')"><span>📦</span>Inventario</div>
+  <div class="tab" id="tabReportes" data-view="reportes" onclick="showView('reportes')"><span>📊</span>Reportes</div>
+  <div class="tab" data-view="sync" onclick="showView('sync')"><span>🔄</span>Sync</div>
+  <div class="tab" id="tabUsuarios" data-view="usuarios" onclick="showView('usuarios')"><span>👥</span>Usuarios</div>
+  <div class="tab" data-view="auditoria" onclick="showView('auditoria')"><span>📋</span>Auditoría</div>
+</div>
+
+<div class="container">
+
+  <!-- INICIO -->
+  <div class="view active" id="view-inicio">
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="num" id="sumDonaciones">$0</div>
+        <div class="lbl">Total donado</div>
+      </div>
+      <div class="summary-card alt">
+        <div class="num" id="sumDonantes">0</div>
+        <div class="lbl">Donantes</div>
+      </div>
+      <div class="summary-card">
+        <div class="num" id="sumVoluntarios">0</div>
+        <div class="lbl">Voluntarios</div>
+      </div>
+      <div class="summary-card alt">
+        <div class="num" id="sumEventos">0</div>
+        <div class="lbl">Eventos</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>⚙️ Configuración de la fundación</h3>
+
+      <label>Nombre de la fundación</label>
+      <input id="inputOrgName" placeholder="Ej. Fundación Esperanza">
+
+      <label>Descripción / Misión</label>
+      <textarea id="inputOrgMision" rows="2" placeholder="Ej. Nuestra misión es ayudar a las familias más necesitadas de Puerto Rico..."></textarea>
+
+      <label>Visión</label>
+      <textarea id="inputOrgVision" rows="2" placeholder="Ej. Ser la fundación líder en ayuda comunitaria de Puerto Rico..."></textarea>
+
+      <label>Dirección física</label>
+      <input id="inputOrgDireccion" placeholder="Ej. Calle Principal #1, Aguadilla, PR">
+
+      <label>Teléfono</label>
+      <input id="inputOrgTelefono" type="tel" placeholder="Ej. 787-000-0000">
+
+      <label>WhatsApp</label>
+      <input id="inputOrgWhatsapp" type="tel" placeholder="Ej. 787-000-0000">
+
+      <label>Email</label>
+      <input id="inputOrgEmail" type="email" placeholder="Ej. info@fundacion.org">
+
+      <label>Página web (opcional)</label>
+      <input id="inputOrgWeb" placeholder="Ej. www.fundacion.org">
+
+      <label>Facebook (opcional)</label>
+      <input id="inputOrgFacebook" placeholder="Ej. facebook.com/mifundacion">
+
+      <label>Instagram (opcional)</label>
+      <input id="inputOrgInstagram" placeholder="Ej. @mifundacion">
+
+      <div style="border-top:1px solid #eee; margin-top:14px; padding-top:14px;">
+        <h3 style="margin-top:0;">📄 Datos legales</h3>
+
+        <label>Número de registro / Incorporación</label>
+        <input id="inputOrgRegistro" placeholder="Ej. 12345-PR">
+
+        <label>EIN (Employer Identification Number)</label>
+        <input id="inputOrgEIN" placeholder="Ej. 00-0000000">
+
+        <label>Estatus 501(c)(3) u otro</label>
+        <input id="inputOrgEstatus" placeholder="Ej. 501(c)(3) aprobado desde 2020">
+
+        <label>Nombre del director / presidente</label>
+        <input id="inputOrgDirector" placeholder="Ej. María Rodríguez">
+
+        <label>Notas legales adicionales</label>
+        <textarea id="inputOrgNotasLegales" rows="2" placeholder="Ej. Documentos archivados en el Departamento de Estado de PR..."></textarea>
+      </div>
+
+      <button class="btn" onclick="saveOrgInfo()">💾 Guardar información</button>
+    </div>
+
+    <div class="card">
+      <h3>📅 Próximos eventos</h3>
+      <div id="proximosEventos"><p class="muted">Sin eventos próximos.</p></div>
+    </div>
+
+    <div class="card">
+      <h3>💾 Datos</h3>
+      <p class="muted">Exporta o importa toda la información de tu fundación (respaldo).</p>
+      <div class="btn-row">
+        <button class="btn secondary" onclick="exportarDatos()">Exportar</button>
+        <button class="btn" style="background:#eef3f1; color:var(--app-color);" onclick="document.getElementById('importFile').click()">Importar</button>
+      </div>
+      <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importarDatos(event)">
+    </div>
+  </div>
+
+  <!-- DONANTES -->
+  <div class="view" id="view-donantes">
+    <h2>💚 Donantes</h2>
+    <div class="search-box">
+      <input type="text" id="buscarDonante" placeholder="Buscar donante..." oninput="renderDonantes()">
+    </div>
+    <div id="listaDonantes"></div>
+  </div>
+
+  <!-- VOLUNTARIOS -->
+  <div class="view" id="view-voluntarios">
+    <h2>🙋 Voluntarios</h2>
+    <div class="search-box">
+      <input type="text" id="buscarVoluntario" placeholder="Buscar voluntario..." oninput="renderVoluntarios()">
+    </div>
+    <div id="listaVoluntarios"></div>
+  </div>
+
+  <!-- EVENTOS -->
+  <div class="view" id="view-eventos">
+    <h2>🎉 Eventos</h2>
+    <div id="listaEventos"></div>
+  </div>
+
+  <!-- SOLICITUDES -->
+  <div class="view" id="view-solicitudes">
+    <h2>🆘 Solicitudes de ayuda</h2>
+    <div class="search-box">
+      <input type="text" id="buscarSolicitud" placeholder="Buscar por nombre..." oninput="renderSolicitudes()">
+    </div>
+    <div id="listaSolicitudes"></div>
+  </div>
+
+  <!-- PROVEEDORES -->
+  <div class="view" id="view-proveedores">
+    <h2>🏪 Proveedores</h2>
+    <div class="search-box">
+      <input type="text" id="buscarProveedor" placeholder="Buscar proveedor..." oninput="renderProveedores()">
+    </div>
+    <div id="listaProveedores"></div>
+  </div>
+
+  <!-- DIRECTORIO -->
+  <div class="view" id="view-directorio">
+    <h2>📞 Directorio comunitario</h2>
+    <p class="muted">Agencias gubernamentales, hospitalarias y servidores comunitarios.</p>
+    <div class="search-box">
+      <input type="text" id="buscarDirectorio" placeholder="Buscar agencia..." oninput="renderDirectorio()">
+    </div>
+    <div id="listaDirectorio"></div>
+  </div>
+
+  <!-- AUDITORIA -->
+  <div class="view" id="view-auditoria">
+    <h2>📋 Auditoría</h2>
+    <p class="muted">Registro automático de todas las acciones realizadas en la app.</p>
+
+    <div style="display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap;">
+      <select id="filtroAuditUsuario" onchange="renderAuditoria()" style="flex:1; padding:8px; border-radius:10px; border:1.5px solid #dde6e3; font-size:14px;">
+        <option value="">Todos los usuarios</option>
+      </select>
+      <select id="filtroAuditModulo" onchange="renderAuditoria()" style="flex:1; padding:8px; border-radius:10px; border:1.5px solid #dde6e3; font-size:14px;">
+        <option value="">Todos los módulos</option>
+        <option value="Donante">Donaciones</option>
+        <option value="Voluntario">Voluntarios</option>
+        <option value="Evento">Eventos</option>
+        <option value="Inventario">Inventario</option>
+        <option value="Entrega">Entregas</option>
+        <option value="Solicitud">Solicitudes</option>
+        <option value="Proveedor">Proveedores</option>
+        <option value="Directorio">Directorio</option>
+        <option value="Censo">Censo</option>
+      </select>
+    </div>
+    <div style="display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap;">
+      <select id="filtroAuditAccion" onchange="renderAuditoria()" style="flex:1; padding:8px; border-radius:10px; border:1.5px solid #dde6e3; font-size:14px;">
+        <option value="">Todas las acciones</option>
+        <option value="Creó">Creó</option>
+        <option value="Editó">Editó</option>
+        <option value="Eliminó">Eliminó</option>
+      </select>
+      <div style="flex:1; display:flex; gap:4px;">
+        <input type="date" id="filtroAuditDesde" onchange="renderAuditoria()" style="flex:1; padding:8px; border-radius:10px; border:1.5px solid #dde6e3; font-size:13px;">
+        <input type="date" id="filtroAuditHasta" onchange="renderAuditoria()" style="flex:1; padding:8px; border-radius:10px; border:1.5px solid #dde6e3; font-size:13px;">
+      </div>
+    </div>
+
+    <div class="search-box">
+      <input type="text" id="buscarAuditoria" placeholder="Buscar en historial..." oninput="renderAuditoria()">
+    </div>
+
+    <div class="btn-row">
+      <button class="btn secondary" onclick="verReporteUsuario()">📄 Ver reporte detallado</button>
+      <button class="btn danger" onclick="limpiarAuditoria()" style="margin-top:8px;">🗑️ Limpiar historial</button>
+    </div>
+
+    <div id="listaAuditoria" style="margin-top:10px;"></div>
+  </div>
+
+  <!-- USUARIOS -->
+  <div class="view" id="view-usuarios">
+    <h2>👥 Gestión de usuarios</h2>
+    <p class="muted">Solo el administrador puede crear y editar usuarios.</p>
+    <div id="listaUsuarios"></div>
+  </div>
+
+  <!-- SYNC -->
+  <div class="view" id="view-sync">
+    <h2>🔄 Sincronización</h2>
+    <p class="muted">Comparte información con otras fundaciones usando un código secreto compartido. Solo las fundaciones con el mismo código pueden ver los datos.</p>
+
+    <div class="card">
+      <h3>🔐 Tu clave JSONBin (privada)</h3>
+      <p class="muted">Esta clave se guarda solo en tu dispositivo, nunca en el código. Obténla en <a href="https://jsonbin.io" target="_blank" style="color:var(--app-color);">jsonbin.io</a> → API Keys → Master Key.</p>
+      <label>Master Key</label>
+      <input id="syncApiKey" type="password" placeholder="$2a$10$...">
+      <button class="btn" onclick="guardarApiKey()" style="margin-top:8px;">💾 Guardar clave</button>
+      <p id="syncApiKeyStatus" class="muted" style="margin-top:6px; font-size:12px;"></p>
+    </div>
+
+    <div class="card">
+      <h3>🔑 Código de grupo</h3>
+      <p class="muted">Crea un código y compártelo con las fundaciones con las que quieres colaborar. Todas deben usar el mismo código.</p>
+      <div style="display:flex; gap:8px;">
+        <input id="syncCodigo" placeholder="Ej. fundaciones-pr-2026" style="flex:1;">
+        <button class="icon-btn" onclick="generarCodigo()">🎲 Generar</button>
+      </div>
+      <button class="btn" onclick="guardarCodigo()" style="margin-top:8px;">💾 Guardar código</button>
+      <p id="syncCodigoActual" class="muted" style="margin-top:6px; font-size:12px;"></p>
+    </div>
+
+    <div class="card">
+      <h3>📤 Publicar mis datos</h3>
+      <p class="muted">Elige qué información quieres compartir con las demás fundaciones del grupo.</p>
+      <label style="display:flex; align-items:center; gap:8px; margin:6px 0; font-size:14px; color:var(--text);">
+        <input type="checkbox" id="syncInventario" style="width:18px; height:18px;"> Inventario (artículos disponibles)
+      </label>
+      <label style="display:flex; align-items:center; gap:8px; margin:6px 0; font-size:14px; color:var(--text);">
+        <input type="checkbox" id="syncCensoFundaciones" style="width:18px; height:18px;"> Fundaciones del censo (tienen/necesitan)
+      </label>
+      <label style="display:flex; align-items:center; gap:8px; margin:6px 0; font-size:14px; color:var(--text);">
+        <input type="checkbox" id="syncCensoPersonas" style="width:18px; height:18px;"> Personas del censo (sin datos personales)
+      </label>
+      <label style="display:flex; align-items:center; gap:8px; margin:6px 0; font-size:14px; color:var(--text);">
+        <input type="checkbox" id="syncProveedores" style="width:18px; height:18px;"> Proveedores
+      </label>
+      <label style="display:flex; align-items:center; gap:8px; margin:6px 0; font-size:14px; color:var(--text);">
+        <input type="checkbox" id="syncDirectorio" style="width:18px; height:18px;"> Directorio comunitario
+      </label>
+      <button class="btn secondary" onclick="publicarDatos()" style="margin-top:10px;">📤 Publicar ahora</button>
+      <p id="syncPublicarStatus" class="muted" style="margin-top:6px; font-size:12px;"></p>
+    </div>
+
+    <div class="card">
+      <h3>📥 Ver datos del grupo</h3>
+      <p class="muted">Descarga y visualiza lo que otras fundaciones del grupo han compartido.</p>
+      <button class="btn" onclick="descargarDatosGrupo()">📥 Actualizar datos del grupo</button>
+      <p id="syncDescargarStatus" class="muted" style="margin-top:6px; font-size:12px;"></p>
+      <div id="syncDatosGrupo" style="margin-top:10px;"></div>
+    </div>
+  </div>
+
+  <!-- CENSO COMUNITARIO -->
+  <div class="view" id="view-censo">
+    <h2>🏘️ Censo Comunitario</h2>
+
+    <div class="tabs" style="position:static; margin-bottom:8px; padding:0;">
+      <div class="tab active" id="censoTabPersonas" onclick="censoTab('personas')" style="min-width:auto;"><span>👥</span>Personas</div>
+      <div class="tab" id="censoTabFundaciones" onclick="censoTab('fundaciones')" style="min-width:auto;"><span>🏢</span>Fundaciones</div>
+      <div class="tab" id="censoTabPueblos" onclick="censoTab('pueblos')" style="min-width:auto;"><span>🗺️</span>Por pueblo</div>
+    </div>
+
+    <div id="censoPersonas">
+      <div class="search-box">
+        <input type="text" id="buscarCenso" placeholder="Buscar por nombre, pueblo, barrio..." oninput="renderCensoPersonas()">
+      </div>
+      <div style="display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap;">
+        <select id="filtroPueblo" onchange="renderCensoPersonas()" style="flex:1; padding:8px; border-radius:10px; border:1.5px solid #dde6e3; font-size:13px;">
+          <option value="">Todos los pueblos</option>
+        </select>
+        <select id="filtroTipoCenso" onchange="renderCensoPersonas()" style="flex:1; padding:8px; border-radius:10px; border:1.5px solid #dde6e3; font-size:13px;">
+          <option value="">Todos los tipos</option>
+          <option value="Encamado">Encamado</option>
+          <option value="Adulto mayor solo">Adulto mayor solo</option>
+          <option value="Familia en necesidad">Familia en necesidad</option>
+          <option value="Persona sin hogar">Persona sin hogar</option>
+          <option value="Discapacitado">Discapacitado</option>
+        </select>
+      </div>
+      <div id="listaCensoPersonas"></div>
+    </div>
+
+    <div id="censoFundaciones" style="display:none;">
+      <div class="search-box">
+        <input type="text" id="buscarCensoFundacion" placeholder="Buscar fundación, pueblo..." oninput="renderCensoFundaciones()">
+      </div>
+      <div id="listaCensoFundaciones"></div>
+    </div>
+
+    <div id="censoPueblos" style="display:none;">
+      <p class="muted">Resumen de necesidades por pueblo — útil para planificar rutas de entrega.</p>
+      <div id="listaCensoPueblos"></div>
+    </div>
+  </div>
+
+  <div class="view" id="view-inventario">
+    <h2>📦 Inventario y Caja</h2>
+
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="num" id="invSaldo">$0</div>
+        <div class="lbl">Saldo en efectivo</div>
+      </div>
+      <div class="summary-card alt">
+        <div class="num" id="invEntregado">$0</div>
+        <div class="lbl">Total entregado ($)</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>🗂️ Artículos en inventario</h3>
+      <p class="muted">Por categoría: lo donado menos lo entregado a participantes.</p>
+      <div id="invArticulos"></div>
+      <div class="btn-row" style="margin-top:10px;">
+        <button class="btn" onclick="abrirModalAjuste()">⚖️ Ajustar cantidad</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>📝 Lista de artículos (categorías)</h3>
+      <p class="muted">Agrega aquí nuevos tipos de artículos para que aparezcan al elegir categoría.</p>
+      <div style="display:flex; gap:8px;">
+        <input id="nuevaCategoriaInput" placeholder="Ej. Café / Té">
+        <button class="icon-btn" style="white-space:nowrap;" onclick="agregarCategoria()">➕ Agregar</button>
+      </div>
+      <div id="listaCategoriasExtra" style="margin-top:10px;"></div>
+    </div>
+
+    <div class="card">
+      <h3>📋 Entregas recientes</h3>
+      <div id="invEntregas"></div>
+    </div>
+  </div>
+
+  <div class="view" id="view-reportes">
+    <h2>📊 Reportes</h2>
+
+    <!-- Filtro de fechas -->
+    <div class="card">
+      <h3>📅 Período del reporte</h3>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+        <div><label>Desde</label><input type="date" id="repDesde"></div>
+        <div><label>Hasta</label><input type="date" id="repHasta"></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" onclick="renderReportes()">🔍 Aplicar filtro</button>
+        <button class="btn" style="background:#eef3f1; color:var(--app-color);" onclick="limpiarFiltroReporte()">✕ Todo</button>
+      </div>
+    </div>
+
+    <!-- Resumen general -->
+    <div class="summary-grid">
+      <div class="summary-card"><div class="num" id="repSaldoCaja2">$0</div><div class="lbl">Saldo en caja</div></div>
+      <div class="summary-card alt"><div class="num" id="repTotalArticulos">0</div><div class="lbl">Artículos disp.</div></div>
+      <div class="summary-card"><div class="num" id="repTotalSolicitudes">0</div><div class="lbl">Solicitudes</div></div>
+      <div class="summary-card alt"><div class="num" id="repCensoTotal">0</div><div class="lbl">Personas censo</div></div>
+    </div>
+
+    <div class="card">
+      <h3>💵 Caja e inventario</h3>
+      <div class="report-row"><span>Total recaudado (efectivo)</span><span id="repRecaudadoCaja">$0.00</span></div>
+      <div class="report-row"><span>Total entregado (efectivo)</span><span id="repEntregadoCaja">$0.00</span></div>
+      <div class="report-row total"><span>Saldo disponible</span><span id="repSaldoCaja">$0.00</span></div>
+    </div>
+
+    <div class="card">
+      <h3>💚 Donaciones</h3>
+      <div class="report-row"><span>Total monetario recaudado</span><span id="repTotalDonado">$0.00</span></div>
+      <div class="report-row"><span>Promedio por donante</span><span id="repPromedio">$0.00</span></div>
+      <div class="report-row"><span>Donante top</span><span id="repTopDonante">—</span></div>
+      <div class="report-row total"><span>Donantes registrados</span><span id="repNumDonantes">0</span></div>
+      <div style="margin-top:10px;"><strong style="font-size:13px;">Por mes</strong><div id="repPorMes"></div></div>
+    </div>
+
+    <div class="card">
+      <h3>📦 Inventario por categoría</h3>
+      <div id="repInventarioDetalle"></div>
+    </div>
+
+    <div class="card">
+      <h3>🙋 Voluntariado</h3>
+      <div class="report-row"><span>Voluntarios registrados</span><span id="repNumVoluntarios">0</span></div>
+      <div class="report-row total"><span>Total horas acumuladas</span><span id="repHoras">0</span></div>
+      <div id="repVoluntariosDetalle"></div>
+    </div>
+
+    <div class="card">
+      <h3>🆘 Solicitudes</h3>
+      <div class="report-row"><span>Total solicitudes</span><span id="repNumSolicitudes">0</span></div>
+      <div class="report-row"><span>Pendientes</span><span id="repSolicitudesPendientes" style="color:var(--danger); font-weight:700;">0</span></div>
+      <div class="report-row"><span>Atendidas</span><span id="repSolicitudesAtendidas" style="color:var(--app-color); font-weight:700;">0</span></div>
+      <div id="repSolicitudesNecesidades" style="margin-top:8px;"></div>
+    </div>
+
+    <div class="card">
+      <h3>🎉 Eventos</h3>
+      <div class="report-row"><span>Eventos totales</span><span id="repNumEventos">0</span></div>
+      <div class="report-row"><span>Presupuesto total</span><span id="repPresupuesto">$0.00</span></div>
+      <div class="report-row total"><span>Total asistentes</span><span id="repAsistentes">0</span></div>
+    </div>
+
+    <div class="card">
+      <h3>🏘️ Censo comunitario</h3>
+      <div class="report-row"><span>Personas/familias registradas</span><span id="repCensoPersonas">0</span></div>
+      <div class="report-row"><span>Necesitan ayuda</span><span id="repCensoNecesitan" style="color:var(--danger); font-weight:700;">0</span></div>
+      <div class="report-row"><span>En proceso</span><span id="repCensoEnProceso" style="color:#b9700a; font-weight:700;">0</span></div>
+      <div class="report-row total"><span>Ayuda recibida</span><span id="repCensoAtendidos" style="color:var(--app-color); font-weight:700;">0</span></div>
+      <div id="repCensoPorPueblo" style="margin-top:8px;"></div>
+    </div>
+
+    <!-- Botón imprimir -->
+    <button class="btn secondary" onclick="verReporteGeneral()" style="margin-bottom:20px;">📄 Ver reporte completo / Imprimir</button>
+  </div>
+
+
+<!-- FAB -->
+<button class="fab" id="fab" onclick="abrirModalActual()">+</button>
+
+<!-- MODAL REPORTE IMPRIMIBLE -->
+<div class="overlay" id="modalReporte" style="align-items:flex-start; overflow-y:auto;">
+  <div class="modal" style="border-radius:18px; max-height:92vh; margin-top:4vh;">
+    <button class="close-x" onclick="cerrarModal('modalReporte')" style="position:sticky; top:0; float:right; z-index:10;">✕</button>
+    <div id="contenidoReporte"></div>
+    <button class="btn secondary" onclick="imprimirDesdeModal()" style="position:sticky; bottom:0; margin-top:16px;">🖨️ Imprimir / Guardar PDF</button>
+  </div>
+</div>
+
+<!-- MODAL USUARIO -->
+<div class="overlay" id="modalUsuario">
+  <div class="modal">
+    <button class="close-x" onclick="cerrarModal('modalUsuario')">✕</button>
+    <h2 id="tituloModalUsuario">Nuevo usuario</h2>
+    <input type="hidden" id="usuarioId">
+    <label>Nombre completo</label>
+    <input id="usuarioNombre" placeholder="Ej. María Rodríguez">
+    <label>Nombre de usuario (para login)</label>
+    <input id="usuarioLogin" placeholder="Ej. maria" autocomplete="off">
+    <label>Contraseña</label>
+    <input type="password" id="usuarioClave" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+    <p class="muted" style="margin-top:2px;">Deja en blanco al editar para mantener la contraseña actual.</p>
+    <label>Rol</label>
+    <select id="usuarioRol">
+      <option value="admin">🔑 Administrador — acceso total</option>
+      <option value="voluntario">🙋 Voluntario — puede registrar y editar</option>
+      <option value="visualizador">👁️ Visualizador — solo puede ver</option>
+    </select>
+    <button class="btn" onclick="guardarUsuario()">Guardar usuario</button>
+  </div>
+</div>
+
+<!-- MODAL DONANTE -->
+<div class="overlay" id="modalDonante">
+  <div class="modal">
+    <button class="close-x" onclick="cerrarModal('modalDonante')">✕</button>
+    <h2 id="tituloModalDonante">Nuevo donante</h2>
+    <input type="hidden" id="donanteId">
+    <label>Nombre completo</label>
+    <input id="donanteNombre" placeholder="Ej. María Rodríguez">
+    <label>Nombre del negocio (si aplica)</label>
+    <input id="donanteNegocio" placeholder="Ej. Supermercado El Sol">
+    <label>Dirección física</label>
+    <input id="donanteDireccionFisica" placeholder="Ej. Calle Principal #123">
+    <div id="gpsDonanteBloque">
+      <div style="display:flex; gap:8px; margin-top:6px; flex-wrap:wrap;">
+        <button type="button" class="icon-btn" onclick="buscarDireccion('donanteDireccionFisica','bDirDon','stGpsDon','donLat','donLng')" id="bDirDon" style="white-space:nowrap; background:#e6f4f0;">🔍 Buscar dirección</button>
+        <button type="button" class="icon-btn" onclick="obtenerGPSGenerico('btnGpsDon','stGpsDon','donLat','donLng','insGpsDon')" id="btnGpsDon" style="white-space:nowrap;">📍 GPS actual</button>
+      </div>
+      <span id="stGpsDon" class="muted" style="font-size:12px; display:block; margin-top:4px;"></span>
+      <input type="hidden" id="donLat"><input type="hidden" id="donLng">
+      <div id="insGpsDon" style="display:none; background:#fff3e0; border-radius:10px; padding:10px; margin-top:6px; font-size:12px; border-left:4px solid var(--accent);">
+        📱 Toca 🔒 en Chrome → Permisos → Ubicación → Permitir
+      </div>
+    </div>
+    <label>Dirección postal</label>
+    <input id="donanteDireccionPostal" placeholder="Ej. PO Box 456, San Juan, PR">
+    <label>Tipo de donación</label>
+    <select id="donanteTipo" onchange="toggleDonanteCategoria()">
+      <option value="Monetaria">💵 Monetaria (dinero/efectivo)</option>
+      <option value="Especie">📦 En especie (artículos/comida/ropa, etc.)</option>
+      <option value="Servicio">🤝 Servicio</option>
+    </select>
+    <p class="muted" id="donanteTipoHint">Selecciona "En especie" si donaron artículos (para que aparezcan en Inventario).</p>
+    <label>Categoría de donación</label>
+    <input id="donanteCategoria" list="listaCategorias" placeholder="Escoge o escribe una categoría">
+    <label>Subcategoría (opcional)</label>
+    <input id="donanteSubcategoria" placeholder="Ej. Large, Niño, Marca X...">
+    <datalist id="listaCategorias"></datalist>
+    <label>📦 Cantidad (número de artículos/cajas/unidades) — IMPORTANTE</label>
+    <input id="donanteMonto" type="number" inputmode="decimal" placeholder="Ej. 20">
+    <p class="muted">Si es dinero, pon el monto en $. Si es artículos, pon cuántas unidades/cajas son (este número es el que se usa en Inventario).</p>
+    <label>Detalles de la donación</label>
+    <textarea id="donanteDetalles" rows="2" placeholder="Ej. 20 cajas de alimentos no perecederos"></textarea>
+    <label>Fecha</label>
+    <input id="donanteFecha" type="date">
+    <label>Teléfono</label>
+    <input id="donanteTelefono" type="tel" placeholder="Ej. 787-000-0000">
+    <label>WhatsApp</label>
+    <input id="donanteWhatsapp" type="tel" placeholder="Ej. 787-000-0000">
+    <label>Email</label>
+    <input id="donanteEmail" type="email" placeholder="Ej. maria@email.com">
+    <label>Comentarios</label>
+    <textarea id="donanteNotas" rows="2" placeholder="Comentarios adicionales"></textarea>
+    <label>¿Tiene documentos del gobierno?</label>
+    <select id="donanteDocumentos">
+      <option value="No">No</option>
+      <option value="Sí">Sí</option>
+    </select>
+    <button class="btn" onclick="guardarDonante()">Guardar donante</button>
+  </div>
+</div>
+
+<!-- MODAL VOLUNTARIO -->
+<div class="overlay" id="modalVoluntario">
+  <div class="modal">
+    <button class="close-x" onclick="cerrarModal('modalVoluntario')">✕</button>
+    <h2 id="tituloModalVoluntario">Nuevo voluntario</h2>
+    <input type="hidden" id="voluntarioId">
+    <label>Nombre completo</label>
+    <input id="voluntarioNombre" placeholder="Ej. Carlos Pérez">
+    <label>Dirección completa</label>
+    <input id="voluntarioDireccion" placeholder="Ej. Calle 5, Urb. Las Flores, San Juan">
+    <div id="gpsVoluntarioBloque">
+      <div style="display:flex; gap:8px; margin-top:6px; flex-wrap:wrap;">
+        <button type="button" class="icon-btn" onclick="buscarDireccion('voluntarioDireccion','bDirVol','stGpsVol','volLat','volLng')" id="bDirVol" style="white-space:nowrap; background:#e6f4f0;">🔍 Buscar dirección</button>
+        <button type="button" class="icon-btn" onclick="obtenerGPSGenerico('btnGpsVol','stGpsVol','volLat','volLng','insGpsVol')" id="btnGpsVol" style="white-space:nowrap;">📍 GPS actual</button>
+      </div>
+      <span id="stGpsVol" class="muted" style="font-size:12px; display:block; margin-top:4px;"></span>
+      <input type="hidden" id="volLat"><input type="hidden" id="volLng">
+      <div id="insGpsVol" style="display:none; background:#fff3e0; border-radius:10px; padding:10px; margin-top:6px; font-size:12px; border-left:4px solid var(--accent);">
+        📱 Toca 🔒 en Chrome → Permisos → Ubicación → Permitir
+      </div>
+    </div>
+    <label>Disponibilidad de horarios</label>
+    <input id="voluntarioDisponibilidad" placeholder="Ej. Fines de semana, tardes">
+    <label>Fundación a la que pertenece o desea pertenecer</label>
+    <input id="voluntarioFundacion" placeholder="Ej. Fundación Esperanza">
+    <label>¿Desea ayudar en otra fundación?</label>
+    <select id="voluntarioOtraFundacion">
+      <option value="No">No</option>
+      <option value="Sí">Sí</option>
+    </select>
+    <label>Rol o al que desea realizar</label>
+    <input id="voluntarioArea" placeholder="Ej. Logística, Redes sociales...">
+    <label>Teléfono</label>
+    <input id="voluntarioTelefono" type="tel" placeholder="Ej. 787-000-0000">
+    <label>WhatsApp</label>
+    <input id="voluntarioWhatsapp" type="tel" placeholder="Ej. 787-000-0000">
+    <label>Email</label>
+    <input id="voluntarioEmail" type="email" placeholder="Ej. carlos@email.com">
+    <label>Horas acumuladas</label>
+    <input id="voluntarioHoras" type="number" inputmode="decimal" placeholder="0">
+    <label>Comentarios</label>
+    <textarea id="voluntarioNotas" rows="2" placeholder="Comentarios adicionales"></textarea>
+    <button class="btn" onclick="guardarVoluntario()">Guardar voluntario</button>
+  </div>
+</div>
+
+<!-- MODAL EVENTO -->
+<div class="overlay" id="modalEvento">
+  <div class="modal">
+    <button class="close-x" onclick="cerrarModal('modalEvento')">✕</button>
+    <h2 id="tituloModalEvento">Nuevo evento</h2>
+    <input type="hidden" id="eventoId">
+    <label>Nombre del evento</label>
+    <input id="eventoNombre" placeholder="Ej. Gala benéfica anual">
+    <label>Fecha</label>
+    <input id="eventoFecha" type="date">
+    <label>Lugar</label>
+    <input id="eventoLugar" placeholder="Ej. Centro de Convenciones">
+    <label>Presupuesto ($)</label>
+    <input id="eventoPresupuesto" type="number" inputmode="decimal" placeholder="0.00">
+    <label>Asistentes esperados</label>
+    <input id="eventoAsistentes" type="number" inputmode="numeric" placeholder="0">
+    <label>Descripción (opcional)</label>
+    <textarea id="eventoDescripcion" rows="2" placeholder="Detalles del evento"></textarea>
+    <button class="btn" onclick="guardarEvento()">Guardar evento</button>
+  </div>
+</div>
+
+<!-- MODAL SOLICITUD -->
+<div class="overlay" id="modalSolicitud">
+  <div class="modal">
+    <button class="close-x" onclick="cerrarModal('modalSolicitud')">✕</button>
+    <h2 id="tituloModalSolicitud">Nueva solicitud</h2>
+    <input type="hidden" id="solicitudId">
+    <label>Nombre completo</label>
+    <input id="solicitudNombre" placeholder="Ej. Juan Torres">
+    <label>Apodo (opcional)</label>
+    <input id="solicitudApodo" placeholder="Ej. Juanito">
+    <label>Dirección física</label>
+    <input id="solicitudDireccionFisica" placeholder="Ej. Calle 5, Sector Los Pinos">
+    <div id="gpsSolicitudBloque">
+      <div style="display:flex; gap:8px; margin-top:6px; flex-wrap:wrap;">
+        <button type="button" class="icon-btn" onclick="buscarDireccion('solicitudDireccionFisica','bDirSol','stGpsSol','solLat','solLng')" id="bDirSol" style="white-space:nowrap; background:#e6f4f0;">🔍 Buscar dirección</button>
+        <button type="button" class="icon-btn" onclick="obtenerGPSGenerico('btnGpsSol','stGpsSol','solLat','solLng','insGpsSol')" id="btnGpsSol" style="white-space:nowrap;">📍 GPS actual</button>
+      </div>
+      <span id="stGpsSol" class="muted" style="font-size:12px; display:block; margin-top:4px;"></span>
+      <input type="hidden" id="solLat"><input type="hidden" id="solLng">
+      <div id="insGpsSol" style="display:none; background:#fff3e0; border-radius:10px; padding:10px; margin-top:6px; font-size:12px; border-left:4px solid var(--accent);">
+        📱 Toca 🔒 en Chrome → Permisos → Ubicación → Permitir
+      </div>
+    </div>
+    <label>Dirección postal</label>
+    <input id="solicitudDireccionPostal" placeholder="Ej. PO Box 123, San Juan, PR">
+    <label>¿Qué solicita?</label>
+    <input id="solicitudQueSolicita" list="listaCategorias" placeholder="Escoge o escribe una categoría">
+    <label>Detalles de lo que necesita</label>
+    <textarea id="solicitudDetalles" rows="2" placeholder="Ej. Necesita 2 cajas de agua y pañales talla 4"></textarea>
+    <label>Teléfono</label>
+    <input id="solicitudTelefono" type="tel" placeholder="Ej. 787-000-0000">
+    <label>WhatsApp</label>
+    <input id="solicitudWhatsapp" type="tel" placeholder="Ej. 787-000-0000">
+    <label>Email</label>
+    <input id="solicitudEmail" type="email" placeholder="Ej. juan@email.com">
+    <label>Estado</label>
+    <select id="solicitudEstado">
+      <option value="Pendiente">Pendiente</option>
+      <option value="Atendido">Atendido</option>
+    </select>
+    <label>Comentarios</label>
+    <textarea id="solicitudComentarios" rows="2" placeholder="Comentarios adicionales"></textarea>
+    <button class="btn" onclick="guardarSolicitud()">Guardar solicitud</button>
+  </div>
+</div>
+
+<!-- MODAL PROVEEDOR -->
+<div class="overlay" id="modalProveedor">
+  <div class="modal">
+    <button class="close-x" onclick="cerrarModal('modalProveedor')">✕</button>
+    <h2 id="tituloModalProveedor">Nuevo proveedor</h2>
+    <input type="hidden" id="proveedorId">
+    <label>Nombre de contacto</label>
+    <input id="proveedorNombre" placeholder="Ej. Pedro González">
+    <label>Nombre del negocio</label>
+    <input id="proveedorNegocio" placeholder="Ej. Ferretería Central">
+    <label>Dirección física</label>
+    <input id="proveedorDireccionFisica" placeholder="Ej. Ave. Principal #45">
+    <div id="gpsProveedorBloque">
+      <div style="display:flex; gap:8px; margin-top:6px; flex-wrap:wrap;">
+        <button type="button" class="icon-btn" onclick="buscarDireccion('proveedorDireccionFisica','bDirProv','stGpsProv','provLat','provLng')" id="bDirProv" style="white-space:nowrap; background:#e6f4f0;">🔍 Buscar dirección</button>
+        <button type="button" class="icon-btn" onclick="obtenerGPSGenerico('btnGpsProv','stGpsProv','provLat','provLng','insGpsProv')" id="btnGpsProv" style="white-space:nowrap;">📍 GPS actual</button>
+      </div>
+      <span id="stGpsProv" class="muted" style="font-size:12px; display:block; margin-top:4px;"></span>
+      <input type="hidden" id="provLat"><input type="hidden" id="provLng">
+      <div id="insGpsProv" style="display:none; background:#fff3e0; border-radius:10px; padding:10px; margin-top:6px; font-size:12px; border-left:4px solid var(--accent);">
+        📱 Toca 🔒 en Chrome → Permisos → Ubicación → Permitir
+      </div>
+    </div>
+    <label>Dirección postal</label>
+    <input id="proveedorDireccionPostal" placeholder="Ej. PO Box 789, San Juan, PR">
+    <label>Productos / servicios que ofrece</label>
+    <textarea id="proveedorProductos" rows="2" placeholder="Ej. Materiales de construcción, herramientas"></textarea>
+    <label>Teléfono</label>
+    <input id="proveedorTelefono" type="tel" placeholder="Ej. 787-000-0000">
+    <label>WhatsApp</label>
+    <input id="proveedorWhatsapp" type="tel" placeholder="Ej. 787-000-0000">
+    <label>Email</label>
+    <input id="proveedorEmail" type="email" placeholder="Ej. contacto@negocio.com">
+    <label>Comentarios</label>
+    <textarea id="proveedorComentarios" rows="2" placeholder="Comentarios adicionales"></textarea>
+    <button class="btn" onclick="guardarProveedor()">Guardar proveedor</button>
+  </div>
+</div>
+
+<!-- MODAL DIRECTORIO -->
+<div class="overlay" id="modalDirectorio">
+  <div class="modal">
+    <button class="close-x" onclick="cerrarModal('modalDirectorio')">✕</button>
+    <h2 id="tituloModalDirectorio">Nueva agencia</h2>
+    <input type="hidden" id="directorioId">
+    <label>Nombre de la agencia</label>
+    <input id="directorioNombre" placeholder="Ej. Departamento de la Familia">
+    <label>Tipo</label>
+    <select id="directorioTipo">
+      <option value="Gubernamental">Gubernamental</option>
+      <option value="Hospitalaria">Hospitalaria</option>
+      <option value="Comunitaria">Comunitaria / Otra fundación</option>
+    </select>
+    <label>Teléfono</label>
+    <input id="directorioTelefono" type="tel" placeholder="Ej. 787-000-0000">
+    <label>Dirección (opcional)</label>
+    <input id="directorioDireccion" placeholder="Ej. Calle Principal #1">
+    <div id="gpsDirectorioBloque">
+      <div style="display:flex; gap:8px; margin-top:6px; flex-wrap:wrap;">
+        <button type="button" class="icon-btn" onclick="buscarDireccion('directorioDireccion','bDirDir','stGpsDir','dirLat','dirLng')" id="bDirDir" style="white-space:nowrap; background:#e6f4f0;">🔍 Buscar dirección</button>
+        <button type="button" class="icon-btn" onclick="obtenerGPSGenerico('btnGpsDir','stGpsDir','dirLat','dirLng','insGpsDir')" id="btnGpsDir" style="white-space:nowrap;">📍 GPS actual</button>
+      </div>
+      <span id="stGpsDir" class="muted" style="font-size:12px; display:block; margin-top:4px;"></span>
+      <input type="hidden" id="dirLat"><input type="hidden" id="dirLng">
+      <div id="insGpsDir" style="display:none; background:#fff3e0; border-radius:10px; padding:10px; margin-top:6px; font-size:12px; border-left:4px solid var(--accent);">
+        📱 Toca 🔒 en Chrome → Permisos → Ubicación → Permitir
+      </div>
+    </div>
+    <label>Email (opcional)</label>
+    <input id="directorioEmail" type="email" placeholder="Ej. info@agencia.gov">
+    <label>Comentarios</label>
+    <textarea id="directorioComentarios" rows="2" placeholder="Ej. Horario de atención, persona de contacto..."></textarea>
+    <button class="btn" onclick="guardarDirectorio()">Guardar</button>
+  </div>
+</div>
+
+<!-- MODAL CENSO PERSONA -->
+<div class="overlay" id="modalCensoPersona">
+  <div class="modal">
+    <button class="close-x" onclick="cerrarModal('modalCensoPersona')">✕</button>
+    <h2 id="tituloModalCensoPersona">Nueva persona / familia</h2>
+    <input type="hidden" id="censoPersonaId">
+    <label>Nombre completo</label>
+    <input id="censoNombre" placeholder="Ej. Rosa Martínez">
+    <label>Apodo (opcional)</label>
+    <input id="censoApodo" placeholder="Ej. Doña Rosa">
+    <label>Pueblo</label>
+    <input id="censoPueblo" list="listaPueblosPR" placeholder="Ej. Bayamón">
+    <datalist id="listaPueblosPR">
+      <option value="Adjuntas"><option value="Aguada"><option value="Aguadilla">
+      <option value="Aguas Buenas"><option value="Aibonito"><option value="Añasco">
+      <option value="Arecibo"><option value="Arroyo"><option value="Barceloneta">
+      <option value="Barranquitas"><option value="Bayamón"><option value="Cabo Rojo">
+      <option value="Caguas"><option value="Camuy"><option value="Canóvanas">
+      <option value="Carolina"><option value="Cataño"><option value="Cayey">
+      <option value="Ceiba"><option value="Ciales"><option value="Cidra">
+      <option value="Coamo"><option value="Comerío"><option value="Corozal">
+      <option value="Culebra"><option value="Dorado"><option value="Fajardo">
+      <option value="Florida"><option value="Guánica"><option value="Guayama">
+      <option value="Guayanilla"><option value="Guaynabo"><option value="Gurabo">
+      <option value="Hatillo"><option value="Hormigueros"><option value="Humacao">
+      <option value="Isabela"><option value="Jayuya"><option value="Juana Díaz">
+      <option value="Juncos"><option value="Lajas"><option value="Lares">
+      <option value="Las Marías"><option value="Las Piedras"><option value="Loíza">
+      <option value="Luquillo"><option value="Manatí"><option value="Maricao">
+      <option value="Maunabo"><option value="Mayagüez"><option value="Moca">
+      <option value="Morovis"><option value="Naguabo"><option value="Naranjito">
+      <option value="Orocovis"><option value="Patillas"><option value="Peñuelas">
+      <option value="Ponce"><option value="Quebradillas"><option value="Rincón">
+      <option value="Río Grande"><option value="Sabana Grande"><option value="Salinas">
+      <option value="San Germán"><option value="San Juan"><option value="San Lorenzo">
+      <option value="San Sebastián"><option value="Santa Isabel"><option value="Toa Alta">
+      <option value="Toa Baja"><option value="Trujillo Alto"><option value="Utuado">
+      <option value="Vega Alta"><option value="Vega Baja"><option value="Vieques">
+      <option value="Villalba"><option value="Yabucoa"><option value="Yauco">
+    </datalist>
+    <label>Barrio / Sector</label>
+    <input id="censoBarrio" placeholder="Ej. Barrio Obrero, Sector La Playa">
+    <label>Dirección</label>
+    <input id="censoDireccion" placeholder="Ej. Calle 5 #12, frente a la iglesia">
+    <div style="display:flex; gap:8px; margin-top:6px; flex-wrap:wrap;">
+      <button type="button" class="icon-btn" id="bDirCenso" onclick="buscarDireccion('censoDireccion','bDirCenso','gpsStatus','censoLat','censoLng')" style="white-space:nowrap; background:#e6f4f0;">🔍 Buscar dirección</button>
+      <button type="button" class="icon-btn" onclick="obtenerGPS()" id="btnGPS" style="white-space:nowrap;">📍 GPS actual</button>
+    </div>
+    <span id="gpsStatus" class="muted" style="font-size:12px; display:block; margin-top:4px;"></span>
+    <input type="hidden" id="censoLat">
+    <input type="hidden" id="censoLng">
+    <div id="coordsManualCenso" style="display:none; margin-top:6px;">
+      <label>O entra las coordenadas manualmente</label>
+      <div style="display:flex; gap:6px;">
+        <input placeholder="Latitud (ej. 18.4271)" oninput="document.getElementById('censoLat').value=this.value" style="flex:1;">
+        <input placeholder="Longitud (ej. -66.9908)" oninput="document.getElementById('censoLng').value=this.value" style="flex:1;">
+      </div>
+    </div>
+    <div id="gpsInstrucciones" style="display:none; background:#fff3e0; border-radius:10px; padding:10px; margin-top:6px; font-size:12px; border-left:4px solid var(--accent);">
+      <strong>📱 Activar GPS en Android:</strong><br>
+      1️⃣ Toca 🔒 en la barra de Chrome → <strong>Permisos → Ubicación → Permitir</strong><br>
+      2️⃣ Toca <strong>"📍 GPS actual"</strong> de nuevo
+    </div>
+    <label>Tipo de caso</label>
+    <select id="censoTipo">
+      <option value="Encamado">Encamado</option>
+      <option value="Adulto mayor solo">Adulto mayor solo</option>
+      <option value="Familia en necesidad">Familia en necesidad</option>
+      <option value="Persona sin hogar">Persona sin hogar</option>
+      <option value="Discapacitado">Discapacitado</option>
+    </select>
+    <label>Número de personas en el hogar</label>
+    <input id="censoPersonasHogar" type="number" inputmode="numeric" placeholder="Ej. 4">
+    <label>Necesidades principales</label>
+    <input id="censoNecesidades" list="listaCategorias" placeholder="Escoge o escribe una categoría">
+    <label>Detalles adicionales de necesidades</label>
+    <textarea id="censoDetallesNecesidades" rows="2" placeholder="Ej. Necesita medicamentos para la presión, pañales adulto"></textarea>
+    <label>Teléfono</label>
+    <input id="censoTelefono" type="tel" placeholder="Ej. 787-000-0000">
+    <label>WhatsApp</label>
+    <input id="censoWhatsapp" type="tel" placeholder="Ej. 787-000-0000">
+    <label>Contacto alterno / familiar</label>
+    <input id="censoContactoAlterno" placeholder="Ej. Hija Carmen: 787-111-2222">
+    <label>Estado</label>
+    <select id="censoEstado">
+      <option value="Necesita ayuda">Necesita ayuda</option>
+      <option value="Ayuda recibida">Ayuda recibida</option>
+      <option value="En proceso">En proceso</option>
+    </select>
+    <label>Comentarios</label>
+    <textarea id="censoComentarios" rows="2" placeholder="Notas adicionales"></textarea>
+    <button class="btn" onclick="guardarCensoPersona()">Guardar</button>
+  </div>
+</div>
+
+<!-- MODAL CENSO FUNDACION -->
+<div class="overlay" id="modalCensoFundacion">
+  <div class="modal">
+    <button class="close-x" onclick="cerrarModal('modalCensoFundacion')">✕</button>
+    <h2 id="tituloModalCensoFundacion">Registrar fundación</h2>
+    <input type="hidden" id="censoFundacionId">
+    <label>Nombre de la fundación</label>
+    <input id="censoFundacionNombre" placeholder="Ej. Fundación Luz de Esperanza">
+    <label>Pueblo</label>
+    <input id="censoFundacionPueblo" list="listaPueblosPR" placeholder="Ej. Ponce">
+    <label>Barrio / Sector</label>
+    <input id="censoFundacionBarrio" placeholder="Ej. Sector Sur">
+    <div id="gpsCensoFundacionBloque">
+      <div style="display:flex; gap:8px; margin-top:6px; flex-wrap:wrap;">
+        <button type="button" class="icon-btn" onclick="buscarDireccion('censoFundacionBarrio','bDirCF','stGpsCF','cfLat','cfLng')" id="bDirCF" style="white-space:nowrap; background:#e6f4f0;">🔍 Buscar dirección</button>
+        <button type="button" class="icon-btn" onclick="obtenerGPSGenerico('btnGpsCF','stGpsCF','cfLat','cfLng','insGpsCF')" id="btnGpsCF" style="white-space:nowrap;">📍 GPS actual</button>
+      </div>
+      <span id="stGpsCF" class="muted" style="font-size:12px; display:block; margin-top:4px;"></span>
+      <input type="hidden" id="cfLat"><input type="hidden" id="cfLng">
+      <div id="insGpsCF" style="display:none; background:#fff3e0; border-radius:10px; padding:10px; margin-top:6px; font-size:12px; border-left:4px solid var(--accent);">
+        📱 Toca 🔒 en Chrome → Permisos → Ubicación → Permitir
+      </div>
+    </div>
+    <label>Teléfono</label>
+    <input id="censoFundacionTelefono" type="tel" placeholder="Ej. 787-000-0000">
+    <label>WhatsApp</label>
+    <input id="censoFundacionWhatsapp" type="tel" placeholder="Ej. 787-000-0000">
+    <label>Email</label>
+    <input id="censoFundacionEmail" type="email" placeholder="Ej. contacto@fundacion.org">
+    <label>Página web (opcional)</label>
+    <input id="censoFundacionWeb" placeholder="Ej. www.fundacion.org">
+    <label>Facebook (opcional)</label>
+    <input id="censoFundacionFacebook" placeholder="Ej. facebook.com/fundacion">
+    <label>Instagram (opcional)</label>
+    <input id="censoFundacionInstagram" placeholder="Ej. @fundacion">
+
+    <div style="border-top:1px solid #eee; margin-top:14px; padding-top:14px;">
+      <strong style="font-size:15px; color:var(--app-color);">👥 Directiva</strong>
+      <label>Director/a o Presidente/a</label>
+      <input id="censoFundacionDirector" placeholder="Ej. María Rodríguez">
+      <label>Secretario/a (opcional)</label>
+      <input id="censoFundacionSecretario" placeholder="Ej. Juan Torres">
+      <label>Tesorero/a (opcional)</label>
+      <input id="censoFundacionTesorero" placeholder="Ej. Carmen López">
+      <label>Otros miembros de la directiva (opcional)</label>
+      <textarea id="censoFundacionDirectiva" rows="2" placeholder="Ej. Vocal 1: Pedro García, Vocal 2: Ana Soto"></textarea>
+    </div>
+
+    <div style="border-top:1px solid #eee; margin-top:14px; padding-top:14px;">
+      <strong style="font-size:15px; color:var(--app-color);">📄 Datos legales</strong>
+      <label>Número de registro</label>
+      <input id="censoFundacionRegistro" placeholder="Ej. 12345-PR">
+      <label>EIN</label>
+      <input id="censoFundacionEIN" placeholder="Ej. 00-0000000">
+      <label>Estatus legal</label>
+      <input id="censoFundacionEstatus" placeholder="Ej. 501(c)(3)">
+    </div>
+
+    <div style="border-top:1px solid #eee; margin-top:14px; padding-top:14px;">
+      <strong style="font-size:15px; color:var(--app-color);">📦 Provisiones</strong>
+      <label>Provisiones que TIENEN disponibles</label>
+      <textarea id="censoFundacionTienen" rows="2" placeholder="Ej. Agua, arroz, ropa niños..."></textarea>
+      <label>Provisiones que NECESITAN</label>
+      <textarea id="censoFundacionNecesitan" rows="2" placeholder="Ej. Medicamentos, pañales..."></textarea>
+    </div>
+
+    <label>Comentarios / Horario de atención</label>
+    <textarea id="censoFundacionComentarios" rows="2" placeholder="Horario de atención, área que cubren..."></textarea>
+    <button class="btn" onclick="guardarCensoFundacion()">Guardar</button>
+  </div>
+</div>
+
+<!-- MODAL CENSO PERSONA -->
+<div class="overlay" id="modalEntrega">
+  <div class="modal">
+    <button class="close-x" onclick="cerrarModal('modalEntrega')">✕</button>
+    <h2 id="tituloModalEntrega">Nueva entrega</h2>
+    <input type="hidden" id="entregaId">
+    <label>Nombre del participante</label>
+    <input id="entregaParticipante" placeholder="Ej. Juan Torres">
+    <label>Tipo de entrega</label>
+    <select id="entregaTipo" onchange="toggleEntregaCategoria()">
+      <option value="Efectivo">Efectivo</option>
+      <option value="Artículo">Artículo</option>
+    </select>
+    <div id="entregaCategoriaWrap" style="display:none;">
+      <label>Categoría del artículo</label>
+      <input id="entregaCategoria" list="listaCategorias" placeholder="Escoge o escribe una categoría">
+      <label>Subcategoría (opcional)</label>
+      <input id="entregaSubcategoria" placeholder="Ej. Large, Niño, Marca X...">
+    </div>
+    <label id="entregaCantidadLabel">Cantidad ($)</label>
+    <input id="entregaCantidad" type="number" inputmode="decimal" placeholder="0.00">
+    <label>Fecha</label>
+    <input id="entregaFecha" type="date">
+    <label>Comentarios</label>
+    <textarea id="entregaNotas" rows="2" placeholder="Notas adicionales"></textarea>
+    <button class="btn" onclick="guardarEntrega()">Guardar entrega</button>
+  </div>
+</div>
+
+<!-- MODAL AJUSTE INVENTARIO -->
+<div class="overlay" id="modalAjuste">
+  <div class="modal">
+    <button class="close-x" onclick="cerrarModal('modalAjuste')">✕</button>
+    <h2>⚖️ Ajustar cantidad</h2>
+    <p class="muted">Usa esto para sumar o restar artículos sin registrar un donante o participante específico (ej. inventario inicial, conteo, ajuste).</p>
+    <label>Categoría</label>
+    <input id="ajusteCategoria" list="listaCategorias" placeholder="Escoge o escribe una categoría">
+    <label>Subcategoría (opcional)</label>
+    <input id="ajusteSubcategoria" placeholder="Ej. Large, Niño, Marca X...">
+    <label>Acción</label>
+    <select id="ajusteAccion">
+      <option value="sumar">➕ Sumar al inventario</option>
+      <option value="restar">➖ Restar del inventario</option>
+    </select>
+    <label>Cantidad</label>
+    <input id="ajusteCantidad" type="number" inputmode="decimal" placeholder="Ej. 10">
+    <label>Notas (opcional)</label>
+    <input id="ajusteNotas" placeholder="Ej. Conteo de inventario inicial">
+    <button class="btn" onclick="guardarAjuste()">Guardar ajuste</button>
+  </div>
+</div>
+
+
+<div class="overlay" id="modalAccionInventario">
+  <div class="modal">
+    <button class="close-x" onclick="cerrarModal('modalAccionInventario')">✕</button>
+    <h2>¿Qué deseas registrar?</h2>
+    <button class="btn" onclick="cerrarModal('modalAccionInventario'); abrirModalDonante();">➕ Nueva donación (entrada)</button>
+    <button class="btn secondary" onclick="cerrarModal('modalAccionInventario'); abrirModalEntrega();">➖ Nueva entrega (salida)</button>
+    <button class="btn" style="background:#eef3f1; color:var(--app-color);" onclick="cerrarModal('modalAccionInventario'); abrirModalAjuste();">⚖️ Ajustar cantidad</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   SISTEMA DE USUARIOS Y LOGIN
+   ========================================================= */
+
+const USUARIOS_DEFAULT = [
+  { id:'u1', nombre:'Administrador', usuario:'admin', clave:'admin123', rol:'admin' }
+];
+
+let sesionActual = null;
+const USUARIOS_BIN_NAME = 'fm-usuarios';
+
+const PERMISOS = {
+  admin:       { verTodo:true,  editar:true,  eliminar:true,  usuarios:true,  reportes:true  },
+  voluntario:  { verTodo:true,  editar:true,  eliminar:false, usuarios:false, reportes:false },
+  visualizador:{ verTodo:true,  editar:false, eliminar:false, usuarios:false, reportes:true  }
+};
+
+async function getUsuarios(){
+  const key = getJsonBinKey();
+  // Siempre cargar locales primero como base
+  const locales = getUsuariosLocal();
+  if(!key) return locales;
+  try{
+    const binId = localStorage.getItem('fm_usuarios_bin_id');
+    if(binId){
+      const res = await fetch(`${JSONBIN_BASE}/${binId}/latest`, {
+        headers:{'X-Master-Key': key}
+      });
+      const json = await res.json();
+      if(json.record?.usuarios && json.record.usuarios.length > 0){
+        // Guardar en local como respaldo
+        localStorage.setItem('fm_usuarios', JSON.stringify(json.record.usuarios));
+        return json.record.usuarios;
+      }
+    }
+    return locales;
+  } catch(e){ return locales; }
+}
+
+function getUsuariosLocal(){
+  const raw = localStorage.getItem('fm_usuarios');
+  if(raw) try{
+    const lista = JSON.parse(raw);
+    if(lista && lista.length > 0) return lista;
+  }catch(e){}
+  // Siempre devolver al menos el admin por defecto
+  const defaults = [...USUARIOS_DEFAULT];
+  localStorage.setItem('fm_usuarios', JSON.stringify(defaults));
+  return defaults;
+}
+
+async function guardarUsuarios(usuarios){
+  localStorage.setItem('fm_usuarios', JSON.stringify(usuarios));
+  const key = getJsonBinKey();
+  if(!key) return;
+  try{
+    const binId = localStorage.getItem('fm_usuarios_bin_id');
+    if(binId){
+      await fetch(`${JSONBIN_BASE}/${binId}`, {
+        method:'PUT',
+        headers:{'Content-Type':'application/json','X-Master-Key':key},
+        body: JSON.stringify({usuarios})
+      });
+    } else {
+      const res = await fetch(JSONBIN_BASE, {
+        method:'POST',
+        headers:{'Content-Type':'application/json','X-Master-Key':key,'X-Bin-Name':USUARIOS_BIN_NAME,'X-Bin-Private':'false'},
+        body: JSON.stringify({usuarios})
+      });
+      const json = await res.json();
+      if(json.metadata?.id) localStorage.setItem('fm_usuarios_bin_id', json.metadata.id);
+    }
+  } catch(e){ console.log('Error sync usuarios:', e); }
+}
+
+function entrarComoAdmin(){
+  // Restaurar usuario admin en localStorage
+  const usuarios = [...USUARIOS_DEFAULT];
+  localStorage.setItem('fm_usuarios', JSON.stringify(usuarios));
+
+  sesionActual = USUARIOS_DEFAULT[0];
+  localStorage.setItem('fm_sesion_activa', JSON.stringify({
+    id: sesionActual.id,
+    nombre: sesionActual.nombre,
+    rol: sesionActual.rol,
+    ts: Date.now()
+  }));
+  document.getElementById('loginScreen').style.display='none';
+  mostrarApp();
+  aplicarPermisos();
+  renderInicio();
+  showView('inicio');
+  showToast('Entrando como Admin — recuerda cambiar la contraseña');
+}
+
+async function iniciarSesion(){
+  let usuarioId = document.getElementById('loginUsuario').value;
+  const usuarioManual = document.getElementById('loginUsuarioManual')?.value?.trim();
+  const clave = document.getElementById('loginClave').value;
+  const err = document.getElementById('loginError');
+  const btn = document.querySelector('.login-btn');
+
+  if(!usuarioId && !usuarioManual){ err.textContent='⚠️ Selecciona o escribe un usuario'; err.style.display='block'; return; }
+  if(!clave){ err.textContent='⚠️ Escribe tu contraseña'; err.style.display='block'; return; }
+
+  btn.textContent = '⏳ Verificando...';
+  btn.disabled = true;
+
+  const usuarios = await getUsuarios();
+  let user;
+  if(usuarioId){
+    user = usuarios.find(u=>u.id===usuarioId && u.clave===clave);
+  } else {
+    // Buscar por nombre de usuario manual
+    user = usuarios.find(u=>u.usuario===usuarioManual && u.clave===clave);
+    // Si no encuentra, intentar con el admin por defecto
+    if(!user && usuarioManual==='admin' && clave==='admin123'){
+      user = USUARIOS_DEFAULT[0];
+    }
+  }
+
+  btn.textContent = 'Entrar →';
+  btn.disabled = false;
+
+  if(!user){ err.textContent='⚠️ Contraseña incorrecta'; err.style.display='block'; return; }
+
+  sesionActual = user;
+  localStorage.setItem('fm_sesion_activa', JSON.stringify({
+    id: user.id,
+    nombre: user.nombre,
+    rol: user.rol,
+    ts: Date.now()
+  }));
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('loginClave').value='';
+  err.style.display='none';
+  mostrarApp();
+  aplicarPermisos();
+  renderInicio();
+  showView('inicio');
+}
+
+function cerrarSesion(){
+  if(!confirm('¿Cerrar sesión?')) return;
+  sesionActual = null;
+  localStorage.removeItem('fm_sesion_activa');
+  ocultarApp();
+  mostrarLogin();
+}
+
+async function mostrarLogin(){
+  const usuarios = await getUsuarios();
+  const sel = document.getElementById('loginUsuario');
+  sel.innerHTML = '<option value="">Selecciona un usuario...</option>' +
+    usuarios.map(u=>`<option value="${u.id}">${u.nombre} (${u.rol})</option>`).join('');
+
+  // Si no hay usuarios mostrar campo manual
+  const manual = document.getElementById('loginManualWrap');
+  if(usuarios.length === 0){
+    manual.style.display = 'block';
+  } else {
+    manual.style.display = 'none';
+  }
+  document.getElementById('loginScreen').style.display='flex';
+}
+
+function aplicarPermisos(){
+  if(!sesionActual) return;
+  const p = PERMISOS[sesionActual.rol] || PERMISOS.visualizador;
+  document.getElementById('headerUsuarioNombre').textContent = `👤 ${sesionActual.nombre}`;
+  const fab = document.getElementById('fab');
+  if(fab) fab.style.display = p.editar ? 'flex' : 'none';
+  const tabUsuarios = document.getElementById('tabUsuarios');
+  if(tabUsuarios) tabUsuarios.style.display = p.usuarios ? '' : 'none';
+  const tabReportes = document.getElementById('tabReportes');
+  if(tabReportes) tabReportes.style.display = p.reportes ? '' : 'none';
+}
+
+function puedeEditar(){
+  if(!sesionActual) return false;
+  return PERMISOS[sesionActual.rol]?.editar || false;
+}
+
+function puedeEliminar(){
+  if(!sesionActual) return false;
+  return PERMISOS[sesionActual.rol]?.eliminar || false;
+}
+
+async function renderUsuarios(){
+  const usuarios = await getUsuarios();
+  const cont = document.getElementById('listaUsuarios');
+  const roles = {admin:'🔑 Admin', voluntario:'🙋 Voluntario', visualizador:'👁️ Visualizador'};
+  const key = getJsonBinKey();
+  cont.innerHTML = `<p class="muted" style="margin-bottom:10px;">${key ? '✅ Sincronizando con JSONBin' : '⚠️ Sin clave JSONBin — solo local. Configura la clave en 🔄 Sync.'}</p>` +
+  usuarios.map(u=>`
+    <div class="item">
+      <div class="item-top"><div>
+        <h3>${u.nombre}</h3>
+        <span class="tag">${roles[u.rol]||u.rol}</span>
+        <span class="muted"> · @${u.usuario}</span>
+        ${u.id===sesionActual?.id?'<span class="tag" style="background:#e6f4f0;color:var(--app-color);margin-left:4px;">Tú</span>':''}
+      </div></div>
+      <div class="item-actions">
+        <button class="icon-btn" onclick="editarUsuario('${u.id}')">✏️ Editar</button>
+        ${u.id!=='u1'?`<button class="icon-btn danger" onclick="eliminarUsuario('${u.id}')">🗑️</button>`:''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function abrirModalUsuario(id){
+  document.getElementById('usuarioId').value='';
+  document.getElementById('usuarioNombre').value='';
+  document.getElementById('usuarioLogin').value='';
+  document.getElementById('usuarioClave').value='';
+  document.getElementById('usuarioRol').value='voluntario';
+  document.getElementById('tituloModalUsuario').textContent='Nuevo usuario';
+  document.getElementById('modalUsuario').classList.add('active');
+}
+
+async function editarUsuario(id){
+  const usuarios = await getUsuarios();
+  const u = usuarios.find(x=>x.id===id);
+  if(!u) return;
+  document.getElementById('usuarioId').value=u.id;
+  document.getElementById('usuarioNombre').value=u.nombre;
+  document.getElementById('usuarioLogin').value=u.usuario;
+  document.getElementById('usuarioClave').value='';
+  document.getElementById('usuarioRol').value=u.rol;
+  document.getElementById('tituloModalUsuario').textContent='Editar usuario';
+  document.getElementById('modalUsuario').classList.add('active');
+}
+
+async function guardarUsuario(){
+  const id = document.getElementById('usuarioId').value;
+  const nombre = document.getElementById('usuarioNombre').value.trim();
+  const usuario = document.getElementById('usuarioLogin').value.trim().toLowerCase();
+  const clave = document.getElementById('usuarioClave').value.trim();
+  const rol = document.getElementById('usuarioRol').value;
+
+  if(!nombre){ showToast('⚠️ Escribe el nombre'); return; }
+  if(!usuario){ showToast('⚠️ Escribe el nombre de usuario'); return; }
+  if(!id && !clave){ showToast('⚠️ Escribe una contraseña'); return; }
+
+  const btn = document.querySelector('#modalUsuario .btn');
+  btn.textContent='⏳ Guardando...'; btn.disabled=true;
+
+  const usuarios = await getUsuarios();
+
+  if(!id){
+    if(usuarios.some(u=>u.usuario===usuario)){ showToast('⚠️ Ese usuario ya existe'); btn.textContent='Guardar usuario'; btn.disabled=false; return; }
+    usuarios.push({id:'u'+Date.now(), nombre, usuario, clave, rol});
+  } else {
+    const idx = usuarios.findIndex(u=>u.id===id);
+    if(idx>=0){ usuarios[idx].nombre=nombre; usuarios[idx].usuario=usuario; usuarios[idx].rol=rol; if(clave) usuarios[idx].clave=clave; }
+  }
+
+  await guardarUsuarios(usuarios);
+  btn.textContent='Guardar usuario'; btn.disabled=false;
+  cerrarModal('modalUsuario');
+  renderUsuarios();
+  showToast('Usuario guardado ✅');
+}
+
+async function eliminarUsuario(id){
+  if(id===sesionActual?.id){ showToast('⚠️ No puedes eliminarte a ti mismo'); return; }
+  if(!confirm('¿Eliminar este usuario?')) return;
+  const usuarios = (await getUsuarios()).filter(u=>u.id!==id);
+  await guardarUsuarios(usuarios);
+  renderUsuarios();
+  showToast('Usuario eliminado 🗑️');
+}
+
+
+
+/* =========================================================
+   FoundationManager - lógica principal
+   Almacenamiento: localStorage
+   ========================================================= */
+
+const STORAGE_KEY = 'fm_data_v1';
+
+let data = {
+  orgName: 'Mi Fundación',
+  donantes: [],
+  voluntarios: [],
+  eventos: [],
+  entregas: [],
+  categoriasExtra: [],
+  solicitudes: [],
+  proveedores: [],
+  directorio: [],
+  censoPersonas: [],
+  censoFundaciones: [],
+  auditoria: []
+};
+
+const CATEGORIAS_BASE = [
+  'Alimentos no perecederos','Alimentos perecederos','Agua','Leche / fórmula infantil',
+  'Comida para bebé','Comida enlatada','Arroz y granos','Aceite / condimentos',
+  'Ropa hombre - Small','Ropa hombre - Medium','Ropa hombre - Large','Ropa hombre - X-Large',
+  'Ropa mujer - Small','Ropa mujer - Medium','Ropa mujer - Large','Ropa mujer - X-Large',
+  'Ropa niños','Ropa de bebé','Zapatos','Ropa de cama / sábanas','Toallas',
+  'Productos de higiene personal','Pañales','Pañales para adultos','Toallas sanitarias / tampones',
+  'Papel higiénico','Jabón','Shampoo / acondicionador','Pasta y cepillo de dientes','Desodorante',
+  'Productos de limpieza','Detergente de ropa','Detergente de platos','Desinfectante / cloro',
+  'Papel toalla','Bolsas de basura','Escoba / trapeador',
+  'Medicinas','Analgésicos / fiebre','Vendas / primeros auxilios','Vitaminas / suplementos',
+  'Equipo médico (sillas de ruedas, andadores, etc.)',
+  'Artículos del hogar (general)','Utensilios de cocina','Electrodomésticos','Muebles',
+  'Linternas / pilas','Velas / fósforos','Cobijas','Artículos escolares','Juguetes','Efectivo'
+];
+
+function renderListaCategorias(){
+  const todas = [...CATEGORIAS_BASE, ...(data.categoriasExtra||[])];
+  const dl = document.getElementById('listaCategorias');
+  dl.innerHTML = todas.map(c=>`<option value="${escapeHtml(c)}">`).join('');
+}
+
+function cargarDatos(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(raw){
+    try{ data = JSON.parse(raw); }catch(e){ console.error('Error al leer datos', e); }
+  }
+  if(!data.donantes) data.donantes = [];
+  if(!data.voluntarios) data.voluntarios = [];
+  if(!data.eventos) data.eventos = [];
+  if(!data.entregas) data.entregas = [];
+  if(!data.categoriasExtra) data.categoriasExtra = [];
+  if(!data.solicitudes) data.solicitudes = [];
+  if(!data.proveedores) data.proveedores = [];
+  if(!data.directorio) data.directorio = [];
+  if(!data.censoPersonas) data.censoPersonas = [];
+  if(!data.censoFundaciones) data.censoFundaciones = [];
+  if(!data.auditoria) data.auditoria = [];
+  if(!data.orgName) data.orgName = 'Mi Fundación';
+}
+
+function guardarDatos(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=> t.classList.remove('show'), 1800);
+}
+
+function registrarAudit(accion, modulo, descripcion){
+  if(!data.auditoria) data.auditoria = [];
+  data.auditoria.unshift({
+    id: uid(),
+    accion,
+    modulo,
+    descripcion,
+    usuario: sesionActual ? sesionActual.nombre : 'Sistema',
+    usuarioRol: sesionActual ? sesionActual.rol : '',
+    fecha: new Date().toISOString()
+  });
+  if(data.auditoria.length > 500) data.auditoria = data.auditoria.slice(0,500);
+}
+
+function uid(){
+  return Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+}
+
+function formatoMoneda(n){
+  return '$' + (Number(n)||0).toLocaleString('es-PR', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+/* ---------- NAVEGACIÓN ---------- */
+let vistaActual = 'inicio';
+
+function showView(view){
+  vistaActual = view;
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('view-'+view).classList.add('active');
+  document.querySelector('.tab[data-view="'+view+'"]').classList.add('active');
+
+  const fab = document.getElementById('fab');
+  if(view === 'inicio' || view === 'reportes'){
+    fab.style.display = 'none';
+  } else {
+    fab.style.display = 'flex';
+  }
+
+  if(view === 'inicio') renderInicio();
+  if(view === 'donantes') renderDonantes();
+  if(view === 'voluntarios') renderVoluntarios();
+  if(view === 'eventos') renderEventos();
+  if(view === 'solicitudes') renderSolicitudes();
+  if(view === 'proveedores') renderProveedores();
+  if(view === 'directorio') renderDirectorio();
+  if(view === 'censo') renderCenso();
+  if(view === 'inventario') renderInventario();
+  if(view === 'auditoria') renderAuditoria();
+  if(view === 'usuarios') renderUsuarios();
+  if(view === 'sync') renderSync();
+  if(view === 'reportes') renderReportes();
+}
+
+function abrirModalActual(){
+  if(!puedeEditar() && vistaActual !== 'usuarios'){ showToast('⚠️ No tienes permiso para agregar'); return; }
+  if(vistaActual === 'donantes') abrirModalDonante();
+  if(vistaActual === 'voluntarios') abrirModalVoluntario();
+  if(vistaActual === 'eventos') abrirModalEvento();
+  if(vistaActual === 'solicitudes') abrirModalSolicitud();
+  if(vistaActual === 'proveedores') abrirModalProveedor();
+  if(vistaActual === 'directorio') abrirModalDirectorio();
+  if(vistaActual === 'censo') abrirModalCensoActual();
+  if(vistaActual === 'inventario') document.getElementById('modalAccionInventario').classList.add('active');
+  if(vistaActual === 'usuarios') abrirModalUsuario();
+}
+
+function cerrarModal(id){
+  document.getElementById(id).classList.remove('active');
+}
+
+/* ---------- INICIO ---------- */
+function renderInicio(){
+  document.getElementById('orgName').textContent = data.orgName;
+  document.getElementById('inputOrgName').value = data.orgName;
+  document.getElementById('inputOrgMision').value = data.orgInfo?.mision || '';
+  document.getElementById('inputOrgVision').value = data.orgInfo?.vision || '';
+  document.getElementById('inputOrgDireccion').value = data.orgInfo?.direccion || '';
+  document.getElementById('inputOrgTelefono').value = data.orgInfo?.telefono || '';
+  document.getElementById('inputOrgWhatsapp').value = data.orgInfo?.whatsapp || '';
+  document.getElementById('inputOrgEmail').value = data.orgInfo?.email || '';
+  document.getElementById('inputOrgWeb').value = data.orgInfo?.web || '';
+  document.getElementById('inputOrgFacebook').value = data.orgInfo?.facebook || '';
+  document.getElementById('inputOrgInstagram').value = data.orgInfo?.instagram || '';
+  document.getElementById('inputOrgRegistro').value = data.orgInfo?.registro || '';
+  document.getElementById('inputOrgEIN').value = data.orgInfo?.ein || '';
+  document.getElementById('inputOrgEstatus').value = data.orgInfo?.estatus || '';
+  document.getElementById('inputOrgDirector').value = data.orgInfo?.director || '';
+  document.getElementById('inputOrgNotasLegales').value = data.orgInfo?.notasLegales || '';
+
+  const totalDonado = data.donantes.filter(d=>d.tipo==='Monetaria'||!d.tipo).reduce((s,d)=>s + (Number(d.monto)||0), 0);
+  document.getElementById('sumDonaciones').textContent = formatoMoneda(totalDonado).replace('.00','');
+  document.getElementById('sumDonantes').textContent = data.donantes.length;
+  document.getElementById('sumVoluntarios').textContent = data.voluntarios.length;
+  document.getElementById('sumEventos').textContent = data.eventos.length;
+
+  // próximos eventos (fecha >= hoy), ordenados
+  const hoy = new Date().toISOString().split('T')[0];
+  const proximos = data.eventos
+    .filter(e=>e.fecha && e.fecha >= hoy)
+    .sort((a,b)=> a.fecha.localeCompare(b.fecha))
+    .slice(0,3);
+
+  const cont = document.getElementById('proximosEventos');
+  if(proximos.length === 0){
+    cont.innerHTML = '<p class="muted">Sin eventos próximos.</p>';
+  } else {
+    cont.innerHTML = proximos.map(e=>`
+      <div class="item evento">
+        <div class="item-top">
+          <div>
+            <h3>${escapeHtml(e.nombre)}</h3>
+            <span class="muted">${formatFecha(e.fecha)} ${e.lugar ? '· '+escapeHtml(e.lugar):''}</span>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+}
+
+function saveOrgInfo(){
+  data.orgName = document.getElementById('inputOrgName').value.trim() || 'Mi Fundación';
+  data.orgInfo = {
+    mision: document.getElementById('inputOrgMision').value.trim(),
+    vision: document.getElementById('inputOrgVision').value.trim(),
+    direccion: document.getElementById('inputOrgDireccion').value.trim(),
+    telefono: document.getElementById('inputOrgTelefono').value.trim(),
+    whatsapp: document.getElementById('inputOrgWhatsapp').value.trim(),
+    email: document.getElementById('inputOrgEmail').value.trim(),
+    web: document.getElementById('inputOrgWeb').value.trim(),
+    facebook: document.getElementById('inputOrgFacebook').value.trim(),
+    instagram: document.getElementById('inputOrgInstagram').value.trim(),
+    registro: document.getElementById('inputOrgRegistro').value.trim(),
+    ein: document.getElementById('inputOrgEIN').value.trim(),
+    estatus: document.getElementById('inputOrgEstatus').value.trim(),
+    director: document.getElementById('inputOrgDirector').value.trim(),
+    notasLegales: document.getElementById('inputOrgNotasLegales').value.trim()
+  };
+  guardarDatos();
+  document.getElementById('orgName').textContent = data.orgName;
+  showToast('Información guardada ✅');
+}
+
+function saveOrgName(){
+  saveOrgInfo();
+}
+
+function formatFecha(f){
+  if(!f) return '';
+  const [y,m,d] = f.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+function separarCategoria(combinada){
+  if(!combinada) return {cat:'', sub:''};
+  const idx = combinada.indexOf(' > ');
+  if(idx === -1) return {cat: combinada, sub:''};
+  return {cat: combinada.slice(0, idx), sub: combinada.slice(idx+3)};
+}
+
+function combinarCategoria(cat, sub){
+  cat = (cat||'').trim();
+  sub = (sub||'').trim();
+  if(!cat) return '';
+  return sub ? `${cat} > ${sub}` : cat;
+}
+
+function escapeHtml(str){
+  if(!str) return '';
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+/* ---------- DONANTES ---------- */
+function toggleDonanteCategoria(){
+  const tipo = document.getElementById('donanteTipo').value;
+  const hint = document.getElementById('donanteTipoHint');
+  if(tipo === 'Especie'){
+    hint.textContent = 'La categoría que elijas se sumará al Inventario.';
+  } else if(tipo === 'Monetaria'){
+    hint.textContent = 'Este monto se sumará al saldo de Caja, no a Inventario.';
+  } else {
+    hint.textContent = 'Selecciona "En especie" si donaron artículos (para que aparezcan en Inventario).';
+  }
+}
+
+function abrirModalDonante(id){
+  document.getElementById('donanteId').value = '';
+  document.getElementById('donanteNombre').value = '';
+  document.getElementById('donanteNegocio').value = '';
+  document.getElementById('donanteDireccionFisica').value = '';
+  document.getElementById('donanteDireccionPostal').value = '';
+  document.getElementById('donanteTipo').value = 'Monetaria';
+  document.getElementById('donanteCategoria').value = '';
+  document.getElementById('donanteSubcategoria').value = '';
+  document.getElementById('donanteMonto').value = '';
+  document.getElementById('donanteDetalles').value = '';
+  document.getElementById('donanteFecha').value = new Date().toISOString().split('T')[0];
+  document.getElementById('donanteTelefono').value = '';
+  document.getElementById('donanteWhatsapp').value = '';
+  document.getElementById('donanteEmail').value = '';
+  document.getElementById('donanteNotas').value = '';
+  document.getElementById('donanteDocumentos').value = 'No';
+  document.getElementById('tituloModalDonante').textContent = 'Nuevo donante';
+  toggleDonanteCategoria();
+
+  if(id){
+    const d = data.donantes.find(x=>x.id===id);
+    if(d){
+      document.getElementById('donanteId').value = d.id;
+      document.getElementById('donanteNombre').value = d.nombre;
+      document.getElementById('donanteNegocio').value = d.negocio || '';
+      document.getElementById('donanteDireccionFisica').value = d.direccionFisica || '';
+      cargarBloqueGPS('btnGpsDon','stGpsDon','donLat','donLng', d.lat, d.lng);
+      document.getElementById('donanteDireccionPostal').value = d.direccionPostal || '';
+      document.getElementById('donanteTipo').value = d.tipo || 'Monetaria';
+      { const sc = separarCategoria(d.categoria); document.getElementById('donanteCategoria').value = sc.cat; document.getElementById('donanteSubcategoria').value = sc.sub; }
+      document.getElementById('donanteMonto').value = d.monto;
+      document.getElementById('donanteDetalles').value = d.detalles || '';
+      document.getElementById('donanteFecha').value = d.fecha || '';
+      document.getElementById('donanteTelefono').value = d.telefono || '';
+      document.getElementById('donanteWhatsapp').value = d.whatsapp || '';
+      document.getElementById('donanteEmail').value = d.email || '';
+      document.getElementById('donanteNotas').value = d.notas || '';
+      document.getElementById('donanteDocumentos').value = d.documentos || 'No';
+      document.getElementById('tituloModalDonante').textContent = 'Editar donante';
+      toggleDonanteCategoria();
+    }
+  }
+  document.getElementById('modalDonante').classList.add('active');
+}
+
+function guardarDonante(){
+  const id = document.getElementById('donanteId').value;
+  const nombre = document.getElementById('donanteNombre').value.trim();
+  if(!nombre){ showToast('⚠️ Escribe el nombre del donante'); return; }
+
+  const tipo = document.getElementById('donanteTipo').value;
+  const categoria = combinarCategoria(document.getElementById('donanteCategoria').value, document.getElementById('donanteSubcategoria').value);
+
+  if(tipo === 'Monetaria' && categoria){
+    if(!confirm('Elegiste una categoría de artículo pero el tipo es "Monetaria", así que NO aparecerá en Inventario.\n\n¿Quieres cambiarlo a "En especie" para que sí aparezca en Inventario?')){
+      // El usuario decide mantenerlo como Monetaria, continúa el guardado normal
+    } else {
+      document.getElementById('donanteTipo').value = 'Especie';
+    }
+  }
+
+  const monto = parseFloat(document.getElementById('donanteMonto').value) || 0;
+  if(tipo === 'Especie' && categoria && monto <= 0){
+    showToast('⚠️ Escribe la CANTIDAD (ej. 20) en el campo de Cantidad, no en Detalles');
+    return;
+  }
+
+  const obj = {
+    id: id || uid(),
+    nombre,
+    negocio: document.getElementById('donanteNegocio').value.trim(),
+    direccionFisica: document.getElementById('donanteDireccionFisica').value.trim(),
+    lat: document.getElementById('donLat')?.value || '',
+    lng: document.getElementById('donLng')?.value || '',
+    direccionPostal: document.getElementById('donanteDireccionPostal').value.trim(),
+    tipo: document.getElementById('donanteTipo').value,
+    categoria,
+    monto,
+    detalles: document.getElementById('donanteDetalles').value.trim(),
+    fecha: document.getElementById('donanteFecha').value,
+    telefono: document.getElementById('donanteTelefono').value.trim(),
+    whatsapp: document.getElementById('donanteWhatsapp').value.trim(),
+    email: document.getElementById('donanteEmail').value.trim(),
+    notas: document.getElementById('donanteNotas').value.trim(),
+    documentos: document.getElementById('donanteDocumentos').value
+  };
+
+  if(id){
+    const idx = data.donantes.findIndex(x=>x.id===id);
+    data.donantes[idx] = obj;
+    registrarAudit('Editó','Donante',`${obj.nombre} — ${obj.tipo} ${obj.categoria?'('+obj.categoria+')':''} ${formatoMoneda(obj.monto)}`);
+  } else {
+    data.donantes.push(obj);
+    registrarAudit('Creó','Donante',`${obj.nombre} — ${obj.tipo} ${obj.categoria?'('+obj.categoria+')':''} ${formatoMoneda(obj.monto)}`);
+  }
+  guardarDatos();
+  cerrarModal('modalDonante');
+  renderDonantes();
+  renderInventario();
+  showToast('Donante guardado ✅');
+}
+
+function eliminarDonante(id){
+  const d = data.donantes.find(x=>x.id===id);
+  if(!confirm('¿Eliminar este donante y su registro de donación? Esta acción no se puede deshacer.')) return;
+  registrarAudit('Eliminó','Donante', d ? d.nombre : id);
+  data.donantes = data.donantes.filter(x=>x.id!==id);
+  guardarDatos();
+  renderDonantes();
+  showToast('Donante eliminado 🗑️');
+}
+
+function renderDonantes(){
+  const q = (document.getElementById('buscarDonante').value || '').toLowerCase();
+  const cont = document.getElementById('listaDonantes');
+
+  const lista = data.donantes
+    .filter(d=> d.nombre.toLowerCase().includes(q))
+    .sort((a,b)=> b.fecha.localeCompare(a.fecha));
+
+  if(lista.length === 0){
+    cont.innerHTML = `<div class="empty"><span>💚</span>${q? 'No se encontraron donantes.' : 'Aún no hay donantes registrados.<br>Toca el botón + para agregar uno.'}</div>`;
+    return;
+  }
+
+  cont.innerHTML = lista.map(d=>`
+    <div class="item">
+      <div class="item-top">
+        <div>
+          <h3>${escapeHtml(d.nombre)}</h3>
+          ${d.negocio ? `<span class="muted">${escapeHtml(d.negocio)}</span><br>` : ''}
+          <span class="tag">${d.tipo === 'Especie' ? (d.monto + ' unidades') : formatoMoneda(d.monto)}</span>
+          ${d.tipo ? `<span class="tag" style="background:#fff3e0; color:#b9700a;">${escapeHtml(d.tipo)}</span>` : ''}
+          ${d.categoria ? `<span class="muted"> · ${escapeHtml(d.categoria)}</span>` : ''}
+          ${d.fecha ? `<span class="muted"> · ${formatFecha(d.fecha)}</span>` : ''}
+          ${(d.telefono||d.whatsapp||d.email) ? `<div class="muted" style="margin-top:4px;">${[d.telefono?'📞 '+escapeHtml(d.telefono):'', d.whatsapp?'💬 '+escapeHtml(d.whatsapp):'', d.email?'✉️ '+escapeHtml(d.email):''].filter(Boolean).join(' · ')}</div>` : ''}
+          ${(d.direccionFisica||d.direccionPostal) ? `<div class="muted" style="margin-top:4px;">${escapeHtml(d.direccionFisica||d.direccionPostal)}</div>` : ''}
+          ${d.detalles ? `<div class="muted" style="margin-top:4px;">📋 ${escapeHtml(d.detalles)}</div>` : ''}
+          ${d.notas ? `<div class="muted" style="margin-top:4px;">${escapeHtml(d.notas)}</div>` : ''}
+          ${d.documentos === 'Sí' ? `<div class="tag" style="margin-top:4px; background:#e6f4f0;">📄 Docs. gobierno</div>` : ''}
+        </div>
+      </div>
+      <div class="item-actions">
+        <button class="icon-btn" onclick="abrirModalDonante('${d.id}')">✏️ Editar</button>
+        <button class="icon-btn danger" onclick="eliminarDonante('${d.id}')">🗑️ Eliminar</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ---------- VOLUNTARIOS ---------- */
+function abrirModalVoluntario(id){
+  document.getElementById('voluntarioId').value = '';
+  document.getElementById('voluntarioNombre').value = '';
+  document.getElementById('voluntarioDireccion').value = '';
+  document.getElementById('voluntarioDisponibilidad').value = '';
+  document.getElementById('voluntarioFundacion').value = '';
+  document.getElementById('voluntarioOtraFundacion').value = 'No';
+  document.getElementById('voluntarioArea').value = '';
+  document.getElementById('voluntarioTelefono').value = '';
+  document.getElementById('voluntarioWhatsapp').value = '';
+  document.getElementById('voluntarioEmail').value = '';
+  document.getElementById('voluntarioHoras').value = '';
+  document.getElementById('voluntarioNotas').value = '';
+  document.getElementById('tituloModalVoluntario').textContent = 'Nuevo voluntario';
+
+  if(id){
+    const v = data.voluntarios.find(x=>x.id===id);
+    if(v){
+      document.getElementById('voluntarioId').value = v.id;
+      document.getElementById('voluntarioNombre').value = v.nombre;
+      document.getElementById('voluntarioDireccion').value = v.direccion || '';
+      cargarBloqueGPS('btnGpsVol','stGpsVol','volLat','volLng', v.lat, v.lng);
+      document.getElementById('voluntarioDisponibilidad').value = v.disponibilidad || '';
+      document.getElementById('voluntarioFundacion').value = v.fundacion || '';
+      document.getElementById('voluntarioOtraFundacion').value = v.otraFundacion || 'No';
+      document.getElementById('voluntarioArea').value = v.area || '';
+      document.getElementById('voluntarioTelefono').value = v.telefono || '';
+      document.getElementById('voluntarioWhatsapp').value = v.whatsapp || '';
+      document.getElementById('voluntarioEmail').value = v.email || '';
+      document.getElementById('voluntarioHoras').value = v.horas || 0;
+      document.getElementById('voluntarioNotas').value = v.notas || '';
+      document.getElementById('tituloModalVoluntario').textContent = 'Editar voluntario';
+    }
+  }
+  document.getElementById('modalVoluntario').classList.add('active');
+}
+
+function guardarVoluntario(){
+  const id = document.getElementById('voluntarioId').value;
+  const nombre = document.getElementById('voluntarioNombre').value.trim();
+  if(!nombre){ showToast('⚠️ Escribe el nombre del voluntario'); return; }
+
+  const obj = {
+    id: id || uid(),
+    nombre,
+    direccion: document.getElementById('voluntarioDireccion').value.trim(),
+    lat: document.getElementById('volLat')?.value || '',
+    lng: document.getElementById('volLng')?.value || '',
+    disponibilidad: document.getElementById('voluntarioDisponibilidad').value.trim(),
+    fundacion: document.getElementById('voluntarioFundacion').value.trim(),
+    otraFundacion: document.getElementById('voluntarioOtraFundacion').value,
+    area: document.getElementById('voluntarioArea').value.trim(),
+    telefono: document.getElementById('voluntarioTelefono').value.trim(),
+    whatsapp: document.getElementById('voluntarioWhatsapp').value.trim(),
+    email: document.getElementById('voluntarioEmail').value.trim(),
+    horas: parseFloat(document.getElementById('voluntarioHoras').value) || 0,
+    notas: document.getElementById('voluntarioNotas').value.trim()
+  };
+
+  if(id){
+    const idx = data.voluntarios.findIndex(x=>x.id===id);
+    data.voluntarios[idx] = obj;
+    registrarAudit('Editó','Voluntario',`${obj.nombre} — ${obj.horas} hrs`);
+  } else {
+    data.voluntarios.push(obj);
+    registrarAudit('Creó','Voluntario',`${obj.nombre} — ${obj.area||'sin área'}`);
+  }
+  guardarDatos();
+  cerrarModal('modalVoluntario');
+  renderVoluntarios();
+  showToast('Voluntario guardado ✅');
+}
+
+function eliminarVoluntario(id){
+  const v = data.voluntarios.find(x=>x.id===id);
+  if(!confirm('¿Eliminar este voluntario y sus horas registradas? Esta acción no se puede deshacer.')) return;
+  registrarAudit('Eliminó','Voluntario', v ? v.nombre : id);
+  data.voluntarios = data.voluntarios.filter(x=>x.id!==id);
+  guardarDatos();
+  renderVoluntarios();
+  showToast('Voluntario eliminado 🗑️');
+}
+
+function renderVoluntarios(){
+  const q = (document.getElementById('buscarVoluntario').value || '').toLowerCase();
+  const cont = document.getElementById('listaVoluntarios');
+
+  const lista = data.voluntarios
+    .filter(v=> v.nombre.toLowerCase().includes(q))
+    .sort((a,b)=> a.nombre.localeCompare(b.nombre));
+
+  if(lista.length === 0){
+    cont.innerHTML = `<div class="empty"><span>🙋</span>${q? 'No se encontraron voluntarios.' : 'Aún no hay voluntarios registrados.<br>Toca el botón + para agregar uno.'}</div>`;
+    return;
+  }
+
+  cont.innerHTML = lista.map(v=>`
+    <div class="item">
+      <div class="item-top">
+        <div>
+          <h3>${escapeHtml(v.nombre)}</h3>
+          <span class="tag">${v.horas || 0} hrs</span>
+          ${v.area ? `<span class="muted"> · ${escapeHtml(v.area)}</span>` : ''}
+          ${v.fundacion ? `<div class="muted" style="margin-top:4px;">🏢 ${escapeHtml(v.fundacion)}</div>` : ''}
+          ${v.disponibilidad ? `<div class="muted" style="margin-top:4px;">🕒 ${escapeHtml(v.disponibilidad)}</div>` : ''}
+          ${v.direccion ? `<div class="muted" style="margin-top:4px;">📍 ${escapeHtml(v.direccion)}</div>` : ''}
+          ${linkNavegar(v.lat, v.lng)}
+          ${(v.telefono||v.whatsapp||v.email) ? `<div class="muted" style="margin-top:4px;">${[v.telefono?'📞 '+escapeHtml(v.telefono):'', v.whatsapp?'💬 '+escapeHtml(v.whatsapp):'', v.email?'✉️ '+escapeHtml(v.email):''].filter(Boolean).join(' · ')}</div>` : ''}
+          ${v.otraFundacion === 'Sí' ? `<div class="tag" style="margin-top:4px; background:#fff3e0; color:#b9700a;">Disponible para otra fundación</div>` : ''}
+          ${v.notas ? `<div class="muted" style="margin-top:4px;">${escapeHtml(v.notas)}</div>` : ''}
+        </div>
+      </div>
+      <div class="item-actions">
+        <button class="icon-btn" onclick="abrirModalVoluntario('${v.id}')">✏️ Editar</button>
+        <button class="icon-btn danger" onclick="eliminarVoluntario('${v.id}')">🗑️ Eliminar</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ---------- EVENTOS ---------- */
+function abrirModalEvento(id){
+  document.getElementById('eventoId').value = '';
+  document.getElementById('eventoNombre').value = '';
+  document.getElementById('eventoFecha').value = '';
+  document.getElementById('eventoLugar').value = '';
+  document.getElementById('eventoPresupuesto').value = '';
+  document.getElementById('eventoAsistentes').value = '';
+  document.getElementById('eventoDescripcion').value = '';
+  document.getElementById('tituloModalEvento').textContent = 'Nuevo evento';
+
+  if(id){
+    const e = data.eventos.find(x=>x.id===id);
+    if(e){
+      document.getElementById('eventoId').value = e.id;
+      document.getElementById('eventoNombre').value = e.nombre;
+      document.getElementById('eventoFecha').value = e.fecha || '';
+      document.getElementById('eventoLugar').value = e.lugar || '';
+      document.getElementById('eventoPresupuesto').value = e.presupuesto || 0;
+      document.getElementById('eventoAsistentes').value = e.asistentes || 0;
+      document.getElementById('eventoDescripcion').value = e.descripcion || '';
+      document.getElementById('tituloModalEvento').textContent = 'Editar evento';
+    }
+  }
+  document.getElementById('modalEvento').classList.add('active');
+}
+
+function guardarEvento(){
+  const id = document.getElementById('eventoId').value;
+  const nombre = document.getElementById('eventoNombre').value.trim();
+  if(!nombre){ showToast('⚠️ Escribe el nombre del evento'); return; }
+
+  const obj = {
+    id: id || uid(),
+    nombre,
+    fecha: document.getElementById('eventoFecha').value,
+    lugar: document.getElementById('eventoLugar').value.trim(),
+    presupuesto: parseFloat(document.getElementById('eventoPresupuesto').value) || 0,
+    asistentes: parseInt(document.getElementById('eventoAsistentes').value) || 0,
+    descripcion: document.getElementById('eventoDescripcion').value.trim()
+  };
+
+  if(id){
+    const idx = data.eventos.findIndex(x=>x.id===id);
+    data.eventos[idx] = obj;
+    registrarAudit('Editó','Evento',`${obj.nombre} — ${formatFecha(obj.fecha)}`);
+  } else {
+    data.eventos.push(obj);
+    registrarAudit('Creó','Evento',`${obj.nombre} — ${formatFecha(obj.fecha)}`);
+  }
+  guardarDatos();
+  cerrarModal('modalEvento');
+  renderEventos();
+  showToast('Evento guardado ✅');
+}
+
+function eliminarEvento(id){
+  const ev = data.eventos.find(x=>x.id===id);
+  if(!confirm('¿Eliminar este evento? Esta acción no se puede deshacer.')) return;
+  registrarAudit('Eliminó','Evento', ev ? ev.nombre : id);
+  data.eventos = data.eventos.filter(x=>x.id!==id);
+  guardarDatos();
+  renderEventos();
+  showToast('Evento eliminado 🗑️');
+}
+
+function renderEventos(){
+  const cont = document.getElementById('listaEventos');
+
+  const lista = [...data.eventos].sort((a,b)=> (a.fecha||'').localeCompare(b.fecha||''));
+
+  if(lista.length === 0){
+    cont.innerHTML = `<div class="empty"><span>🎉</span>Aún no hay eventos registrados.<br>Toca el botón + para agregar uno.</div>`;
+    return;
+  }
+
+  cont.innerHTML = lista.map(e=>`
+    <div class="item evento">
+      <div class="item-top">
+        <div>
+          <h3>${escapeHtml(e.nombre)}</h3>
+          <span class="muted">${e.fecha ? formatFecha(e.fecha) : 'Sin fecha'} ${e.lugar ? '· '+escapeHtml(e.lugar) : ''}</span>
+          <div style="margin-top:6px;">
+            <span class="tag">Presupuesto: ${formatoMoneda(e.presupuesto)}</span>
+            <span class="tag" style="background:#fff3e0; color:#b9700a;">Asistentes: ${e.asistentes || 0}</span>
+          </div>
+          ${e.descripcion ? `<div class="muted" style="margin-top:6px;">${escapeHtml(e.descripcion)}</div>` : ''}
+        </div>
+      </div>
+      <div class="item-actions">
+        <button class="icon-btn" onclick="abrirModalEvento('${e.id}')">✏️ Editar</button>
+        <button class="icon-btn danger" onclick="eliminarEvento('${e.id}')">🗑️ Eliminar</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ---------- INVENTARIO / ENTREGAS ---------- */
+function toggleEntregaCategoria(){
+  const tipo = document.getElementById('entregaTipo').value;
+  const wrap = document.getElementById('entregaCategoriaWrap');
+  const lbl = document.getElementById('entregaCantidadLabel');
+  if(tipo === 'Artículo'){
+    wrap.style.display = 'block';
+    lbl.textContent = 'Cantidad (unidades)';
+  } else {
+    wrap.style.display = 'none';
+    lbl.textContent = 'Cantidad ($)';
+  }
+}
+
+function abrirModalEntrega(id){
+  document.getElementById('entregaId').value = '';
+  document.getElementById('entregaParticipante').value = '';
+  document.getElementById('entregaTipo').value = 'Efectivo';
+  document.getElementById('entregaCategoria').value = '';
+  document.getElementById('entregaSubcategoria').value = '';
+  document.getElementById('entregaCantidad').value = '';
+  document.getElementById('entregaFecha').value = new Date().toISOString().split('T')[0];
+  document.getElementById('entregaNotas').value = '';
+  document.getElementById('tituloModalEntrega').textContent = 'Nueva entrega';
+  toggleEntregaCategoria();
+
+  if(id){
+    const e = data.entregas.find(x=>x.id===id);
+    if(e){
+      document.getElementById('entregaId').value = e.id;
+      document.getElementById('entregaParticipante').value = e.participante;
+      document.getElementById('entregaTipo').value = e.tipo;
+      { const sc = separarCategoria(e.categoria); document.getElementById('entregaCategoria').value = sc.cat; document.getElementById('entregaSubcategoria').value = sc.sub; }
+      document.getElementById('entregaCantidad').value = e.cantidad;
+      document.getElementById('entregaFecha').value = e.fecha || '';
+      document.getElementById('entregaNotas').value = e.notas || '';
+      document.getElementById('tituloModalEntrega').textContent = 'Editar entrega';
+      toggleEntregaCategoria();
+    }
+  }
+  document.getElementById('modalEntrega').classList.add('active');
+}
+
+function guardarEntrega(){
+  const id = document.getElementById('entregaId').value;
+  const participante = document.getElementById('entregaParticipante').value.trim();
+  if(!participante){ showToast('⚠️ Escribe el nombre del participante'); return; }
+
+  const tipo = document.getElementById('entregaTipo').value;
+  const categoria = combinarCategoria(document.getElementById('entregaCategoria').value, document.getElementById('entregaSubcategoria').value);
+  if(tipo === 'Artículo' && !categoria){ showToast('⚠️ Indica la categoría del artículo'); return; }
+
+  const cantidad = parseFloat(document.getElementById('entregaCantidad').value) || 0;
+
+  // Validar disponibilidad (sumando de vuelta la entrega anterior si se está editando)
+  const { saldo, articulos } = calcularInventario();
+  let previa = 0;
+  if(id){
+    const ant = data.entregas.find(x=>x.id===id);
+    if(ant && ant.tipo === tipo && (ant.categoria||'') === categoria) previa = Number(ant.cantidad)||0;
+  }
+
+  if(tipo === 'Efectivo'){
+    const disponibleEfectivo = saldo + previa;
+    if(cantidad > disponibleEfectivo){
+      showToast(`⚠️ Solo hay ${formatoMoneda(disponibleEfectivo)} disponibles en caja`);
+      return;
+    }
+  } else {
+    const art = articulos.find(a=>a.categoria === categoria);
+    const disponibleArt = (art ? art.disponible : 0) + previa;
+    if(cantidad > disponibleArt){
+      showToast(`⚠️ Solo hay ${disponibleArt} unidades disponibles de "${categoria}"`);
+      return;
+    }
+  }
+
+  const obj = {
+    id: id || uid(),
+    participante,
+    tipo,
+    categoria: tipo === 'Artículo' ? categoria : '',
+    cantidad,
+    fecha: document.getElementById('entregaFecha').value,
+    notas: document.getElementById('entregaNotas').value.trim()
+  };
+
+  if(id){
+    const idx = data.entregas.findIndex(x=>x.id===id);
+    data.entregas[idx] = obj;
+    registrarAudit('Editó','Entrega',`${obj.participante} — ${obj.tipo==='Efectivo'?formatoMoneda(obj.cantidad):obj.cantidad+' '+obj.categoria}`);
+  } else {
+    data.entregas.push(obj);
+    registrarAudit('Creó','Entrega',`${obj.participante} — ${obj.tipo==='Efectivo'?formatoMoneda(obj.cantidad):obj.cantidad+' '+obj.categoria}`);
+  }
+  guardarDatos();
+  cerrarModal('modalEntrega');
+  renderInventario();
+  showToast('Entrega registrada ✅');
+}
+
+function eliminarEntrega(id){
+  const en = data.entregas.find(x=>x.id===id);
+  if(!confirm('¿Eliminar este registro de entrega? Se devolverá la cantidad al inventario/caja.')) return;
+  registrarAudit('Eliminó','Entrega', en ? `${en.participante} — ${en.categoria||'efectivo'}` : id);
+  data.entregas = data.entregas.filter(x=>x.id!==id);
+  guardarDatos();
+  renderInventario();
+  showToast('Entrega eliminada 🗑️');
+}
+
+function calcularInventario(){
+  // Efectivo
+  const totalRecaudado = data.donantes
+    .filter(d=>d.tipo === 'Monetaria' || !d.tipo)
+    .reduce((s,d)=> s + (Number(d.monto)||0), 0);
+  const totalEntregadoEfectivo = data.entregas
+    .filter(e=>e.tipo === 'Efectivo')
+    .reduce((s,e)=> s + (Number(e.cantidad)||0), 0);
+  const saldo = totalRecaudado - totalEntregadoEfectivo;
+
+  // Artículos por categoría
+  const donadoPorCat = {};
+  data.donantes
+    .filter(d=> d.tipo === 'Especie' && d.categoria)
+    .forEach(d=>{
+      const cat = d.categoria.trim();
+      donadoPorCat[cat] = (donadoPorCat[cat]||0) + (Number(d.monto)||0);
+    });
+
+  const entregadoPorCat = {};
+  data.entregas
+    .filter(e=> e.tipo === 'Artículo' && e.categoria)
+    .forEach(e=>{
+      const cat = e.categoria.trim();
+      entregadoPorCat[cat] = (entregadoPorCat[cat]||0) + (Number(e.cantidad)||0);
+    });
+
+  const categorias = new Set([...Object.keys(donadoPorCat), ...Object.keys(entregadoPorCat)]);
+  const articulos = [...categorias].map(cat=>({
+    categoria: cat,
+    donado: donadoPorCat[cat] || 0,
+    entregado: entregadoPorCat[cat] || 0,
+    disponible: (donadoPorCat[cat]||0) - (entregadoPorCat[cat]||0)
+  })).sort((a,b)=> a.categoria.localeCompare(b.categoria));
+
+  return { totalRecaudado, totalEntregadoEfectivo, saldo, articulos };
+}
+
+/* ---------- CATEGORÍAS PERSONALIZADAS ---------- */
+function agregarCategoria(){
+  const input = document.getElementById('nuevaCategoriaInput');
+  const val = input.value.trim();
+  if(!val){ showToast('⚠️ Escribe el nombre del artículo'); return; }
+
+  const todas = [...CATEGORIAS_BASE, ...data.categoriasExtra];
+  if(todas.some(c=>c.toLowerCase() === val.toLowerCase())){
+    showToast('⚠️ Esa categoría ya existe');
+    return;
+  }
+
+  data.categoriasExtra.push(val);
+  guardarDatos();
+  input.value = '';
+  renderListaCategorias();
+  renderCategoriasExtra();
+  showToast('Categoría agregada ✅');
+}
+
+function editarCategoriaExtra(idx){
+  const actual = data.categoriasExtra[idx];
+  const nuevo = prompt('Editar nombre de la categoría:', actual);
+  if(nuevo === null) return;
+  const val = nuevo.trim();
+  if(!val){ showToast('⚠️ El nombre no puede estar vacío'); return; }
+
+  const todas = [...CATEGORIAS_BASE, ...data.categoriasExtra.filter((_,i)=>i!==idx)];
+  if(todas.some(c=>c.toLowerCase() === val.toLowerCase())){
+    showToast('⚠️ Esa categoría ya existe');
+    return;
+  }
+
+  const anterior = data.categoriasExtra[idx];
+  data.categoriasExtra[idx] = val;
+
+  // Actualizar referencias existentes en donaciones y entregas
+  data.donantes.forEach(d=>{ if(d.categoria === anterior) d.categoria = val; });
+  data.entregas.forEach(e=>{ if(e.categoria === anterior) e.categoria = val; });
+
+  guardarDatos();
+  renderListaCategorias();
+  renderCategoriasExtra();
+  renderInventario();
+  showToast('Categoría actualizada ✅');
+}
+
+function eliminarCategoriaExtra(idx){
+  if(!confirm('¿Eliminar esta categoría de la lista? (No afecta donaciones ya registradas con este nombre)')) return;
+  data.categoriasExtra.splice(idx,1);
+  guardarDatos();
+  renderListaCategorias();
+  renderCategoriasExtra();
+  showToast('Categoría eliminada 🗑️');
+}
+
+function renderCategoriasExtra(){
+  const cont = document.getElementById('listaCategoriasExtra');
+  if(!data.categoriasExtra || data.categoriasExtra.length === 0){
+    cont.innerHTML = '<p class="muted">No has agregado categorías nuevas. La lista base ya incluye alimentos, ropa, limpieza, higiene y medicamentos.</p>';
+    return;
+  }
+  cont.innerHTML = data.categoriasExtra.map((c,idx)=>`
+    <div class="report-row">
+      <span>${escapeHtml(c)}</span>
+      <span>
+        <button class="icon-btn" onclick="editarCategoriaExtra(${idx})">✏️</button>
+        <button class="icon-btn danger" onclick="eliminarCategoriaExtra(${idx})">🗑️</button>
+      </span>
+    </div>
+  `).join('');
+}
+
+/* ---------- AJUSTE DE INVENTARIO ---------- */
+function abrirModalAjuste(){
+  document.getElementById('ajusteCategoria').value = '';
+  document.getElementById('ajusteSubcategoria').value = '';
+  document.getElementById('ajusteAccion').value = 'sumar';
+  document.getElementById('ajusteCantidad').value = '';
+  document.getElementById('ajusteNotas').value = '';
+  document.getElementById('modalAjuste').classList.add('active');
+}
+
+function guardarAjuste(){
+  const categoria = combinarCategoria(document.getElementById('ajusteCategoria').value, document.getElementById('ajusteSubcategoria').value);
+  const accion = document.getElementById('ajusteAccion').value;
+  const cantidad = parseFloat(document.getElementById('ajusteCantidad').value) || 0;
+  const notas = document.getElementById('ajusteNotas').value.trim();
+
+  if(!categoria){ showToast('⚠️ Escoge o escribe una categoría'); return; }
+  if(cantidad <= 0){ showToast('⚠️ Escribe una cantidad mayor a 0'); return; }
+
+  if(accion === 'sumar'){
+    data.donantes.push({
+      id: uid(),
+      nombre: 'Ajuste de inventario',
+      negocio: '', direccionFisica:'', direccionPostal:'',
+      tipo: 'Especie',
+      categoria,
+      monto: cantidad,
+      detalles: notas || 'Ajuste manual (suma)',
+      fecha: new Date().toISOString().split('T')[0],
+      telefono:'', whatsapp:'', email:'', notas:'', documentos:'No'
+    });
+  } else {
+    const { articulos } = calcularInventario();
+    const art = articulos.find(a=>a.categoria === categoria);
+    const disponible = art ? art.disponible : 0;
+    if(cantidad > disponible){
+      showToast(`⚠️ Solo hay ${disponible} unidades disponibles de "${categoria}"`);
+      return;
+    }
+    data.entregas.push({
+      id: uid(),
+      participante: 'Ajuste de inventario',
+      tipo: 'Artículo',
+      categoria,
+      cantidad,
+      fecha: new Date().toISOString().split('T')[0],
+      notas: notas || 'Ajuste manual (resta)'
+    });
+  }
+
+  guardarDatos();
+  cerrarModal('modalAjuste');
+  renderInventario();
+  showToast('Inventario ajustado ✅');
+}
+
+function renderInventario(){
+  renderCategoriasExtra();
+  const { totalRecaudado, totalEntregadoEfectivo, saldo, articulos } = calcularInventario();
+
+  document.getElementById('invSaldo').textContent = formatoMoneda(saldo).replace('.00','');
+  document.getElementById('invEntregado').textContent = formatoMoneda(totalEntregadoEfectivo).replace('.00','');
+
+  const cont = document.getElementById('invArticulos');
+  if(articulos.length === 0){
+    cont.innerHTML = '<p class="muted">Aún no hay artículos donados por categoría.</p>';
+  } else {
+    cont.innerHTML = articulos.map(a=>`
+      <div class="report-row">
+        <span>${escapeHtml(a.categoria)}</span>
+        <span>
+          <span class="muted">${a.donado} donado · ${a.entregado} entregado</span><br>
+          <strong style="color:${a.disponible <= 5 ? 'var(--danger)' : 'var(--app-color)'}">
+            ${a.disponible <= 5 ? '⚠️ Buscar más: ' : ''}${a.disponible} disponible
+          </strong>
+        </span>
+      </div>
+    `).join('');
+  }
+
+  const contE = document.getElementById('invEntregas');
+  const entregas = [...data.entregas].sort((a,b)=> (b.fecha||'').localeCompare(a.fecha||''));
+  if(entregas.length === 0){
+    contE.innerHTML = `<div class="empty"><span>📦</span>Aún no hay entregas registradas.<br>Toca el botón + para registrar una.</div>`;
+  } else {
+    contE.innerHTML = entregas.map(e=>`
+      <div class="item">
+        <div class="item-top">
+          <div>
+            <h3>${escapeHtml(e.participante)}</h3>
+            <span class="tag">${e.tipo === 'Efectivo' ? formatoMoneda(e.cantidad) : e.cantidad + ' ' + escapeHtml(e.categoria)}</span>
+            ${e.fecha ? `<span class="muted"> · ${formatFecha(e.fecha)}</span>` : ''}
+            ${e.notas ? `<div class="muted" style="margin-top:4px;">${escapeHtml(e.notas)}</div>` : ''}
+          </div>
+        </div>
+        <div class="item-actions">
+          <button class="icon-btn" onclick="abrirModalEntrega('${e.id}')">✏️ Editar</button>
+          <button class="icon-btn danger" onclick="eliminarEntrega('${e.id}')">🗑️ Eliminar</button>
+        </div>
+      </div>
+    `).join('');
+  }
+}
+
+
+/* ---------- SOLICITUDES ---------- */
+function abrirModalSolicitud(id){
+  document.getElementById('solicitudId').value = '';
+  document.getElementById('solicitudNombre').value = '';
+  document.getElementById('solicitudApodo').value = '';
+  document.getElementById('solicitudDireccionFisica').value = '';
+  document.getElementById('solicitudDireccionPostal').value = '';
+  document.getElementById('solicitudQueSolicita').value = '';
+  document.getElementById('solicitudDetalles').value = '';
+  document.getElementById('solicitudTelefono').value = '';
+  document.getElementById('solicitudWhatsapp').value = '';
+  document.getElementById('solicitudEmail').value = '';
+  document.getElementById('solicitudEstado').value = 'Pendiente';
+  document.getElementById('solicitudComentarios').value = '';
+  document.getElementById('tituloModalSolicitud').textContent = 'Nueva solicitud';
+
+  if(id){
+    const s = data.solicitudes.find(x=>x.id===id);
+    if(s){
+      document.getElementById('solicitudId').value = s.id;
+      document.getElementById('solicitudNombre').value = s.nombre;
+      document.getElementById('solicitudApodo').value = s.apodo || '';
+      document.getElementById('solicitudDireccionFisica').value = s.direccionFisica || '';
+      cargarBloqueGPS('btnGpsSol','stGpsSol','solLat','solLng', s.lat, s.lng);
+      document.getElementById('solicitudDireccionPostal').value = s.direccionPostal || '';
+      document.getElementById('solicitudQueSolicita').value = s.queSolicita || '';
+      document.getElementById('solicitudDetalles').value = s.detalles || '';
+      document.getElementById('solicitudTelefono').value = s.telefono || '';
+      document.getElementById('solicitudWhatsapp').value = s.whatsapp || '';
+      document.getElementById('solicitudEmail').value = s.email || '';
+      document.getElementById('solicitudEstado').value = s.estado || 'Pendiente';
+      document.getElementById('solicitudComentarios').value = s.comentarios || '';
+      document.getElementById('tituloModalSolicitud').textContent = 'Editar solicitud';
+    }
+  }
+  document.getElementById('modalSolicitud').classList.add('active');
+}
+
+function guardarSolicitud(){
+  const id = document.getElementById('solicitudId').value;
+  const nombre = document.getElementById('solicitudNombre').value.trim();
+  if(!nombre){ showToast('⚠️ Escribe el nombre del solicitante'); return; }
+
+  const obj = {
+    id: id || uid(),
+    nombre,
+    apodo: document.getElementById('solicitudApodo').value.trim(),
+    direccionFisica: document.getElementById('solicitudDireccionFisica').value.trim(),
+    lat: document.getElementById('solLat')?.value || '',
+    lng: document.getElementById('solLng')?.value || '',
+    direccionPostal: document.getElementById('solicitudDireccionPostal').value.trim(),
+    queSolicita: document.getElementById('solicitudQueSolicita').value.trim(),
+    detalles: document.getElementById('solicitudDetalles').value.trim(),
+    telefono: document.getElementById('solicitudTelefono').value.trim(),
+    whatsapp: document.getElementById('solicitudWhatsapp').value.trim(),
+    email: document.getElementById('solicitudEmail').value.trim(),
+    estado: document.getElementById('solicitudEstado').value,
+    comentarios: document.getElementById('solicitudComentarios').value.trim(),
+    fecha: new Date().toISOString().split('T')[0]
+  };
+
+  if(id){
+    const idx = data.solicitudes.findIndex(x=>x.id===id);
+    obj.fecha = data.solicitudes[idx].fecha || obj.fecha;
+    data.solicitudes[idx] = obj;
+    registrarAudit('Editó','Solicitud',`${obj.nombre} — ${obj.queSolicita||'sin especificar'}`);
+  } else {
+    data.solicitudes.push(obj);
+    registrarAudit('Creó','Solicitud',`${obj.nombre} — ${obj.queSolicita||'sin especificar'}`);
+  }
+  guardarDatos();
+  cerrarModal('modalSolicitud');
+  renderSolicitudes();
+  showToast('Solicitud guardada ✅');
+}
+
+function eliminarSolicitud(id){
+  const sol = data.solicitudes.find(x=>x.id===id);
+  if(!confirm('¿Eliminar esta solicitud? Esta acción no se puede deshacer.')) return;
+  registrarAudit('Eliminó','Solicitud', sol ? sol.nombre : id);
+  data.solicitudes = data.solicitudes.filter(x=>x.id!==id);
+  guardarDatos();
+  renderSolicitudes();
+  showToast('Solicitud eliminada 🗑️');
+}
+
+function cambiarEstadoSolicitud(id){
+  const s = data.solicitudes.find(x=>x.id===id);
+  if(!s) return;
+  s.estado = s.estado === 'Pendiente' ? 'Atendido' : 'Pendiente';
+  guardarDatos();
+  renderSolicitudes();
+}
+
+function renderSolicitudes(){
+  const q = (document.getElementById('buscarSolicitud').value || '').toLowerCase();
+  const cont = document.getElementById('listaSolicitudes');
+
+  const lista = data.solicitudes
+    .filter(s=> s.nombre.toLowerCase().includes(q) || (s.apodo||'').toLowerCase().includes(q))
+    .sort((a,b)=>{
+      if(a.estado !== b.estado) return a.estado === 'Pendiente' ? -1 : 1;
+      return (b.fecha||'').localeCompare(a.fecha||'');
+    });
+
+  if(lista.length === 0){
+    cont.innerHTML = `<div class="empty"><span>🆘</span>${q? 'No se encontraron solicitudes.' : 'Aún no hay solicitudes registradas.<br>Toca el botón + para agregar una.'}</div>`;
+    return;
+  }
+
+  cont.innerHTML = lista.map(s=>`
+    <div class="item">
+      <div class="item-top">
+        <div>
+          <h3>${escapeHtml(s.nombre)}${s.apodo ? ' "'+escapeHtml(s.apodo)+'"' : ''}</h3>
+          <span class="tag" style="cursor:pointer;${s.estado==='Pendiente' ? 'background:#fff3e0; color:#b9700a;' : ''}" onclick="cambiarEstadoSolicitud('${s.id}')">${s.estado === 'Pendiente' ? '⏳ Pendiente' : '✅ Atendido'}</span>
+          ${s.queSolicita ? `<span class="muted"> · ${escapeHtml(s.queSolicita)}</span>` : ''}
+          ${s.detalles ? `<div class="muted" style="margin-top:4px;">📋 ${escapeHtml(s.detalles)}</div>` : ''}
+          ${(s.direccionFisica||s.direccionPostal) ? `<div class="muted" style="margin-top:4px;">📍 ${escapeHtml(s.direccionFisica||s.direccionPostal)}</div>` : ''}
+          ${linkNavegar(s.lat, s.lng)}
+          ${(s.telefono||s.whatsapp||s.email) ? `<div class="muted" style="margin-top:4px;">${[s.telefono?'📞 '+escapeHtml(s.telefono):'', s.whatsapp?'💬 '+escapeHtml(s.whatsapp):'', s.email?'✉️ '+escapeHtml(s.email):''].filter(Boolean).join(' · ')}</div>` : ''}
+          ${s.comentarios ? `<div class="muted" style="margin-top:4px;">${escapeHtml(s.comentarios)}</div>` : ''}
+        </div>
+      </div>
+      <div class="item-actions">
+        <button class="icon-btn" onclick="cambiarEstadoSolicitud('${s.id}')">${s.estado==='Pendiente' ? '✅ Marcar atendido' : '↩️ Reabrir'}</button>
+        <button class="icon-btn" onclick="abrirModalSolicitud('${s.id}')">✏️ Editar</button>
+        <button class="icon-btn danger" onclick="eliminarSolicitud('${s.id}')">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ---------- PROVEEDORES ---------- */
+function abrirModalProveedor(id){
+  document.getElementById('proveedorId').value = '';
+  document.getElementById('proveedorNombre').value = '';
+  document.getElementById('proveedorNegocio').value = '';
+  document.getElementById('proveedorDireccionFisica').value = '';
+  document.getElementById('proveedorDireccionPostal').value = '';
+  document.getElementById('proveedorProductos').value = '';
+  document.getElementById('proveedorTelefono').value = '';
+  document.getElementById('proveedorWhatsapp').value = '';
+  document.getElementById('proveedorEmail').value = '';
+  document.getElementById('proveedorComentarios').value = '';
+  document.getElementById('tituloModalProveedor').textContent = 'Nuevo proveedor';
+
+  if(id){
+    const p = data.proveedores.find(x=>x.id===id);
+    if(p){
+      document.getElementById('proveedorId').value = p.id;
+      document.getElementById('proveedorNombre').value = p.nombre;
+      document.getElementById('proveedorNegocio').value = p.negocio || '';
+      document.getElementById('proveedorDireccionFisica').value = p.direccionFisica || '';
+      cargarBloqueGPS('btnGpsProv','stGpsProv','provLat','provLng', p.lat, p.lng);
+      document.getElementById('proveedorDireccionPostal').value = p.direccionPostal || '';
+      document.getElementById('proveedorProductos').value = p.productos || '';
+      document.getElementById('proveedorTelefono').value = p.telefono || '';
+      document.getElementById('proveedorWhatsapp').value = p.whatsapp || '';
+      document.getElementById('proveedorEmail').value = p.email || '';
+      document.getElementById('proveedorComentarios').value = p.comentarios || '';
+      document.getElementById('tituloModalProveedor').textContent = 'Editar proveedor';
+    }
+  }
+  document.getElementById('modalProveedor').classList.add('active');
+}
+
+function guardarProveedor(){
+  const id = document.getElementById('proveedorId').value;
+  const nombre = document.getElementById('proveedorNombre').value.trim();
+  const negocio = document.getElementById('proveedorNegocio').value.trim();
+  if(!nombre && !negocio){ showToast('⚠️ Escribe el nombre o negocio del proveedor'); return; }
+
+  const obj = {
+    id: id || uid(),
+    nombre,
+    negocio,
+    direccionFisica: document.getElementById('proveedorDireccionFisica').value.trim(),
+    lat: document.getElementById('provLat')?.value || '',
+    lng: document.getElementById('provLng')?.value || '',
+    direccionPostal: document.getElementById('proveedorDireccionPostal').value.trim(),
+    productos: document.getElementById('proveedorProductos').value.trim(),
+    telefono: document.getElementById('proveedorTelefono').value.trim(),
+    whatsapp: document.getElementById('proveedorWhatsapp').value.trim(),
+    email: document.getElementById('proveedorEmail').value.trim(),
+    comentarios: document.getElementById('proveedorComentarios').value.trim()
+  };
+
+  if(id){
+    const idx = data.proveedores.findIndex(x=>x.id===id);
+    data.proveedores[idx] = obj;
+    registrarAudit('Editó','Proveedor',`${obj.negocio||obj.nombre}`);
+  } else {
+    data.proveedores.push(obj);
+    registrarAudit('Creó','Proveedor',`${obj.negocio||obj.nombre}`);
+  }
+  guardarDatos();
+  cerrarModal('modalProveedor');
+  renderProveedores();
+  showToast('Proveedor guardado ✅');
+}
+
+function eliminarProveedor(id){
+  const pr = data.proveedores.find(x=>x.id===id);
+  if(!confirm('¿Eliminar este proveedor? Esta acción no se puede deshacer.')) return;
+  registrarAudit('Eliminó','Proveedor', pr ? (pr.negocio||pr.nombre) : id);
+  data.proveedores = data.proveedores.filter(x=>x.id!==id);
+  guardarDatos();
+  renderProveedores();
+  showToast('Proveedor eliminado 🗑️');
+}
+
+function renderProveedores(){
+  const q = (document.getElementById('buscarProveedor').value || '').toLowerCase();
+  const cont = document.getElementById('listaProveedores');
+
+  const lista = data.proveedores
+    .filter(p=> p.nombre.toLowerCase().includes(q) || (p.negocio||'').toLowerCase().includes(q))
+    .sort((a,b)=> (a.negocio||a.nombre).localeCompare(b.negocio||b.nombre));
+
+  if(lista.length === 0){
+    cont.innerHTML = `<div class="empty"><span>🏪</span>${q? 'No se encontraron proveedores.' : 'Aún no hay proveedores registrados.<br>Toca el botón + para agregar uno.'}</div>`;
+    return;
+  }
+
+  cont.innerHTML = lista.map(p=>`
+    <div class="item">
+      <div class="item-top">
+        <div>
+          <h3>${escapeHtml(p.negocio || p.nombre)}</h3>
+          ${(p.negocio && p.nombre) ? `<span class="muted">Contacto: ${escapeHtml(p.nombre)}</span>` : ''}
+          ${p.productos ? `<div class="muted" style="margin-top:4px;">🛠️ ${escapeHtml(p.productos)}</div>` : ''}
+          ${(p.direccionFisica||p.direccionPostal) ? `<div class="muted" style="margin-top:4px;">📍 ${escapeHtml(p.direccionFisica||p.direccionPostal)}</div>` : ''}
+          ${linkNavegar(p.lat, p.lng)}
+          ${(p.telefono||p.whatsapp||p.email) ? `<div class="muted" style="margin-top:4px;">${[p.telefono?'📞 '+escapeHtml(p.telefono):'', p.whatsapp?'💬 '+escapeHtml(p.whatsapp):'', p.email?'✉️ '+escapeHtml(p.email):''].filter(Boolean).join(' · ')}</div>` : ''}
+          ${p.comentarios ? `<div class="muted" style="margin-top:4px;">${escapeHtml(p.comentarios)}</div>` : ''}
+        </div>
+      </div>
+      <div class="item-actions">
+        <button class="icon-btn" onclick="abrirModalProveedor('${p.id}')">✏️ Editar</button>
+        <button class="icon-btn danger" onclick="eliminarProveedor('${p.id}')">🗑️ Eliminar</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ---------- DIRECTORIO COMUNITARIO ---------- */
+function abrirModalDirectorio(id){
+  document.getElementById('directorioId').value = '';
+  document.getElementById('directorioNombre').value = '';
+  document.getElementById('directorioTipo').value = 'Gubernamental';
+  document.getElementById('directorioTelefono').value = '';
+  document.getElementById('directorioDireccion').value = '';
+  document.getElementById('directorioEmail').value = '';
+  document.getElementById('directorioComentarios').value = '';
+  document.getElementById('tituloModalDirectorio').textContent = 'Nueva agencia';
+
+  if(id){
+    const d = data.directorio.find(x=>x.id===id);
+    if(d){
+      document.getElementById('directorioId').value = d.id;
+      document.getElementById('directorioNombre').value = d.nombre;
+      document.getElementById('directorioTipo').value = d.tipo || 'Gubernamental';
+      document.getElementById('directorioTelefono').value = d.telefono || '';
+      document.getElementById('directorioDireccion').value = d.direccion || '';
+      cargarBloqueGPS('btnGpsDir','stGpsDir','dirLat','dirLng', d.lat, d.lng);
+      document.getElementById('directorioEmail').value = d.email || '';
+      document.getElementById('directorioComentarios').value = d.comentarios || '';
+      document.getElementById('tituloModalDirectorio').textContent = 'Editar agencia';
+    }
+  }
+  document.getElementById('modalDirectorio').classList.add('active');
+}
+
+function guardarDirectorio(){
+  const id = document.getElementById('directorioId').value;
+  const nombre = document.getElementById('directorioNombre').value.trim();
+  if(!nombre){ showToast('⚠️ Escribe el nombre de la agencia'); return; }
+
+  const obj = {
+    id: id || uid(),
+    nombre,
+    tipo: document.getElementById('directorioTipo').value,
+    telefono: document.getElementById('directorioTelefono').value.trim(),
+    direccion: document.getElementById('directorioDireccion').value.trim(),
+    lat: document.getElementById('dirLat')?.value || '',
+    lng: document.getElementById('dirLng')?.value || '',
+    email: document.getElementById('directorioEmail').value.trim(),
+    comentarios: document.getElementById('directorioComentarios').value.trim()
+  };
+
+  if(id){
+    const idx = data.directorio.findIndex(x=>x.id===id);
+    data.directorio[idx] = obj;
+    registrarAudit('Editó','Directorio',`${obj.nombre} (${obj.tipo})`);
+  } else {
+    data.directorio.push(obj);
+    registrarAudit('Creó','Directorio',`${obj.nombre} (${obj.tipo})`);
+  }
+  guardarDatos();
+  cerrarModal('modalDirectorio');
+  renderDirectorio();
+  showToast('Agencia guardada ✅');
+}
+
+function eliminarDirectorio(id){
+  const dr = data.directorio.find(x=>x.id===id);
+  if(!confirm('¿Eliminar esta agencia del directorio? Esta acción no se puede deshacer.')) return;
+  registrarAudit('Eliminó','Directorio', dr ? dr.nombre : id);
+  data.directorio = data.directorio.filter(x=>x.id!==id);
+  guardarDatos();
+  renderDirectorio();
+  showToast('Agencia eliminada 🗑️');
+}
+
+function renderDirectorio(){
+  const q = (document.getElementById('buscarDirectorio').value || '').toLowerCase();
+  const cont = document.getElementById('listaDirectorio');
+
+  const lista = data.directorio
+    .filter(d=> d.nombre.toLowerCase().includes(q))
+    .sort((a,b)=> a.nombre.localeCompare(b.nombre));
+
+  if(lista.length === 0){
+    cont.innerHTML = `<div class="empty"><span>📞</span>${q? 'No se encontraron agencias.' : 'Aún no hay agencias registradas.<br>Toca el botón + para agregar una.'}</div>`;
+    return;
+  }
+
+  const colores = {'Gubernamental':'#e6f4f0','Hospitalaria':'#fdecea','Comunitaria':'#fff3e0'};
+  const textos = {'Gubernamental':'var(--app-color)','Hospitalaria':'var(--danger)','Comunitaria':'#b9700a'};
+
+  cont.innerHTML = lista.map(d=>`
+    <div class="item">
+      <div class="item-top">
+        <div>
+          <h3>${escapeHtml(d.nombre)}</h3>
+          <span class="tag" style="background:${colores[d.tipo]||'#e6f4f0'}; color:${textos[d.tipo]||'var(--app-color)'};">${escapeHtml(d.tipo)}</span>
+          ${d.telefono ? `<div class="muted" style="margin-top:4px;"><a href="tel:${escapeHtml(d.telefono)}" style="color:var(--app-color); font-weight:600; text-decoration:none;">📞 ${escapeHtml(d.telefono)}</a></div>` : ''}
+          ${d.direccion ? `<div class="muted" style="margin-top:4px;">📍 ${escapeHtml(d.direccion)}</div>` : ''}
+          ${linkNavegar(d.lat, d.lng)}
+          ${d.email ? `<div class="muted" style="margin-top:4px;">✉️ ${escapeHtml(d.email)}</div>` : ''}
+          ${d.comentarios ? `<div class="muted" style="margin-top:4px;">${escapeHtml(d.comentarios)}</div>` : ''}
+        </div>
+      </div>
+      <div class="item-actions">
+        <button class="icon-btn" onclick="abrirModalDirectorio('${d.id}')">✏️ Editar</button>
+        <button class="icon-btn danger" onclick="eliminarDirectorio('${d.id}')">🗑️ Eliminar</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ---------- CENSO - EVENT DELEGATION ---------- */
+document.addEventListener('click', function(e){
+  const el = e.target.closest('[data-accion]');
+  if(!el) return;
+  const accion = el.dataset.accion;
+  const id = el.dataset.id;
+  if(accion === 'editarCenso') abrirModalCensoPersona(id);
+  if(accion === 'eliminarCenso') eliminarCensoPersona(id);
+  if(accion === 'estadoCenso') cambiarEstadoCenso(id);
+});
+
+/* ---------- GPS GENÉRICO ---------- */
+async function buscarDireccion(campoDir, btnId, statusId, latId, lngId){
+  const direccion = document.getElementById(campoDir).value.trim();
+  if(!direccion){ showToast('⚠️ Escribe una dirección primero'); return; }
+
+  const btn = document.getElementById(btnId);
+  const status = document.getElementById(statusId);
+  btn.textContent = '⏳ Buscando...';
+  btn.disabled = true;
+  status.textContent = 'Buscando...';
+
+  try{
+    const query = encodeURIComponent(direccion + ', Puerto Rico');
+    const url = 'https://nominatim.openstreetmap.org/search?q=' + query + '&format=json&limit=1&accept-language=es';
+    const res = await fetch(url, {
+      method: 'GET',
+      mode: 'cors',
+      headers: { 'User-Agent': 'FoundationManager/1.0' }
+    });
+    const json = await res.json();
+
+    if(json && json.length > 0){
+      const lat = parseFloat(json[0].lat).toFixed(6);
+      const lng = parseFloat(json[0].lon).toFixed(6);
+      document.getElementById(latId).value = lat;
+      document.getElementById(lngId).value = lng;
+      const nombre = json[0].display_name.split(',').slice(0,2).join(',');
+      status.textContent = '✅ ' + nombre;
+      btn.textContent = '🔍 Buscar de nuevo';
+      showToast('Dirección encontrada ✅');
+    } else {
+      status.textContent = '❌ No encontrada — intenta con otro nombre';
+      btn.textContent = '🔍 Buscar dirección';
+    }
+  } catch(e){
+    status.textContent = '❌ Sin conexión o error — puedes ingresar coordenadas manualmente';
+    btn.textContent = '🔍 Buscar dirección';
+  }
+  btn.disabled = false;
+}
+
+// Mantener compatibilidad con el botón del censo
+function obtenerGPS(){
+  obtenerGPSGenerico('btnGPS','gpsStatus','censoLat','censoLng','gpsInstrucciones');
+}
+
+function obtenerGPSGenerico(btnId, statusId, latId, lngId, instruccionesId){
+  const btn = document.getElementById(btnId);
+  const status = document.getElementById(statusId);
+  const instrucciones = instruccionesId ? document.getElementById(instruccionesId) : null;
+
+  if(!navigator.geolocation){ showToast('⚠️ Este dispositivo no soporta GPS'); return; }
+
+  btn.textContent = '⏳ Obteniendo...';
+  btn.disabled = true;
+  status.textContent = 'Buscando ubicación...';
+  if(instrucciones) instrucciones.style.display = 'none';
+
+  navigator.geolocation.getCurrentPosition(
+    function(pos){
+      const lat = pos.coords.latitude.toFixed(6);
+      const lng = pos.coords.longitude.toFixed(6);
+      document.getElementById(latId).value = lat;
+      document.getElementById(lngId).value = lng;
+      status.textContent = `✅ GPS (${lat}, ${lng})`;
+      btn.textContent = '📍 Actualizar GPS';
+      btn.disabled = false;
+      if(instrucciones) instrucciones.style.display = 'none';
+    },
+    function(err){
+      btn.textContent = '📍 Intentar de nuevo';
+      btn.disabled = false;
+      if(err.code === 1){
+        status.textContent = '❌ Permiso denegado';
+        if(instrucciones) instrucciones.style.display = 'block';
+      } else {
+        status.textContent = '❌ No se pudo obtener — intenta de nuevo';
+      }
+    },
+    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+  );
+}
+
+function linkNavegar(lat, lng){
+  if(!lat || !lng) return '';
+  return `<a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" style="display:inline-block; margin-top:6px; background:var(--app-color); color:#fff; padding:5px 12px; border-radius:8px; font-size:12px; text-decoration:none; font-weight:600;">🗺️ Navegar</a>`;
+}
+
+function bloqueGPS(btnId, statusId, latId, lngId, instrucId, campoDir){
+  return `
+    <div style="display:flex; gap:8px; margin-top:6px; flex-wrap:wrap;">
+      <button type="button" class="icon-btn" id="bDir_${btnId}" onclick="buscarDireccion('${campoDir}','bDir_${btnId}','${statusId}','${latId}','${lngId}')" style="white-space:nowrap; background:#e6f4f0;">🔍 Buscar dirección</button>
+      <button type="button" class="icon-btn" id="${btnId}" onclick="obtenerGPSGenerico('${btnId}','${statusId}','${latId}','${lngId}','${instrucId}')" style="white-space:nowrap;">📍 GPS actual</button>
+    </div>
+    <span id="${statusId}" class="muted" style="font-size:12px; display:block; margin-top:4px;"></span>
+    <input type="hidden" id="${latId}">
+    <input type="hidden" id="${lngId}">
+    <div id="${instrucId}" style="display:none; background:#fff3e0; border-radius:10px; padding:10px; margin-top:6px; font-size:12px; border-left:4px solid var(--accent);">
+      <strong>📱 Activar GPS en Android:</strong><br>
+      1️⃣ Toca 🔒 en la barra de Chrome → <strong>Permisos → Ubicación → Permitir</strong><br>
+      2️⃣ Toca <strong>"📍 GPS actual"</strong> de nuevo
+    </div>`;
+}
+
+function limpiarBloqueGPS(btnId, statusId, latId, lngId){
+  const btn = document.getElementById(btnId); if(btn){ btn.textContent = btn.textContent.includes('Buscar')?'🔍 Buscar dirección':'📍 GPS actual'; btn.disabled=false; }
+  const st = document.getElementById(statusId); if(st) st.textContent='';
+  const la = document.getElementById(latId); if(la) la.value='';
+  const ln = document.getElementById(lngId); if(ln) ln.value='';
+}
+
+function cargarBloqueGPS(btnId, statusId, latId, lngId, lat, lng){
+  const btn = document.getElementById(btnId);
+  if(btn){ btn.textContent = lat&&lng ? '📍 Actualizar GPS' : '📍 Obtener GPS'; btn.disabled = false; }
+  const la = document.getElementById(latId); if(la) la.value = lat||'';
+  const ln = document.getElementById(lngId); if(ln) ln.value = lng||'';
+  const st = document.getElementById(statusId);
+  if(st) st.textContent = lat&&lng ? `✅ GPS (${parseFloat(lat).toFixed(5)}, ${parseFloat(lng).toFixed(5)})` : '';
+}
+
+
+
+
+
+function abrirRutaPueblo(pueblo){
+  const personas = data.censoPersonas.filter(p=>p.pueblo===pueblo && p.lat && p.lng && p.estado!=='Ayuda recibida');
+  if(personas.length === 0){
+    showToast('No hay coordenadas GPS en este pueblo');
+    return;
+  }
+
+  // Google Maps soporta hasta 8 paradas en la URL
+  const paradas = personas.slice(0,8);
+  if(personas.length > 8) showToast(`Mostrando las primeras 8 de ${personas.length} paradas`);
+
+  const waypoints = paradas.slice(1).map(p=>`${p.lat},${p.lng}`).join('|');
+  const destino = `${paradas[paradas.length-1].lat},${paradas[paradas.length-1].lng}`;
+  const origen = `${paradas[0].lat},${paradas[0].lng}`;
+
+  let url = `https://www.google.com/maps/dir/?api=1&origin=${origen}&destination=${destino}`;
+  if(paradas.length > 2) url += `&waypoints=${paradas.slice(1,-1).map(p=>`${p.lat},${p.lng}`).join('|')}`;
+  url += '&travelmode=driving';
+
+  window.open(url, '_blank');
+}
+
+
+let censoSeccion = 'personas';
+
+function censoTab(sec){
+  censoSeccion = sec;
+  document.getElementById('censoPersonas').style.display = sec==='personas' ? 'block' : 'none';
+  document.getElementById('censoFundaciones').style.display = sec==='fundaciones' ? 'block' : 'none';
+  document.getElementById('censoPueblos').style.display = sec==='pueblos' ? 'block' : 'none';
+  ['personas','fundaciones','pueblos'].forEach(s=>{
+    document.getElementById('censoTab'+s.charAt(0).toUpperCase()+s.slice(1)).classList.toggle('active', s===sec);
+  });
+  if(sec==='personas') renderCensoPersonas();
+  if(sec==='fundaciones') renderCensoFundaciones();
+  if(sec==='pueblos') renderCensoPueblos();
+}
+
+function renderCenso(){
+  actualizarFiltroPueblos();
+  censoTab(censoSeccion);
+}
+
+function actualizarFiltroPueblos(){
+  const sel = document.getElementById('filtroPueblo');
+  const actual = sel.value;
+  const pueblos = [...new Set(data.censoPersonas.map(p=>p.pueblo).filter(Boolean))].sort();
+  sel.innerHTML = '<option value="">Todos los pueblos</option>' +
+    pueblos.map(p=>`<option value="${escapeHtml(p)}"${p===actual?' selected':''}>${escapeHtml(p)}</option>`).join('');
+}
+
+function abrirModalCensoActual(){
+  if(censoSeccion === 'fundaciones') abrirModalCensoFundacion();
+  else abrirModalCensoPersona();
+}
+
+/* --- Personas --- */
+function abrirModalCensoPersona(id){
+  const campos = ['censoPersonaId','censoNombre','censoApodo','censoPueblo','censoBarrio',
+    'censoDireccion','censoLat','censoLng','censoNecesidades','censoDetallesNecesidades','censoTelefono',
+    'censoWhatsapp','censoContactoAlterno','censoComentarios'];
+  campos.forEach(c=>{ document.getElementById(c).value=''; });
+  document.getElementById('gpsStatus').textContent = '';
+  document.getElementById('gpsInstrucciones').style.display = 'none';
+  document.getElementById('censoTipo').value = 'Adulto mayor solo';
+  document.getElementById('censoPersonasHogar').value = '';
+  document.getElementById('censoEstado').value = 'Necesita ayuda';
+  document.getElementById('tituloModalCensoPersona').textContent = 'Nueva persona / familia';
+
+  if(id){
+    const p = data.censoPersonas.find(x=>x.id===id);
+    if(p){
+      document.getElementById('censoPersonaId').value = p.id;
+      document.getElementById('censoNombre').value = p.nombre;
+      document.getElementById('censoApodo').value = p.apodo||'';
+      document.getElementById('censoPueblo').value = p.pueblo||'';
+      document.getElementById('censoBarrio').value = p.barrio||'';
+      document.getElementById('censoDireccion').value = p.direccion||'';
+      document.getElementById('censoLat').value = p.lat||'';
+      document.getElementById('censoLng').value = p.lng||'';
+      if(p.lat && p.lng) document.getElementById('gpsStatus').textContent = `✅ GPS guardado (${parseFloat(p.lat).toFixed(5)}, ${parseFloat(p.lng).toFixed(5)})`;
+      document.getElementById('censoTipo').value = p.tipo||'Adulto mayor solo';
+      document.getElementById('censoPersonasHogar').value = p.personasHogar||'';
+      document.getElementById('censoNecesidades').value = p.necesidades||'';
+      document.getElementById('censoDetallesNecesidades').value = p.detallesNecesidades||'';
+      document.getElementById('censoTelefono').value = p.telefono||'';
+      document.getElementById('censoWhatsapp').value = p.whatsapp||'';
+      document.getElementById('censoContactoAlterno').value = p.contactoAlterno||'';
+      document.getElementById('censoEstado').value = p.estado||'Necesita ayuda';
+      document.getElementById('censoComentarios').value = p.comentarios||'';
+      document.getElementById('tituloModalCensoPersona').textContent = 'Editar persona / familia';
+    }
+  }
+  document.getElementById('modalCensoPersona').classList.add('active');
+}
+
+function guardarCensoPersona(){
+  const id = document.getElementById('censoPersonaId').value;
+  const nombre = document.getElementById('censoNombre').value.trim();
+  if(!nombre){ showToast('⚠️ Escribe el nombre'); return; }
+
+  const obj = {
+    id: id||uid(), nombre,
+    apodo: document.getElementById('censoApodo').value.trim(),
+    pueblo: document.getElementById('censoPueblo').value.trim(),
+    barrio: document.getElementById('censoBarrio').value.trim(),
+    direccion: document.getElementById('censoDireccion').value.trim(),
+    lat: document.getElementById('censoLat').value,
+    lng: document.getElementById('censoLng').value,
+    tipo: document.getElementById('censoTipo').value,
+    personasHogar: parseInt(document.getElementById('censoPersonasHogar').value)||0,
+    necesidades: document.getElementById('censoNecesidades').value.trim(),
+    detallesNecesidades: document.getElementById('censoDetallesNecesidades').value.trim(),
+    telefono: document.getElementById('censoTelefono').value.trim(),
+    whatsapp: document.getElementById('censoWhatsapp').value.trim(),
+    contactoAlterno: document.getElementById('censoContactoAlterno').value.trim(),
+    estado: document.getElementById('censoEstado').value,
+    comentarios: document.getElementById('censoComentarios').value.trim(),
+    fecha: new Date().toISOString().split('T')[0]
+  };
+
+  if(id){ data.censoPersonas[data.censoPersonas.findIndex(x=>x.id===id)] = obj; registrarAudit('Editó','Censo',`${obj.nombre} — ${obj.pueblo||'sin pueblo'}, ${obj.tipo}`); }
+  else { data.censoPersonas.push(obj); registrarAudit('Creó','Censo',`${obj.nombre} — ${obj.pueblo||'sin pueblo'}, ${obj.tipo}`); }
+  guardarDatos();
+  cerrarModal('modalCensoPersona');
+  actualizarFiltroPueblos();
+  renderCensoPersonas();
+  showToast('Registro guardado ✅');
+}
+
+function eliminarCensoPersona(id){
+  const cp = data.censoPersonas.find(x=>x.id===id);
+  if(!confirm('¿Eliminar este registro del censo?')) return;
+  registrarAudit('Eliminó','Censo', cp ? cp.nombre : id);
+  data.censoPersonas = data.censoPersonas.filter(x=>x.id!==id);
+  guardarDatos();
+  actualizarFiltroPueblos();
+  renderCensoPersonas();
+  showToast('Registro eliminado 🗑️');
+}
+
+function cambiarEstadoCenso(id){
+  const p = data.censoPersonas.find(x=>x.id===id);
+  if(!p) return;
+  const estados = ['Necesita ayuda','En proceso','Ayuda recibida'];
+  p.estado = estados[(estados.indexOf(p.estado)+1) % estados.length];
+  guardarDatos();
+  renderCensoPersonas();
+}
+
+function renderCensoPersonas(){
+  const q = (document.getElementById('buscarCenso').value||'').toLowerCase();
+  const pueblo = document.getElementById('filtroPueblo').value;
+  const tipo = document.getElementById('filtroTipoCenso').value;
+  const cont = document.getElementById('listaCensoPersonas');
+
+  const colorEstado = {'Necesita ayuda':'#fdecea','En proceso':'#fff3e0','Ayuda recibida':'#e6f4f0'};
+  const textoEstado = {'Necesita ayuda':'var(--danger)','En proceso':'#b9700a','Ayuda recibida':'var(--app-color)'};
+
+  const lista = data.censoPersonas
+    .filter(p=>{
+      if(pueblo && p.pueblo !== pueblo) return false;
+      if(tipo && p.tipo !== tipo) return false;
+      return !q || p.nombre.toLowerCase().includes(q) ||
+        (p.pueblo||'').toLowerCase().includes(q) ||
+        (p.barrio||'').toLowerCase().includes(q);
+    })
+    .sort((a,b)=>{
+      const ord = {'Necesita ayuda':0,'En proceso':1,'Ayuda recibida':2};
+      if((ord[a.estado]||0) !== (ord[b.estado]||0)) return (ord[a.estado]||0)-(ord[b.estado]||0);
+      return (a.pueblo||'').localeCompare(b.pueblo||'');
+    });
+
+  if(lista.length===0){
+    cont.innerHTML = `<div class="empty"><span>🏘️</span>${q||pueblo||tipo ? 'No se encontraron registros con ese filtro.' : 'Aún no hay personas en el censo.<br>Toca el botón + para agregar.'}</div>`;
+    return;
+  }
+
+  cont.innerHTML = lista.map((p,i)=>`
+    <div class="item" data-censo-id="${escapeHtml(p.id)}">
+      <div class="item-top">
+        <div style="width:100%">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <h3 style="margin:0;">${escapeHtml(p.nombre)}${p.apodo?' "'+escapeHtml(p.apodo)+'"':''}</h3>
+            <span class="tag" style="background:${colorEstado[p.estado]||'#eee'}; color:${textoEstado[p.estado]||'#333'}; cursor:pointer; white-space:nowrap;" data-accion="estadoCenso" data-id="${escapeHtml(p.id)}">${escapeHtml(p.estado)}</span>
+          </div>
+          <span class="tag" style="margin-top:4px;">${escapeHtml(p.tipo)}</span>
+          ${p.pueblo ? `<span class="muted"> · 📍 ${escapeHtml(p.pueblo)}${p.barrio?', '+escapeHtml(p.barrio):''}</span>` : ''}
+          ${p.direccion ? `<div class="muted" style="margin-top:4px;">${escapeHtml(p.direccion)}</div>` : ''}
+          ${p.lat && p.lng ? `<a href="https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}" target="_blank" style="display:inline-block; margin-top:6px; background:var(--app-color); color:#fff; padding:5px 12px; border-radius:8px; font-size:12px; text-decoration:none; font-weight:600;">🗺️ Navegar</a>` : ''}
+          ${p.necesidades ? `<div class="muted" style="margin-top:4px;">🆘 Necesita: <strong>${escapeHtml(p.necesidades)}</strong></div>` : ''}
+          ${p.detallesNecesidades ? `<div class="muted" style="margin-top:2px;">${escapeHtml(p.detallesNecesidades)}</div>` : ''}
+          ${p.personasHogar ? `<div class="muted" style="margin-top:4px;">👥 ${p.personasHogar} persona(s) en el hogar</div>` : ''}
+          ${(p.telefono||p.whatsapp) ? `<div class="muted" style="margin-top:4px;">${[p.telefono?'<a href="tel:'+escapeHtml(p.telefono)+'" style="color:var(--app-color);text-decoration:none;">📞 '+escapeHtml(p.telefono)+'</a>':'', p.whatsapp?'💬 '+escapeHtml(p.whatsapp):''].filter(Boolean).join(' · ')}</div>` : ''}
+          ${p.contactoAlterno ? `<div class="muted" style="margin-top:4px;">👤 ${escapeHtml(p.contactoAlterno)}</div>` : ''}
+          ${p.comentarios ? `<div class="muted" style="margin-top:4px;">${escapeHtml(p.comentarios)}</div>` : ''}
+        </div>
+      </div>
+      <div class="item-actions">
+        <button class="icon-btn" data-accion="editarCenso" data-id="${escapeHtml(p.id)}">✏️ Editar</button>
+        <button class="icon-btn danger" data-accion="eliminarCenso" data-id="${escapeHtml(p.id)}">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* --- Fundaciones en censo --- */
+function abrirModalCensoFundacion(id){
+  ['censoFundacionId','censoFundacionNombre','censoFundacionPueblo','censoFundacionBarrio',
+   'censoFundacionTelefono','censoFundacionWhatsapp','censoFundacionEmail','censoFundacionWeb',
+   'censoFundacionFacebook','censoFundacionInstagram','censoFundacionDirector',
+   'censoFundacionSecretario','censoFundacionTesorero','censoFundacionDirectiva',
+   'censoFundacionRegistro','censoFundacionEIN','censoFundacionEstatus',
+   'censoFundacionTienen','censoFundacionNecesitan','censoFundacionComentarios'
+  ].forEach(c=>{ const el=document.getElementById(c); if(el) el.value=''; });
+  document.getElementById('tituloModalCensoFundacion').textContent = 'Registrar fundación';
+
+  if(id){
+    const f = data.censoFundaciones.find(x=>x.id===id);
+    if(f){
+      document.getElementById('censoFundacionId').value = f.id;
+      document.getElementById('censoFundacionNombre').value = f.nombre;
+      document.getElementById('censoFundacionPueblo').value = f.pueblo||'';
+      document.getElementById('censoFundacionBarrio').value = f.barrio||'';
+      cargarBloqueGPS('btnGpsCF','stGpsCF','cfLat','cfLng', f.lat, f.lng);
+      document.getElementById('censoFundacionTelefono').value = f.telefono||'';
+      document.getElementById('censoFundacionWhatsapp').value = f.whatsapp||'';
+      document.getElementById('censoFundacionEmail').value = f.email||'';
+      document.getElementById('censoFundacionWeb').value = f.web||'';
+      document.getElementById('censoFundacionFacebook').value = f.facebook||'';
+      document.getElementById('censoFundacionInstagram').value = f.instagram||'';
+      document.getElementById('censoFundacionDirector').value = f.director||'';
+      document.getElementById('censoFundacionSecretario').value = f.secretario||'';
+      document.getElementById('censoFundacionTesorero').value = f.tesorero||'';
+      document.getElementById('censoFundacionDirectiva').value = f.directiva||'';
+      document.getElementById('censoFundacionRegistro').value = f.registro||'';
+      document.getElementById('censoFundacionEIN').value = f.ein||'';
+      document.getElementById('censoFundacionEstatus').value = f.estatus||'';
+      document.getElementById('censoFundacionTienen').value = f.tienen||'';
+      document.getElementById('censoFundacionNecesitan').value = f.necesitan||'';
+      document.getElementById('censoFundacionComentarios').value = f.comentarios||'';
+      document.getElementById('tituloModalCensoFundacion').textContent = 'Editar fundación';
+    }
+  }
+  document.getElementById('modalCensoFundacion').classList.add('active');
+}
+
+function guardarCensoFundacion(){
+  const id = document.getElementById('censoFundacionId').value;
+  const nombre = document.getElementById('censoFundacionNombre').value.trim();
+  if(!nombre){ showToast('⚠️ Escribe el nombre de la fundación'); return; }
+
+  const obj = {
+    id: id||uid(), nombre,
+    pueblo: document.getElementById('censoFundacionPueblo').value.trim(),
+    barrio: document.getElementById('censoFundacionBarrio').value.trim(),
+    lat: document.getElementById('cfLat')?.value || '',
+    lng: document.getElementById('cfLng')?.value || '',
+    telefono: document.getElementById('censoFundacionTelefono').value.trim(),
+    whatsapp: document.getElementById('censoFundacionWhatsapp').value.trim(),
+    email: document.getElementById('censoFundacionEmail').value.trim(),
+    web: document.getElementById('censoFundacionWeb').value.trim(),
+    facebook: document.getElementById('censoFundacionFacebook').value.trim(),
+    instagram: document.getElementById('censoFundacionInstagram').value.trim(),
+    director: document.getElementById('censoFundacionDirector').value.trim(),
+    secretario: document.getElementById('censoFundacionSecretario').value.trim(),
+    tesorero: document.getElementById('censoFundacionTesorero').value.trim(),
+    directiva: document.getElementById('censoFundacionDirectiva').value.trim(),
+    registro: document.getElementById('censoFundacionRegistro').value.trim(),
+    ein: document.getElementById('censoFundacionEIN').value.trim(),
+    estatus: document.getElementById('censoFundacionEstatus').value.trim(),
+    tienen: document.getElementById('censoFundacionTienen').value.trim(),
+    necesitan: document.getElementById('censoFundacionNecesitan').value.trim(),
+    comentarios: document.getElementById('censoFundacionComentarios').value.trim()
+  };
+
+  if(id){ data.censoFundaciones[data.censoFundaciones.findIndex(x=>x.id===id)] = obj; }
+  else { data.censoFundaciones.push(obj); }
+  guardarDatos();
+  cerrarModal('modalCensoFundacion');
+  renderCensoFundaciones();
+  showToast('Fundación guardada ✅');
+}
+
+function eliminarCensoFundacion(id){
+  if(!confirm('¿Eliminar este registro?')) return;
+  data.censoFundaciones = data.censoFundaciones.filter(x=>x.id!==id);
+  guardarDatos();
+  renderCensoFundaciones();
+  showToast('Registro eliminado 🗑️');
+}
+
+function renderCensoFundaciones(){
+  const q = (document.getElementById('buscarCensoFundacion').value||'').toLowerCase();
+  const cont = document.getElementById('listaCensoFundaciones');
+
+  const lista = data.censoFundaciones
+    .filter(f=> !q || f.nombre.toLowerCase().includes(q) || (f.pueblo||'').toLowerCase().includes(q))
+    .sort((a,b)=> a.nombre.localeCompare(b.nombre));
+
+  if(lista.length===0){
+    cont.innerHTML = `<div class="empty"><span>🏢</span>${q? 'No se encontraron fundaciones.' : 'Aún no hay fundaciones registradas.<br>Toca el botón + para agregar.'}</div>`;
+    return;
+  }
+
+  cont.innerHTML = lista.map(f=>`
+    <div class="item">
+      <div class="item-top">
+        <div>
+          <h3>${escapeHtml(f.nombre)}</h3>
+          ${f.pueblo ? `<span class="muted">📍 ${escapeHtml(f.pueblo)}${f.barrio?', '+escapeHtml(f.barrio):''}</span>` : ''}
+          ${f.director ? `<div class="muted" style="margin-top:4px;">👤 Director/a: <strong>${escapeHtml(f.director)}</strong></div>` : ''}
+          ${f.secretario ? `<div class="muted">✍️ Secretario/a: ${escapeHtml(f.secretario)}</div>` : ''}
+          ${f.tesorero ? `<div class="muted">💰 Tesorero/a: ${escapeHtml(f.tesorero)}</div>` : ''}
+          ${f.tienen ? `<div style="margin-top:6px;"><span class="tag" style="background:#e6f4f0; color:var(--app-color);">✅ Tienen: ${escapeHtml(f.tienen)}</span></div>` : ''}
+          ${f.necesitan ? `<div style="margin-top:4px;"><span class="tag" style="background:#fdecea; color:var(--danger);">🆘 Necesitan: ${escapeHtml(f.necesitan)}</span></div>` : ''}
+          ${(f.telefono||f.whatsapp||f.email) ? `<div class="muted" style="margin-top:6px;">${[f.telefono?'<a href="tel:'+escapeHtml(f.telefono)+'" style="color:var(--app-color);text-decoration:none;">📞 '+escapeHtml(f.telefono)+'</a>':'', f.whatsapp?'💬 '+escapeHtml(f.whatsapp):'', f.email?'✉️ '+escapeHtml(f.email):''].filter(Boolean).join(' · ')}</div>` : ''}
+          ${(f.facebook||f.instagram||f.web) ? `<div class="muted" style="margin-top:4px;">${[f.web?'🌐 '+escapeHtml(f.web):'', f.facebook?'📘 '+escapeHtml(f.facebook):'', f.instagram?'📷 '+escapeHtml(f.instagram):''].filter(Boolean).join(' · ')}</div>` : ''}
+          ${f.ein ? `<div class="muted" style="margin-top:4px;">EIN: ${escapeHtml(f.ein)}${f.estatus?' · '+escapeHtml(f.estatus):''}</div>` : ''}
+          ${f.comentarios ? `<div class="muted" style="margin-top:4px;">${escapeHtml(f.comentarios)}</div>` : ''}
+          ${linkNavegar(f.lat, f.lng)}
+        </div>
+      </div>
+      <div class="item-actions">
+        <button class="icon-btn" onclick="abrirModalCensoFundacion('${f.id}')">✏️ Editar</button>
+        <button class="icon-btn danger" onclick="eliminarCensoFundacion('${f.id}')">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* --- Vista por pueblo --- */
+function renderCensoPueblos(){
+  const cont = document.getElementById('listaCensoPueblos');
+  if(data.censoPersonas.length===0){
+    cont.innerHTML = `<div class="empty"><span>🗺️</span>Aún no hay registros en el censo.</div>`;
+    return;
+  }
+
+  const porPueblo = {};
+  data.censoPersonas.forEach(p=>{
+    const pueblo = p.pueblo || 'Sin pueblo';
+    if(!porPueblo[pueblo]) porPueblo[pueblo] = {total:0, necesitan:0, enProceso:0, atendidos:0, personas:[]};
+    porPueblo[pueblo].total++;
+    if(p.estado==='Necesita ayuda') porPueblo[pueblo].necesitan++;
+    else if(p.estado==='En proceso') porPueblo[pueblo].enProceso++;
+    else porPueblo[pueblo].atendidos++;
+    porPueblo[pueblo].personas.push(p);
+  });
+
+  cont.innerHTML = Object.keys(porPueblo).sort().map(pueblo=>{
+    const d = porPueblo[pueblo];
+    const necesidades = [...new Set(d.personas.map(p=>p.necesidades).filter(Boolean))];
+    return `
+      <div class="card" style="border-left:5px solid var(--app-color);">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h3 style="margin:0;">📍 ${escapeHtml(pueblo)}</h3>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <span class="tag">${d.total} ${d.total===1?'persona':'personas'}</span>
+            ${d.personas.some(p=>p.lat&&p.lng) ? `<button class="icon-btn" onclick="abrirRutaPueblo('${escapeHtml(pueblo)}')" style="font-size:12px;">🗺️ Ruta</button>` : ''}
+          </div>
+        </div>
+        <div style="display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;">
+          ${d.necesitan ? `<span class="tag" style="background:#fdecea; color:var(--danger);">🆘 ${d.necesitan} necesitan ayuda</span>` : ''}
+          ${d.enProceso ? `<span class="tag" style="background:#fff3e0; color:#b9700a;">⏳ ${d.enProceso} en proceso</span>` : ''}
+          ${d.atendidos ? `<span class="tag" style="background:#e6f4f0; color:var(--app-color);">✅ ${d.atendidos} atendidos</span>` : ''}
+        </div>
+        ${necesidades.length ? `<div class="muted" style="margin-top:8px;">🆘 Necesidades: ${necesidades.map(n=>escapeHtml(n)).join(', ')}</div>` : ''}
+        ${d.personas.filter(p=>p.barrio).length ? `<div class="muted" style="margin-top:4px;">🏘️ Barrios: ${[...new Set(d.personas.map(p=>p.barrio).filter(Boolean))].map(b=>escapeHtml(b)).join(', ')}</div>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+/* ---------- AUDITORÍA ---------- */
+async function actualizarFiltroUsuariosAudit(){
+  const sel = document.getElementById('filtroAuditUsuario');
+  if(!sel) return;
+  const usuarios = await getUsuarios();
+  const usuariosEnAudit = [...new Set((data.auditoria||[]).map(a=>a.usuario).filter(Boolean))];
+  sel.innerHTML = '<option value="">Todos los usuarios</option>' +
+    usuariosEnAudit.map(u=>`<option value="${escapeHtml(u)}">${escapeHtml(u)}</option>`).join('');
+}
+
+function renderAuditoria(){
+  actualizarFiltroUsuariosAudit();
+  const q = (document.getElementById('buscarAuditoria').value||'').toLowerCase();
+  const modulo = document.getElementById('filtroAuditModulo').value;
+  const accion = document.getElementById('filtroAuditAccion').value;
+  const usuario = document.getElementById('filtroAuditUsuario').value;
+  const desde = document.getElementById('filtroAuditDesde').value;
+  const hasta = document.getElementById('filtroAuditHasta').value;
+  const cont = document.getElementById('listaAuditoria');
+
+  const lista = (data.auditoria||[]).filter(a=>{
+    if(modulo && a.modulo !== modulo) return false;
+    if(accion && a.accion !== accion) return false;
+    if(usuario && a.usuario !== usuario) return false;
+    if(desde && a.fecha.slice(0,10) < desde) return false;
+    if(hasta && a.fecha.slice(0,10) > hasta) return false;
+    if(q && !(a.descripcion||'').toLowerCase().includes(q) && !a.modulo.toLowerCase().includes(q) && !(a.usuario||'').toLowerCase().includes(q)) return false;
+    return true;
+  });
+
+  if(lista.length === 0){
+    cont.innerHTML = `<div class="empty"><span>📋</span>No hay registros con esos filtros.</div>`;
+    return;
+  }
+
+  const colorAccion = {'Creó':'#e6f4f0','Editó':'#fff3e0','Eliminó':'#fdecea'};
+  const textoAccion = {'Creó':'var(--app-color)','Editó':'#b9700a','Eliminó':'var(--danger)'};
+
+  cont.innerHTML = lista.map(a=>{
+    const fecha = new Date(a.fecha);
+    const fechaStr = fecha.toLocaleDateString('es-PR',{day:'2-digit',month:'short',year:'numeric'});
+    const horaStr = fecha.toLocaleTimeString('es-PR',{hour:'2-digit',minute:'2-digit'});
+    return `
+      <div class="item" style="border-left-color:${textoAccion[a.accion]||'var(--app-color)'};">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+          <div>
+            <span class="tag" style="background:${colorAccion[a.accion]||'#eee'}; color:${textoAccion[a.accion]||'#333'};">${a.accion}</span>
+            <span class="tag" style="margin-left:4px;">${escapeHtml(a.modulo)}</span>
+            ${a.usuario ? `<span class="muted" style="display:block; margin-top:4px;">👤 ${escapeHtml(a.usuario)}</span>` : ''}
+            <div style="margin-top:6px; font-size:14px; color:var(--text);">${escapeHtml(a.descripcion||'')}</div>
+          </div>
+          <div style="text-align:right; font-size:12px; color:var(--muted); white-space:nowrap; margin-left:8px;">
+            ${fechaStr}<br>${horaStr}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function limpiarAuditoria(){
+  if(!confirm('¿Limpiar todo el historial de auditoría? Esta acción no se puede deshacer.')) return;
+  data.auditoria = [];
+  guardarDatos();
+  renderAuditoria();
+  showToast('Historial limpiado 🗑️');
+}
+
+function verReporteUsuario(){
+  const usuario = document.getElementById('filtroAuditUsuario').value;
+  const desde = document.getElementById('filtroAuditDesde').value;
+  const hasta = document.getElementById('filtroAuditHasta').value;
+  const modulo = document.getElementById('filtroAuditModulo').value;
+
+  let lista = data.auditoria || [];
+  if(usuario) lista = lista.filter(a=>a.usuario===usuario);
+  if(desde) lista = lista.filter(a=>a.fecha.slice(0,10)>=desde);
+  if(hasta) lista = lista.filter(a=>a.fecha.slice(0,10)<=hasta);
+  if(modulo) lista = lista.filter(a=>a.modulo===modulo);
+
+  const titulo = usuario ? `Actividad de ${usuario}` : 'Actividad de todos los usuarios';
+  const periodo = desde||hasta ? `Período: ${desde||'inicio'} al ${hasta||'hoy'}` : 'Todo el período';
+  const org = data.orgName || 'Mi Fundación';
+  const ahora = new Date().toLocaleString('es-PR');
+
+  // Agrupar por usuario
+  const porUsuario = {};
+  lista.forEach(a=>{
+    const u = a.usuario||'Sin usuario';
+    if(!porUsuario[u]) porUsuario[u] = [];
+    porUsuario[u].push(a);
+  });
+
+  const colorAccion = {'Creó':'#0e7c61','Editó':'#b9700a','Eliminó':'#e2574c'};
+
+  const html = `
+    <div style="font-family:sans-serif; color:#1f2d2a;">
+      <div style="text-align:center; border-bottom:3px solid #0e7c61; padding-bottom:16px; margin-bottom:20px;">
+        <div style="font-size:32px;">🌱</div>
+        <h2 style="margin:4px 0; color:#0e7c61; font-size:22px;">${escapeHtml(org)}</h2>
+        <h3 style="margin:4px 0; font-size:18px;">📋 ${escapeHtml(titulo)}</h3>
+        <p style="margin:4px 0; color:#6b7d79; font-size:13px;">${escapeHtml(periodo)}</p>
+        <p style="margin:4px 0; color:#6b7d79; font-size:12px;">Generado: ${ahora}</p>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;">
+        <div style="background:#e6f4f0; border-radius:12px; padding:12px; text-align:center;">
+          <div style="font-size:24px; font-weight:700; color:#0e7c61;">${lista.length}</div>
+          <div style="font-size:13px; color:#6b7d79;">Acciones totales</div>
+        </div>
+        <div style="background:#fff3e0; border-radius:12px; padding:12px; text-align:center;">
+          <div style="font-size:24px; font-weight:700; color:#b9700a;">${Object.keys(porUsuario).length}</div>
+          <div style="font-size:13px; color:#6b7d79;">Usuarios activos</div>
+        </div>
+      </div>
+
+      ${Object.keys(porUsuario).map(u=>{
+        const acciones = porUsuario[u];
+        const crea = acciones.filter(a=>a.accion==='Creó').length;
+        const edita = acciones.filter(a=>a.accion==='Editó').length;
+        const elim = acciones.filter(a=>a.accion==='Eliminó').length;
+        return `
+          <div style="border:1px solid #dde6e3; border-radius:14px; padding:16px; margin-bottom:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <h3 style="margin:0; font-size:17px;">👤 ${escapeHtml(u)}</h3>
+              <span style="background:#e6f4f0; color:#0e7c61; padding:4px 10px; border-radius:20px; font-size:13px; font-weight:600;">${acciones.length} acciones</span>
+            </div>
+            <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;">
+              <span style="background:#e6f4f0; color:#0e7c61; padding:4px 10px; border-radius:20px; font-size:13px;">✅ Creó: ${crea}</span>
+              <span style="background:#fff3e0; color:#b9700a; padding:4px 10px; border-radius:20px; font-size:13px;">✏️ Editó: ${edita}</span>
+              <span style="background:#fdecea; color:#e2574c; padding:4px 10px; border-radius:20px; font-size:13px;">🗑️ Eliminó: ${elim}</span>
+            </div>
+            <table style="width:100%; border-collapse:collapse; font-size:13px;">
+              <thead>
+                <tr style="background:#f4f8f7;">
+                  <th style="padding:8px; text-align:left; border-radius:8px 0 0 8px;">Acción</th>
+                  <th style="padding:8px; text-align:left;">Módulo</th>
+                  <th style="padding:8px; text-align:left;">Descripción</th>
+                  <th style="padding:8px; text-align:right; border-radius:0 8px 8px 0;">Fecha/Hora</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${acciones.map((a,i)=>{
+                  const f = new Date(a.fecha);
+                  return `
+                    <tr style="border-bottom:1px solid #f0f0f0; background:${i%2===0?'#fff':'#fafafa'};">
+                      <td style="padding:8px;"><span style="color:${colorAccion[a.accion]||'#333'}; font-weight:600;">${escapeHtml(a.accion)}</span></td>
+                      <td style="padding:8px;">${escapeHtml(a.modulo)}</td>
+                      <td style="padding:8px;">${escapeHtml(a.descripcion||'')}</td>
+                      <td style="padding:8px; text-align:right; white-space:nowrap; color:#6b7d79;">
+                        ${f.toLocaleDateString('es-PR',{day:'2-digit',month:'short'})}<br>
+                        ${f.toLocaleTimeString('es-PR',{hour:'2-digit',minute:'2-digit'})}
+                      </td>
+                    </tr>`;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>`;
+      }).join('')}
+
+      ${lista.length===0?'<p style="text-align:center; color:#6b7d79; padding:20px;">No hay actividad registrada con los filtros seleccionados.</p>':''}
+    </div>
+  `;
+
+  document.getElementById('contenidoReporte').innerHTML = html;
+  document.getElementById('modalReporte').classList.add('active');
+}
+
+function imprimirDesdeModal(){
+  const contenido = document.getElementById('contenidoReporte').innerHTML;
+  const ventana = window.open('','_blank');
+  ventana.document.write(`
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+      <meta charset="UTF-8">
+      <title>Reporte FoundationManager</title>
+      <style>
+        body{font-family:sans-serif; color:#1f2d2a; margin:20px; font-size:13px;}
+        @media print{ body{margin:10px;} button{display:none;} }
+        table{width:100%; border-collapse:collapse;}
+        th,td{padding:8px; border-bottom:1px solid #eee;}
+      </style>
+    </head>
+    <body>
+      <button onclick="window.print()" style="background:#0e7c61; color:#fff; border:none; padding:10px 20px; border-radius:8px; font-size:14px; cursor:pointer; margin-bottom:16px;">🖨️ Imprimir / Guardar PDF</button>
+      ${contenido}
+    </body>
+    </html>
+  `);
+  ventana.document.close();
+}
+
+
+
+const JSONBIN_BASE = 'https://api.jsonbin.io/v3/b';
+
+function getJsonBinKey(){
+  return localStorage.getItem('fm_jsonbin_key') || '';
+}
+
+function guardarApiKey(){
+  const key = document.getElementById('syncApiKey').value.trim();
+  if(!key){ showToast('⚠️ Escribe tu Master Key de JSONBin'); return; }
+  localStorage.setItem('fm_jsonbin_key', key);
+  document.getElementById('syncApiKeyStatus').textContent = '✅ Clave guardada en este dispositivo';
+  document.getElementById('syncApiKey').value = '';
+  showToast('Clave guardada ✅');
+}
+
+function renderSync(){
+  const codigo = data.syncCodigo || '';
+  document.getElementById('syncCodigo').value = codigo;
+  document.getElementById('syncCodigoActual').textContent = codigo ? `Código activo: "${codigo}"` : 'Sin código configurado';
+  document.getElementById('syncInventario').checked = data.syncOpciones?.inventario || false;
+  document.getElementById('syncCensoFundaciones').checked = data.syncOpciones?.censoFundaciones || false;
+  document.getElementById('syncCensoPersonas').checked = data.syncOpciones?.censoPersonas || false;
+  document.getElementById('syncProveedores').checked = data.syncOpciones?.proveedores || false;
+  document.getElementById('syncDirectorio').checked = data.syncOpciones?.directorio || false;
+  document.getElementById('syncApiKeyStatus').textContent = getJsonBinKey() ? '✅ Clave configurada en este dispositivo' : '⚠️ Clave no configurada aún';
+}
+
+function generarCodigo(){
+  const palabras = ['esperanza','ayuda','juntos','puerto','rico','fundacion','comunidad','apoyo','fuerza','luz'];
+  const p1 = palabras[Math.floor(Math.random()*palabras.length)];
+  const p2 = palabras[Math.floor(Math.random()*palabras.length)];
+  const num = Math.floor(Math.random()*9000)+1000;
+  document.getElementById('syncCodigo').value = `${p1}-${p2}-${num}`;
+}
+
+function guardarCodigo(){
+  const codigo = document.getElementById('syncCodigo').value.trim().toLowerCase().replace(/\s+/g,'-');
+  if(!codigo){ showToast('⚠️ Escribe o genera un código'); return; }
+  data.syncCodigo = codigo;
+  if(!data.syncBinId) data.syncBinId = {};
+  guardarDatos();
+  document.getElementById('syncCodigoActual').textContent = `Código activo: "${codigo}"`;
+  showToast('Código guardado ✅');
+}
+
+function construirPayload(){
+  const opciones = {
+    inventario: document.getElementById('syncInventario').checked,
+    censoFundaciones: document.getElementById('syncCensoFundaciones').checked,
+    censoPersonas: document.getElementById('syncCensoPersonas').checked,
+    proveedores: document.getElementById('syncProveedores').checked,
+    directorio: document.getElementById('syncDirectorio').checked
+  };
+  data.syncOpciones = opciones;
+  guardarDatos();
+
+  const { articulos, saldo } = calcularInventario();
+  const payload = {
+    fundacion: data.orgName,
+    actualizado: new Date().toISOString(),
+    codigo: data.syncCodigo
+  };
+
+  if(opciones.inventario){
+    payload.inventario = {
+      saldoEfectivo: saldo,
+      articulos: articulos.map(a=>({ categoria:a.categoria, disponible:a.disponible }))
+    };
+  }
+  if(opciones.censoFundaciones){
+    payload.censoFundaciones = data.censoFundaciones.map(f=>({
+      nombre:f.nombre, pueblo:f.pueblo, barrio:f.barrio,
+      telefono:f.telefono, whatsapp:f.whatsapp,
+      tienen:f.tienen, necesitan:f.necesitan, comentarios:f.comentarios
+    }));
+  }
+  if(opciones.censoPersonas){
+    // Solo pueblo, barrio, tipo y necesidades — sin nombre ni contacto
+    payload.censoPersonas = data.censoPersonas.map(p=>({
+      pueblo:p.pueblo, barrio:p.barrio, tipo:p.tipo,
+      necesidades:p.necesidades, detallesNecesidades:p.detallesNecesidades,
+      personasHogar:p.personasHogar, estado:p.estado
+    }));
+  }
+  if(opciones.proveedores){
+    payload.proveedores = data.proveedores;
+  }
+  if(opciones.directorio){
+    payload.directorio = data.directorio;
+  }
+  return payload;
+}
+
+async function publicarDatos(){
+  const status = document.getElementById('syncPublicarStatus');
+  if(!data.syncCodigo){ showToast('⚠️ Primero configura un código'); return; }
+
+  const seleccionadas = ['syncInventario','syncCensoFundaciones','syncCensoPersonas','syncProveedores','syncDirectorio'];
+  if(!seleccionadas.some(id=>document.getElementById(id).checked)){
+    showToast('⚠️ Selecciona al menos una opción para compartir');
+    return;
+  }
+
+  status.textContent = '⏳ Publicando...';
+  const payload = construirPayload();
+  const binName = `fm-${data.syncCodigo}-${data.orgName.replace(/\s+/g,'-').toLowerCase()}`;
+
+  try {
+    // Si ya tiene un bin, lo actualiza; si no, crea uno nuevo
+    const binId = data.syncBinId?.[data.syncCodigo];
+    let res, json;
+
+    if(binId){
+      res = await fetch(`${JSONBIN_BASE}/${binId}`, {
+        method:'PUT',
+        headers:{'Content-Type':'application/json','X-Master-Key':getJsonBinKey()},
+        body: JSON.stringify(payload)
+      });
+    } else {
+      res = await fetch(JSONBIN_BASE, {
+        method:'POST',
+        headers:{'Content-Type':'application/json','X-Master-Key':getJsonBinKey(),'X-Bin-Name':binName,'X-Bin-Private':'false'},
+        body: JSON.stringify(payload)
+      });
+    }
+
+    json = await res.json();
+
+    if(json.metadata?.id || json.record){
+      if(!data.syncBinId) data.syncBinId = {};
+      data.syncBinId[data.syncCodigo] = json.metadata?.id || binId;
+      guardarDatos();
+      const fecha = new Date().toLocaleTimeString('es-PR');
+      status.textContent = `✅ Publicado a las ${fecha}`;
+      showToast('Datos publicados ✅');
+    } else {
+      throw new Error('Respuesta inesperada');
+    }
+  } catch(e){
+    status.textContent = '❌ Error al publicar. Verifica tu conexión.';
+    showToast('⚠️ Error al publicar');
+  }
+}
+
+async function descargarDatosGrupo(){
+  const status = document.getElementById('syncDescargarStatus');
+  const cont = document.getElementById('syncDatosGrupo');
+  if(!data.syncCodigo){ showToast('⚠️ Primero configura un código'); return; }
+
+  status.textContent = '⏳ Buscando datos del grupo...';
+  cont.innerHTML = '';
+
+  try {
+    // Buscar bins que contengan el código del grupo
+    const res = await fetch(`${JSONBIN_BASE}?X-Master-Key=${getJsonBinKey()}`);
+    const json = await res.json();
+
+    // Filtrar por codigo
+    const bins = (json || []).filter(b=> b.snippetMeta?.name?.includes(data.syncCodigo));
+
+    if(!bins.length){
+      status.textContent = 'No se encontraron datos de otras fundaciones con este código.';
+      return;
+    }
+
+    // Descargar cada bin
+    const resultados = await Promise.all(bins.map(async b=>{
+      const r = await fetch(`${JSONBIN_BASE}/${b.id}/latest`, {
+        headers:{'X-Master-Key':getJsonBinKey()}
+      });
+      const j = await r.json();
+      return j.record || j;
+    }));
+
+    const otros = resultados.filter(r=> r.fundacion !== data.orgName && r.codigo === data.syncCodigo);
+
+    if(!otros.length){
+      status.textContent = 'Solo tú has publicado con este código aún.';
+      return;
+    }
+
+    status.textContent = `✅ ${otros.length} fundación(es) encontrada(s)`;
+    cont.innerHTML = otros.map(r=>`
+      <div class="card" style="border-left:5px solid var(--accent);">
+        <h3>🏢 ${escapeHtml(r.fundacion)}</h3>
+        <span class="muted">Actualizado: ${new Date(r.actualizado).toLocaleString('es-PR')}</span>
+
+        ${r.inventario ? `
+          <div style="margin-top:10px;">
+            <strong>📦 Inventario</strong>
+            <div class="muted">Saldo: ${formatoMoneda(r.inventario.saldoEfectivo)}</div>
+            ${r.inventario.articulos.map(a=>`
+              <div class="report-row">
+                <span>${escapeHtml(a.categoria)}</span>
+                <span style="color:${a.disponible<=5?'var(--danger)':'var(--app-color)'}; font-weight:600;">${a.disponible} disp.</span>
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+
+        ${r.censoFundaciones?.length ? `
+          <div style="margin-top:10px;">
+            <strong>🏢 Fundaciones en su censo</strong>
+            ${r.censoFundaciones.map(f=>`
+              <div class="item" style="margin-top:6px;">
+                <h3>${escapeHtml(f.nombre)}</h3>
+                ${f.pueblo?`<span class="muted">📍 ${escapeHtml(f.pueblo)}</span>`:''}
+                ${f.tienen?`<div><span class="tag" style="background:#e6f4f0;color:var(--app-color);">✅ Tienen: ${escapeHtml(f.tienen)}</span></div>`:''}
+                ${f.necesitan?`<div><span class="tag" style="background:#fdecea;color:var(--danger);">🆘 Necesitan: ${escapeHtml(f.necesitan)}</span></div>`:''}
+                ${f.telefono?`<div class="muted"><a href="tel:${escapeHtml(f.telefono)}" style="color:var(--app-color);text-decoration:none;">📞 ${escapeHtml(f.telefono)}</a></div>`:''}
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+
+        ${r.censoPersonas?.length ? `
+          <div style="margin-top:10px;">
+            <strong>👥 Necesidades en su área</strong>
+            ${[...new Set(r.censoPersonas.map(p=>p.pueblo).filter(Boolean))].map(pueblo=>{
+              const pp = r.censoPersonas.filter(p=>p.pueblo===pueblo);
+              const nec = [...new Set(pp.map(p=>p.necesidades).filter(Boolean))];
+              return `<div class="report-row"><span>📍 ${escapeHtml(pueblo)} (${pp.length})</span><span class="muted">${nec.map(n=>escapeHtml(n)).join(', ')||'—'}</span></div>`;
+            }).join('')}
+          </div>
+        ` : ''}
+
+        ${r.proveedores?.length ? `
+          <div style="margin-top:10px;">
+            <strong>🏪 Sus proveedores (${r.proveedores.length})</strong>
+            <div class="muted">Importa estos proveedores a tu app:</div>
+            <button class="icon-btn" onclick="importarProveedores(${JSON.stringify(r.proveedores).replace(/'/g,"&#39;")})">➕ Importar proveedores</button>
+          </div>
+        ` : ''}
+
+        ${r.directorio?.length ? `
+          <div style="margin-top:10px;">
+            <strong>📞 Su directorio (${r.directorio.length})</strong>
+            <button class="icon-btn" onclick="importarDirectorio(${JSON.stringify(r.directorio).replace(/'/g,"&#39;")})">➕ Importar directorio</button>
+          </div>
+        ` : ''}
+      </div>
+    `).join('');
+
+  } catch(e){
+    status.textContent = '❌ Error al descargar. Verifica tu conexión.';
+  }
+}
+
+function importarProveedores(nuevos){
+  if(!confirm(`¿Agregar ${nuevos.length} proveedor(es) a tu lista? Los que ya existen no se duplicarán.`)) return;
+  let agregados = 0;
+  nuevos.forEach(p=>{
+    if(!data.proveedores.some(x=>x.nombre===p.nombre && x.negocio===p.negocio)){
+      data.proveedores.push({...p, id:uid()});
+      agregados++;
+    }
+  });
+  guardarDatos();
+  showToast(`${agregados} proveedor(es) importado(s) ✅`);
+}
+
+function importarDirectorio(nuevos){
+  if(!confirm(`¿Agregar ${nuevos.length} agencia(s) a tu directorio? Las que ya existen no se duplicarán.`)) return;
+  let agregados = 0;
+  nuevos.forEach(d=>{
+    if(!data.directorio.some(x=>x.nombre===d.nombre)){
+      data.directorio.push({...d, id:uid()});
+      agregados++;
+    }
+  });
+  guardarDatos();
+  showToast(`${agregados} agencia(s) importada(s) ✅`);
+}
+
+function limpiarFiltroReporte(){
+  document.getElementById('repDesde').value = '';
+  document.getElementById('repHasta').value = '';
+  renderReportes();
+}
+
+function filtrarPorFecha(arr, campoFecha){
+  const desde = document.getElementById('repDesde').value;
+  const hasta = document.getElementById('repHasta').value;
+  return arr.filter(x=>{
+    const f = x[campoFecha]||'';
+    if(desde && f < desde) return false;
+    if(hasta && f > hasta) return false;
+    return true;
+  });
+}
+
+function renderReportes(){
+  const { totalRecaudado, totalEntregadoEfectivo, saldo, articulos } = calcularInventario();
+
+  // Caja
+  document.getElementById('repRecaudadoCaja').textContent = formatoMoneda(totalRecaudado);
+  document.getElementById('repEntregadoCaja').textContent = formatoMoneda(totalEntregadoEfectivo);
+  document.getElementById('repSaldoCaja').textContent = formatoMoneda(saldo);
+  document.getElementById('repSaldoCaja2').textContent = formatoMoneda(saldo).replace('.00','');
+
+  // Artículos totales disponibles
+  const totalArticulos = articulos.reduce((s,a)=>s+(a.disponible>0?a.disponible:0),0);
+  document.getElementById('repTotalArticulos').textContent = totalArticulos;
+
+  // Donaciones (filtradas por fecha)
+  const donsFiltradas = filtrarPorFecha(data.donantes, 'fecha');
+  const donsMon = donsFiltradas.filter(d=>d.tipo==='Monetaria'||!d.tipo);
+  const totalDonado = donsMon.reduce((s,d)=>s+(Number(d.monto)||0),0);
+  const promedio = donsMon.length ? totalDonado/donsMon.length : 0;
+  let topDonante = '—';
+  if(donsMon.length){
+    const top = [...donsMon].sort((a,b)=>(b.monto||0)-(a.monto||0))[0];
+    topDonante = `${top.nombre} (${formatoMoneda(top.monto)})`;
+  }
+  document.getElementById('repTotalDonado').textContent = formatoMoneda(totalDonado);
+  document.getElementById('repPromedio').textContent = formatoMoneda(promedio);
+  document.getElementById('repTopDonante').textContent = topDonante;
+  document.getElementById('repNumDonantes').textContent = donsMon.length;
+
+  // Donaciones por mes
+  const porMes = {};
+  donsMon.forEach(d=>{
+    if(!d.fecha) return;
+    const mes = d.fecha.slice(0,7);
+    porMes[mes] = (porMes[mes]||0)+(Number(d.monto)||0);
+  });
+  const nombresMes = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const contMes = document.getElementById('repPorMes');
+  const meses = Object.keys(porMes).sort().reverse();
+  contMes.innerHTML = meses.length ? meses.map(m=>{
+    const [y,mm] = m.split('-');
+    return `<div class="report-row"><span>${nombresMes[parseInt(mm)-1]} ${y}</span><span>${formatoMoneda(porMes[m])}</span></div>`;
+  }).join('') : '<p class="muted">Sin datos.</p>';
+
+  // Inventario detalle
+  const contInv = document.getElementById('repInventarioDetalle');
+  contInv.innerHTML = articulos.length ? articulos.map(a=>`
+    <div class="report-row">
+      <span>${escapeHtml(a.categoria)}</span>
+      <span style="color:${a.disponible<=5?'var(--danger)':'var(--app-color)'}; font-weight:700;">${a.disponible} ${a.disponible<=5?'⚠️':''}</span>
+    </div>
+  `).join('') : '<p class="muted">Sin artículos en inventario.</p>';
+
+  // Voluntarios
+  const totalHoras = data.voluntarios.reduce((s,v)=>s+(Number(v.horas)||0),0);
+  document.getElementById('repNumVoluntarios').textContent = data.voluntarios.length;
+  document.getElementById('repHoras').textContent = totalHoras;
+  const contVol = document.getElementById('repVoluntariosDetalle');
+  const topVols = [...data.voluntarios].sort((a,b)=>(b.horas||0)-(a.horas||0)).slice(0,5);
+  contVol.innerHTML = topVols.length ? topVols.map(v=>`
+    <div class="report-row"><span>${escapeHtml(v.nombre)}</span><span>${v.horas||0} hrs</span></div>
+  `).join('') : '';
+
+  // Solicitudes
+  const solsFiltradas = filtrarPorFecha(data.solicitudes, 'fecha');
+  const solsPend = solsFiltradas.filter(s=>s.estado==='Pendiente').length;
+  const solsAtend = solsFiltradas.filter(s=>s.estado==='Atendido').length;
+  document.getElementById('repNumSolicitudes').textContent = solsFiltradas.length;
+  document.getElementById('repSolicitudesPendientes').textContent = solsPend;
+  document.getElementById('repSolicitudesAtendidas').textContent = solsAtend;
+  document.getElementById('repTotalSolicitudes').textContent = solsFiltradas.length;
+  const necSols = [...new Set(solsFiltradas.map(s=>s.queSolicita).filter(Boolean))];
+  const contSolNec = document.getElementById('repSolicitudesNecesidades');
+  contSolNec.innerHTML = necSols.length ? `<div class="muted" style="font-size:12px;">Lo más solicitado: ${necSols.slice(0,5).map(n=>escapeHtml(n)).join(', ')}</div>` : '';
+
+  // Eventos
+  const evsFiltrados = filtrarPorFecha(data.eventos, 'fecha');
+  document.getElementById('repNumEventos').textContent = evsFiltrados.length;
+  document.getElementById('repPresupuesto').textContent = formatoMoneda(evsFiltrados.reduce((s,e)=>s+(Number(e.presupuesto)||0),0));
+  document.getElementById('repAsistentes').textContent = evsFiltrados.reduce((s,e)=>s+(Number(e.asistentes)||0),0);
+
+  // Censo
+  const cp = data.censoPersonas;
+  document.getElementById('repCensoPersonas').textContent = cp.length;
+  document.getElementById('repCensoNecesitan').textContent = cp.filter(p=>p.estado==='Necesita ayuda').length;
+  document.getElementById('repCensoEnProceso').textContent = cp.filter(p=>p.estado==='En proceso').length;
+  document.getElementById('repCensoAtendidos').textContent = cp.filter(p=>p.estado==='Ayuda recibida').length;
+  document.getElementById('repCensoTotal').textContent = cp.length;
+
+  const porPueblo = {};
+  cp.forEach(p=>{ if(p.pueblo){ porPueblo[p.pueblo]=(porPueblo[p.pueblo]||0)+1; } });
+  const contCensoPueblo = document.getElementById('repCensoPorPueblo');
+  const pueblosOrden = Object.keys(porPueblo).sort((a,b)=>porPueblo[b]-porPueblo[a]).slice(0,8);
+  contCensoPueblo.innerHTML = pueblosOrden.length ? pueblosOrden.map(p=>`
+    <div class="report-row"><span>📍 ${escapeHtml(p)}</span><span>${porPueblo[p]} persona(s)</span></div>
+  `).join('') : '';
+}
+
+function verReporteGeneral(){
+  renderReportes();
+  const org = data.orgName || 'Mi Fundación';
+  const ahora = new Date().toLocaleString('es-PR');
+  const desde = document.getElementById('repDesde').value;
+  const hasta = document.getElementById('repHasta').value;
+  const periodo = desde||hasta ? `${desde||'inicio'} al ${hasta||'hoy'}` : 'Todo el período';
+
+  const { totalRecaudado, totalEntregadoEfectivo, saldo, articulos } = calcularInventario();
+  const donsMon = data.donantes.filter(d=>d.tipo==='Monetaria'||!d.tipo);
+  const totalDonado = donsMon.reduce((s,d)=>s+(Number(d.monto)||0),0);
+  const solsPend = data.solicitudes.filter(s=>s.estado==='Pendiente').length;
+  const cp = data.censoPersonas;
+
+  const html = `
+    <div style="font-family:sans-serif; color:#1f2d2a;">
+      <div style="text-align:center; border-bottom:3px solid #0e7c61; padding-bottom:16px; margin-bottom:20px;">
+        <div style="font-size:32px;">🌱</div>
+        <h2 style="margin:4px 0; color:#0e7c61; font-size:22px;">${escapeHtml(org)}</h2>
+        ${data.orgInfo?.director ? `<p style="margin:2px 0; color:#6b7d79; font-size:13px;">Director/a: ${escapeHtml(data.orgInfo.director)}</p>` : ''}
+        ${data.orgInfo?.telefono ? `<p style="margin:2px 0; color:#6b7d79; font-size:13px;">📞 ${escapeHtml(data.orgInfo.telefono)}</p>` : ''}
+        ${data.orgInfo?.email ? `<p style="margin:2px 0; color:#6b7d79; font-size:13px;">✉️ ${escapeHtml(data.orgInfo.email)}</p>` : ''}
+        ${data.orgInfo?.ein ? `<p style="margin:2px 0; color:#6b7d79; font-size:13px;">EIN: ${escapeHtml(data.orgInfo.ein)}</p>` : ''}
+        <h3 style="margin:8px 0 4px; font-size:18px;">📊 Reporte General</h3>
+        <p style="margin:4px 0; color:#6b7d79; font-size:13px;">Período: ${escapeHtml(periodo)}</p>
+        <p style="margin:4px 0; color:#6b7d79; font-size:12px;">Generado: ${ahora}</p>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;">
+        <div style="background:#e6f4f0; border-radius:12px; padding:14px; text-align:center;">
+          <div style="font-size:22px; font-weight:700; color:#0e7c61;">$${totalRecaudado.toFixed(2)}</div>
+          <div style="font-size:12px; color:#6b7d79;">Total recaudado</div>
+        </div>
+        <div style="background:#e6f4f0; border-radius:12px; padding:14px; text-align:center;">
+          <div style="font-size:22px; font-weight:700; color:#0e7c61;">$${saldo.toFixed(2)}</div>
+          <div style="font-size:12px; color:#6b7d79;">Saldo en caja</div>
+        </div>
+        <div style="background:#fff3e0; border-radius:12px; padding:14px; text-align:center;">
+          <div style="font-size:22px; font-weight:700; color:#b9700a;">${data.donantes.length}</div>
+          <div style="font-size:12px; color:#6b7d79;">Donantes</div>
+        </div>
+        <div style="background:#fff3e0; border-radius:12px; padding:14px; text-align:center;">
+          <div style="font-size:22px; font-weight:700; color:#b9700a;">${data.voluntarios.length}</div>
+          <div style="font-size:12px; color:#6b7d79;">Voluntarios</div>
+        </div>
+        <div style="background:#fdecea; border-radius:12px; padding:14px; text-align:center;">
+          <div style="font-size:22px; font-weight:700; color:#e2574c;">${solsPend}</div>
+          <div style="font-size:12px; color:#6b7d79;">Solicitudes pendientes</div>
+        </div>
+        <div style="background:#fdecea; border-radius:12px; padding:14px; text-align:center;">
+          <div style="font-size:22px; font-weight:700; color:#e2574c;">${cp.filter(p=>p.estado==='Necesita ayuda').length}</div>
+          <div style="font-size:12px; color:#6b7d79;">Personas necesitan ayuda</div>
+        </div>
+      </div>
+
+      <h3 style="color:#0e7c61; border-bottom:2px solid #e6f4f0; padding-bottom:6px;">📦 Inventario</h3>
+      <table style="width:100%; border-collapse:collapse; font-size:13px; margin-bottom:20px;">
+        <thead><tr style="background:#f4f8f7;">
+          <th style="padding:8px; text-align:left;">Categoría</th>
+          <th style="padding:8px; text-align:right;">Donado</th>
+          <th style="padding:8px; text-align:right;">Entregado</th>
+          <th style="padding:8px; text-align:right;">Disponible</th>
+        </tr></thead>
+        <tbody>
+          ${articulos.length ? articulos.map((a,i)=>`
+            <tr style="border-bottom:1px solid #f0f0f0; background:${i%2===0?'#fff':'#fafafa'};">
+              <td style="padding:8px;">${escapeHtml(a.categoria)}</td>
+              <td style="padding:8px; text-align:right;">${a.donado}</td>
+              <td style="padding:8px; text-align:right;">${a.entregado}</td>
+              <td style="padding:8px; text-align:right; color:${a.disponible<=5?'#e2574c':'#0e7c61'}; font-weight:600;">${a.disponible}${a.disponible<=5?' ⚠️':''}</td>
+            </tr>`).join('') : '<tr><td colspan="4" style="padding:12px; text-align:center; color:#6b7d79;">Sin artículos en inventario</td></tr>'}
+        </tbody>
+      </table>
+
+      <h3 style="color:#0e7c61; border-bottom:2px solid #e6f4f0; padding-bottom:6px;">🆘 Solicitudes por estado</h3>
+      <table style="width:100%; border-collapse:collapse; font-size:13px; margin-bottom:20px;">
+        <thead><tr style="background:#f4f8f7;">
+          <th style="padding:8px; text-align:left;">Nombre</th>
+          <th style="padding:8px; text-align:left;">Qué solicita</th>
+          <th style="padding:8px; text-align:left;">Estado</th>
+        </tr></thead>
+        <tbody>
+          ${data.solicitudes.length ? [...data.solicitudes].sort((a,b)=>a.estado.localeCompare(b.estado)).map((s,i)=>`
+            <tr style="border-bottom:1px solid #f0f0f0; background:${i%2===0?'#fff':'#fafafa'};">
+              <td style="padding:8px;">${escapeHtml(s.nombre)}</td>
+              <td style="padding:8px;">${escapeHtml(s.queSolicita||'—')}</td>
+              <td style="padding:8px; color:${s.estado==='Pendiente'?'#b9700a':'#0e7c61'}; font-weight:600;">${escapeHtml(s.estado)}</td>
+            </tr>`).join('') : '<tr><td colspan="3" style="padding:12px; text-align:center; color:#6b7d79;">Sin solicitudes</td></tr>'}
+        </tbody>
+      </table>
+
+      <h3 style="color:#0e7c61; border-bottom:2px solid #e6f4f0; padding-bottom:6px;">🏘️ Censo por pueblo</h3>
+      <table style="width:100%; border-collapse:collapse; font-size:13px; margin-bottom:20px;">
+        <thead><tr style="background:#f4f8f7;">
+          <th style="padding:8px; text-align:left;">Pueblo</th>
+          <th style="padding:8px; text-align:right;">Total</th>
+          <th style="padding:8px; text-align:right;">Necesitan ayuda</th>
+          <th style="padding:8px; text-align:right;">Atendidos</th>
+        </tr></thead>
+        <tbody>
+          ${cp.length ? [...new Set(cp.map(p=>p.pueblo).filter(Boolean))].sort().map((pueblo,i)=>{
+            const pp = cp.filter(p=>p.pueblo===pueblo);
+            return `<tr style="border-bottom:1px solid #f0f0f0; background:${i%2===0?'#fff':'#fafafa'};">
+              <td style="padding:8px;">${escapeHtml(pueblo)}</td>
+              <td style="padding:8px; text-align:right;">${pp.length}</td>
+              <td style="padding:8px; text-align:right; color:#e2574c;">${pp.filter(p=>p.estado==='Necesita ayuda').length}</td>
+              <td style="padding:8px; text-align:right; color:#0e7c61;">${pp.filter(p=>p.estado==='Ayuda recibida').length}</td>
+            </tr>`;
+          }).join('') : '<tr><td colspan="4" style="padding:12px; text-align:center; color:#6b7d79;">Sin registros en censo</td></tr>'}
+        </tbody>
+      </table>
+
+      <p style="text-align:center; color:#6b7d79; font-size:12px; margin-top:20px; border-top:1px solid #eee; padding-top:10px;">
+        FoundationManager — ${escapeHtml(org)} — ${ahora}
+      </p>
+    </div>
+  `;
+
+  document.getElementById('contenidoReporte').innerHTML = html;
+  document.getElementById('modalReporte').classList.add('active');
+}
+
+function imprimirReporte(){
+  verReporteGeneral();
+}
+
+
+
+
+/* ---------- EXPORT / IMPORT ---------- */
+function exportarDatos(){
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const fecha = new Date().toISOString().split('T')[0];
+  a.href = url;
+  a.download = `foundationmanager_backup_${fecha}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Datos exportados 📤');
+}
+
+function importarDatos(event){
+  const file = event.target.files[0];
+  if(!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const nuevo = JSON.parse(e.target.result);
+      if(!confirm('Esto reemplazará todos los datos actuales con los del archivo importado. ¿Continuar?')) return;
+      data = nuevo;
+      if(!data.donantes) data.donantes = [];
+      if(!data.voluntarios) data.voluntarios = [];
+      if(!data.eventos) data.eventos = [];
+      if(!data.orgName) data.orgName = 'Mi Fundación';
+      guardarDatos();
+      renderInicio();
+      showToast('Datos importados ✅');
+    }catch(err){
+      showToast('⚠️ Archivo inválido');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+/* ---------- INIT ---------- */
+document.addEventListener('DOMContentLoaded', function(){
+  cargarDatos();
+  renderListaCategorias();
+
+  // Verificar sesión guardada (expira en 4 horas de inactividad)
+  const raw = localStorage.getItem('fm_sesion_activa');
+  if(raw){
+    try{
+      const s = JSON.parse(raw);
+      const CUATRO_HORAS = 4 * 60 * 60 * 1000;
+      if(Date.now() - s.ts < CUATRO_HORAS){
+        sesionActual = s;
+        // Renovar timestamp
+        s.ts = Date.now();
+        localStorage.setItem('fm_sesion_activa', JSON.stringify(s));
+        mostrarApp();
+        aplicarPermisos();
+        showView('inicio');
+        return;
+      } else {
+        localStorage.removeItem('fm_sesion_activa');
+      }
+    }catch(e){ localStorage.removeItem('fm_sesion_activa'); }
+  }
+
+  ocultarApp();
+  mostrarLogin();
+});
+
+function ocultarApp(){
+  ['header','#fab','.tabs','.container'].forEach(sel=>{
+    const el = document.querySelector(sel) || document.getElementById(sel.replace('#',''));
+    if(el) el.style.display = 'none';
+  });
+}
+
+function mostrarApp(){
+  const header = document.querySelector('header');
+  const tabs = document.querySelector('.tabs');
+  const container = document.querySelector('.container');
+  const fab = document.getElementById('fab');
+  if(header) header.style.display = 'block';
+  if(tabs) tabs.style.display = 'flex';
+  if(container) container.style.display = 'block';
+  if(fab) fab.style.display = 'flex';
+}
+
+</script>
+
+<script>
+// Desregistrar service workers anteriores que puedan causar problemas
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.getRegistrations().then(regs=>{
+    regs.forEach(r=> r.unregister());
+  });
+}
+
+// Bloquear pull-to-refresh en Chrome Android
+let lastY = 0;
+document.addEventListener('touchstart', e=>{ lastY = e.touches[0].clientY; }, {passive:true});
+document.addEventListener('touchmove', e=>{
+  const y = e.touches[0].clientY;
+  const scrollTop = document.scrollingElement?.scrollTop || 0;
+  if(scrollTop <= 0 && y > lastY){
+    e.preventDefault();
+  }
+  lastY = y;
+}, {passive:false});
+</script>
+</body>
+</html>
