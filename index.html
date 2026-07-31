@@ -457,18 +457,19 @@
     <h2>🔄 Sincronización</h2>
 
     <div class="card" style="border-left:5px solid var(--app-color);">
-      <h3>☁️ Supabase — Sincronización automática</h3>
-      <p class="muted">Todos los datos se sincronizan automáticamente con Supabase entre todos los dispositivos.</p>
-      <div id="supabaseStatus" style="font-size:14px; margin:8px 0;">⏳ Verificando conexión...</div>
+      <h3>☁️ Sincronización entre dispositivos</h3>
+      <p class="muted">Mantén todos tus dispositivos actualizados con los mismos datos.</p>
+      <div id="supabaseStatus" style="font-size:14px; margin:8px 0;">Toca "Probar" para verificar la conexión</div>
       <div class="btn-row">
-        <button class="btn" onclick="probarSupabase()">🔌 Probar conexión</button>
-        <button class="btn secondary" onclick="subirTodoASupabase()">⬆️ Subir todo</button>
+        <button class="btn" onclick="probarSupabase()">🔌 Probar</button>
+        <button class="btn secondary" onclick="subirTodoASupabase()">⬆️ Subir</button>
+        <button class="btn" style="background:#eef3f1; color:var(--app-color);" onclick="bajarDeSupabase()">⬇️ Bajar</button>
       </div>
-      <button class="btn" style="background:#eef3f1; color:var(--app-color); margin-top:8px;" onclick="bajarDeSupabase()">⬇️ Descargar de Supabase</button>
     </div>
 
     <div class="card">
-      <h3>🔐 Tu clave JSONBin (privada)</h3>
+      <h3>🤝 Compartir con otras fundaciones</h3>
+      <p class="muted">Comparte información con otras fundaciones usando un código secreto compartido.</p>
       <p class="muted">Esta clave se guarda solo en tu dispositivo, nunca en el código. Obténla en <a href="https://jsonbin.io" target="_blank" style="color:var(--app-color);">jsonbin.io</a> → API Keys → Master Key.</p>
       <label>Master Key</label>
       <input id="syncApiKey" type="password" placeholder="$2a$10$...">
